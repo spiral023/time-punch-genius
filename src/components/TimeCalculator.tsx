@@ -221,6 +221,20 @@ const TimeCalculator = () => {
   const progress77 = Math.min((totalMinutes / target77Minutes) * 100, 100);
   const progress10h = Math.min((totalMinutes / target10Hours) * 100, 100);
 
+  const getTextColorClass = (minutes: number): string => {
+    if (minutes < 360) { // unter 06:00
+      return 'text-red-500';
+    } else if (minutes >= 360 && minutes < 462) { // zwischen 06:00 und 07:42
+      return 'text-purple-500';
+    } else if (minutes >= 462 && minutes < 570) { // zwischen 07:42 und 09:30
+      return 'text-green-500';
+    } else if (minutes >= 570 && minutes < 600) { // zwischen 09:30 und 10:00
+      return 'text-yellow-500';
+    } else { // über 10:00
+      return 'text-red-500';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <motion.div 
@@ -323,7 +337,7 @@ const TimeCalculator = () => {
                   key={totalMinutes}
                   initial={{ scale: 1.1 }}
                   animate={{ scale: 1 }}
-                  className="text-4xl font-bold text-primary"
+                  className={`text-4xl font-bold ${getTextColorClass(totalMinutes)}`}
                 >
                   {formatHoursMinutes(totalMinutes)}
                 </motion.div>
