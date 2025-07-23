@@ -20,7 +20,12 @@ interface ValidationError {
 
 const TimeCalculator = () => {
   const [input, setInput] = useState('');
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('dark');
+    }
+    return true;
+  });
   const { toast } = useToast();
 
   // Load from localStorage on mount
@@ -30,8 +35,11 @@ const TimeCalculator = () => {
       setInput(saved);
     }
     
-    // Set dark mode by default
-    document.documentElement.classList.add('dark');
+    // Set dark mode by default if not already set
+    if (!document.documentElement.classList.contains('dark') && !document.documentElement.classList.contains('light')) {
+      document.documentElement.classList.add('dark');
+      setIsDarkMode(true);
+    }
   }, []);
 
   // Save to localStorage on input change
@@ -149,7 +157,8 @@ const TimeCalculator = () => {
     return addMinutesToTime(lastEntry.end, remainingMinutes);
   };
 
-  const target742Minutes = 7.42 * 60; // 445.2 minutes
+  const target6Hours = 6 * 60; // 360 minutes
+  const target77Minutes = 7.7 * 60; // 462 minutes
   const target10Hours = 10 * 60; // 600 minutes
 
   const clearInput = () => {
@@ -160,7 +169,8 @@ const TimeCalculator = () => {
     });
   };
 
-  const progress742 = Math.min((totalMinutes / target742Minutes) * 100, 100);
+  const progress6h = Math.min((totalMinutes / target6Hours) * 100, 100);
+  const progress77 = Math.min((totalMinutes / target77Minutes) * 100, 100);
   const progress10h = Math.min((totalMinutes / target10Hours) * 100, 100);
 
   return (
@@ -187,7 +197,7 @@ const TimeCalculator = () => {
             variant="outline"
             size="icon"
             onClick={toggleDarkMode}
-            className="rounded-full"
+            className="rounded-full hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
@@ -200,8 +210,8 @@ const TimeCalculator = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Card className="h-fit">
-              <CardHeader>
+            <Card className="h-fit hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
+              <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-t-lg">
                 <CardTitle className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <Calculator className="h-5 w-5" />
@@ -293,19 +303,36 @@ const TimeCalculator = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* 7.42 Hours Target */}
+                {/* 6 Hours Target */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">7,42 Stunden</span>
+                    <span className="text-sm font-medium">6 Stunden</span>
                     <span className="text-sm text-muted-foreground">
-                      {calculateTargetTime(target742Minutes) || '--:--'}
+                      {calculateTargetTime(target6Hours) || '--:--'}
                     </span>
                   </div>
                   <div className="space-y-2">
-                    <Progress value={progress742} className="h-2" />
+                    <Progress value={progress6h} className="h-3 bg-gradient-to-r from-green-200 to-green-300 dark:from-green-800 dark:to-green-700" />
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{Math.round(progress742)}%</span>
-                      <span>{formatHoursMinutes(target742Minutes)}</span>
+                      <span>{Math.round(progress6h)}%</span>
+                      <span>{formatHoursMinutes(target6Hours)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 7.7 Hours Target */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">7,7 Stunden</span>
+                    <span className="text-sm text-muted-foreground">
+                      {calculateTargetTime(target77Minutes) || '--:--'}
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    <Progress value={progress77} className="h-3 bg-gradient-to-r from-blue-200 to-blue-300 dark:from-blue-800 dark:to-blue-700" />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>{Math.round(progress77)}%</span>
+                      <span>{formatHoursMinutes(target77Minutes)}</span>
                     </div>
                   </div>
                 </div>
@@ -319,7 +346,7 @@ const TimeCalculator = () => {
                     </span>
                   </div>
                   <div className="space-y-2">
-                    <Progress value={progress10h} className="h-2" />
+                    <Progress value={progress10h} className="h-3 bg-gradient-to-r from-purple-200 to-purple-300 dark:from-purple-800 dark:to-purple-700" />
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{Math.round(progress10h)}%</span>
                       <span>{formatHoursMinutes(target10Hours)}</span>
