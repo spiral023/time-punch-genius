@@ -177,6 +177,15 @@ const TimeCalculator = () => {
     return { timeEntries: entries, errors: validationErrors, totalMinutes: total };
   }, [input, currentTime]);
 
+  // Update document title
+  useEffect(() => {
+    if (totalMinutes > 0) {
+      document.title = `${formatMinutesToTime(totalMinutes)} - ZE-Helper`;
+    } else {
+      document.title = 'ZE-Helper';
+    }
+  }, [totalMinutes]);
+
   const calculateTargetTime = (targetMinutes: number): string | null => {
     if (timeEntries.length === 0) return null;
     
@@ -221,7 +230,7 @@ const TimeCalculator = () => {
             className="flex items-center gap-3"
           >
             <Clock className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">Zeitrechner</h1>
+            <h1 className="text-3xl font-bold text-foreground">ZE-Helper</h1>
           </motion.div>
         </div>
 
@@ -377,6 +386,11 @@ const TimeCalculator = () => {
                 </div>
               </CardContent>
             </Card>
+            <div className="text-center text-sm text-muted-foreground mt-4">
+              <a href="http://ze-helper.sp23.online" target="_blank" rel="noopener noreferrer" className="hover:underline">
+                ze-helper.sp23.online
+              </a>
+            </div>
           </motion.div>
 
           {/* Time & Entries Column */}
