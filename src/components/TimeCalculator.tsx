@@ -225,7 +225,7 @@ const TimeCalculator = () => {
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Input Section */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -256,7 +256,7 @@ const TimeCalculator = () => {
                   placeholder="Zeitbuchungen eingeben:&#10;08:00 - 12:00&#10;12:30 - 16:42&#10;13:15&#10;Homeoffice"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  className="min-h-[200px] font-mono text-sm resize-none"
+                  className="min-h-[450px] font-mono text-sm resize-none"
                 />
                 
                 <AnimatePresence>
@@ -293,37 +293,6 @@ const TimeCalculator = () => {
             transition={{ delay: 0.4 }}
             className="space-y-6"
           >
-            {/* Current Browser Time */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Aktuelle Zeit
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <motion.div
-                  key={currentTime.getTime()}
-                  initial={{ scale: 1.05, opacity: 0.8 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="text-3xl font-bold text-primary font-mono"
-                >
-                  {currentTime.toLocaleTimeString('de-DE', { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    second: '2-digit'
-                  })}
-                </motion.div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {currentTime.toLocaleDateString('de-DE', {
-                    weekday: 'long',
-                    day: 'numeric',
-                    month: 'long'
-                  })}
-                </p>
-              </CardContent>
-            </Card>
-
             {/* Current Work Time */}
             <Card>
               <CardHeader>
@@ -406,6 +375,40 @@ const TimeCalculator = () => {
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Time & Entries Column */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5 }}
+            className="space-y-6"
+          >
+            {/* Current Browser Time */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Aktuelle Zeit
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-primary font-mono">
+                  {currentTime.toLocaleTimeString('de-DE', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit'
+                  })}
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {currentTime.toLocaleDateString('de-DE', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long'
+                  })}
+                </p>
               </CardContent>
             </Card>
 
