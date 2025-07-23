@@ -382,7 +382,7 @@ const TimeCalculator = () => {
                     </span>
                   </div>
                   <div className="space-y-2">
-                    <Progress value={progress77} className="h-3 bg-gradient-to-r from-blue-200 to-blue-300 dark:from-blue-800 dark:to-blue-700" />
+                    <Progress value={progress77} className="h-3 bg-gradient-to-r from-yellow-200 to-yellow-300 dark:from-yellow-800 dark:to-yellow-700" />
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{(Math.round(progress77 * 10) / 10)}%</span>
                       <span>{formatHoursMinutes(target77Minutes)}</span>
@@ -399,7 +399,7 @@ const TimeCalculator = () => {
                     </span>
                   </div>
                   <div className="space-y-2">
-                    <Progress value={progress10h} className="h-3 bg-gradient-to-r from-purple-200 to-purple-300 dark:from-purple-800 dark:to-purple-700" />
+                    <Progress value={progress10h} className="h-3 bg-gradient-to-r from-red-200 to-red-300 dark:from-red-800 dark:to-red-700" />
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{(Math.round(progress10h * 10) / 10)}%</span>
                       <span>{formatHoursMinutes(target10Hours)}</span>
