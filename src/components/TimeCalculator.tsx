@@ -20,12 +20,7 @@ interface ValidationError {
 
 const TimeCalculator = () => {
   const [input, setInput] = useState('');
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return document.documentElement.classList.contains('dark');
-    }
-    return true;
-  });
+  const [currentTime, setCurrentTime] = useState(new Date());
   const { toast } = useToast();
 
   // Load from localStorage on mount
@@ -35,22 +30,22 @@ const TimeCalculator = () => {
       setInput(saved);
     }
     
-    // Set dark mode by default if not already set
-    if (!document.documentElement.classList.contains('dark') && !document.documentElement.classList.contains('light')) {
-      document.documentElement.classList.add('dark');
-      setIsDarkMode(true);
-    }
+    // Set dark mode by default
+    document.documentElement.classList.add('dark');
+  }, []);
+
+  // Update current time every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   // Save to localStorage on input change
   useEffect(() => {
     localStorage.setItem('timeCalculatorInput', input);
   }, [input]);
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
-  };
 
   const parseTimeToMinutes = (time: string): number => {
     const [hours, minutes] = time.split(':').map(Number);
@@ -85,15 +80,51 @@ const TimeCalculator = () => {
       if (!trimmed) return;
 
       // Skip lines like "Homeoffice"
-      if (!trimmed.includes('-')) return;
+      if (!trimmed.includes('-') && !trimmed.includes(':')) return;
 
+      // Check for open time entry (just start time)
+      const openTimePattern = /^(\d{1,2}:\d{2})$/;
+      const openMatch = trimmed.match(openTimePattern);
+      
+      if (openMatch) {
+        const [, startTime] = openMatch;
+        
+        // Validate time format
+        const timeValidation = /^([01]?\d|2[0-3]):[0-5]\d$/;
+        if (!timeValidation.test(startTime)) {
+          validationErrors.push({
+            line: index + 1,
+            message: 'Ungültige Zeitangabe'
+          });
+          return;
+        }
+
+        const startMinutes = parseTimeToMinutes(startTime);
+        const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+        
+        if (currentMinutes <= startMinutes) {
+          validationErrors.push({
+            line: index + 1,
+            message: 'Startzeit liegt in der Zukunft'
+          });
+          return;
+        }
+
+        const duration = currentMinutes - startMinutes;
+        const endTime = formatMinutesToTime(currentMinutes);
+        
+        entries.push({ start: startTime, end: endTime, duration });
+        return;
+      }
+
+      // Check for complete time entry (start - end)
       const timePattern = /^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/;
       const match = trimmed.match(timePattern);
 
       if (!match) {
         validationErrors.push({
           line: index + 1,
-          message: 'Ungültiges Format. Verwenden Sie HH:MM - HH:MM'
+          message: 'Ungültiges Format. Verwenden Sie HH:MM - HH:MM oder HH:MM'
         });
         return;
       }
@@ -144,7 +175,7 @@ const TimeCalculator = () => {
     const total = entries.reduce((sum, entry) => sum + entry.duration, 0);
     
     return { timeEntries: entries, errors: validationErrors, totalMinutes: total };
-  }, [input]);
+  }, [input, currentTime]);
 
   const calculateTargetTime = (targetMinutes: number): string | null => {
     if (timeEntries.length === 0) return null;
@@ -182,7 +213,7 @@ const TimeCalculator = () => {
         className="max-w-4xl mx-auto space-y-6"
       >
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-center items-center mb-8">
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -192,15 +223,6 @@ const TimeCalculator = () => {
             <Clock className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold text-foreground">Zeitrechner</h1>
           </motion.div>
-          
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={toggleDarkMode}
-            className="rounded-full hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-xl"
-          >
-            {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -231,7 +253,7 @@ const TimeCalculator = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <Textarea
-                  placeholder="Zeitbuchungen eingeben:&#10;08:00 - 12:00&#10;12:30 - 16:42&#10;Homeoffice"
+                  placeholder="Zeitbuchungen eingeben:&#10;08:00 - 12:00&#10;12:30 - 16:42&#10;13:15&#10;Homeoffice"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   className="min-h-[200px] font-mono text-sm resize-none"
@@ -271,7 +293,38 @@ const TimeCalculator = () => {
             transition={{ delay: 0.4 }}
             className="space-y-6"
           >
-            {/* Current Time */}
+            {/* Current Browser Time */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Aktuelle Zeit
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <motion.div
+                  key={currentTime.getTime()}
+                  initial={{ scale: 1.05, opacity: 0.8 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-3xl font-bold text-primary font-mono"
+                >
+                  {currentTime.toLocaleTimeString('de-DE', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit'
+                  })}
+                </motion.div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {currentTime.toLocaleDateString('de-DE', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long'
+                  })}
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Current Work Time */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
