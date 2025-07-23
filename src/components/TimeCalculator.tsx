@@ -172,7 +172,15 @@ const TimeCalculator = () => {
       entries.push({ start: startTime, end: endTime, duration });
     });
 
-    const total = entries.reduce((sum, entry) => sum + entry.duration, 0);
+    let total = entries.reduce((sum, entry) => sum + entry.duration, 0);
+
+    // Abzug der Mittagspause: 30 Minuten nach 6 Stunden Arbeitszeit
+    const lunchBreakThreshold = 6 * 60; // 6 Stunden in Minuten
+    const lunchBreakDuration = 30; // 30 Minuten
+
+    if (total >= lunchBreakThreshold) {
+      total -= lunchBreakDuration;
+    }
     
     return { timeEntries: entries, errors: validationErrors, totalMinutes: total };
   }, [input, currentTime]);
@@ -345,7 +353,7 @@ const TimeCalculator = () => {
                   <div className="space-y-2">
                     <Progress value={progress6h} className="h-3 bg-gradient-to-r from-green-200 to-green-300 dark:from-green-800 dark:to-green-700" />
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{Math.round(progress6h)}%</span>
+                      <span>{(Math.round(progress6h * 10) / 10)}%</span>
                       <span>{formatHoursMinutes(target6Hours)}</span>
                     </div>
                   </div>
@@ -362,7 +370,7 @@ const TimeCalculator = () => {
                   <div className="space-y-2">
                     <Progress value={progress77} className="h-3 bg-gradient-to-r from-blue-200 to-blue-300 dark:from-blue-800 dark:to-blue-700" />
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{Math.round(progress77)}%</span>
+                      <span>{(Math.round(progress77 * 10) / 10)}%</span>
                       <span>{formatHoursMinutes(target77Minutes)}</span>
                     </div>
                   </div>
@@ -379,7 +387,7 @@ const TimeCalculator = () => {
                   <div className="space-y-2">
                     <Progress value={progress10h} className="h-3 bg-gradient-to-r from-purple-200 to-purple-300 dark:from-purple-800 dark:to-purple-700" />
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{Math.round(progress10h)}%</span>
+                      <span>{(Math.round(progress10h * 10) / 10)}%</span>
                       <span>{formatHoursMinutes(target10Hours)}</span>
                     </div>
                   </div>
