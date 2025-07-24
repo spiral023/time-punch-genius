@@ -204,7 +204,7 @@ const TimeCalculator = () => {
                   {formatHoursMinutes(totalMinutes)}
                 </motion.div>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {timeEntries.length} Zeiträume erfasst
+                  {timeEntries.length} {timeEntries.length === 1 ? 'Zeitraum' : 'Zeiträume'} erfasst
                 </p>
               </CardContent>
             </Card>
