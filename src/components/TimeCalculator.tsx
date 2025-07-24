@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Clock, Calculator, Target, Trash2, Sun, Moon } from 'lucide-react';
+import { Clock, Calculator, Target, Trash2, Sun, Moon, Coffee } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface TimeEntry {
@@ -70,7 +70,7 @@ const TimeCalculator = () => {
     return formatMinutesToTime(newMinutes);
   };
 
-  const { timeEntries, errors, totalMinutes } = useMemo(() => {
+  const { timeEntries, errors, totalMinutes, totalBreak, breakDeducted, grossTotalMinutes } = useMemo(() => {
     const lines = input.split('\n').filter(line => line.trim());
     const entries: TimeEntry[] = [];
     const validationErrors: ValidationError[] = [];
@@ -172,17 +172,34 @@ const TimeCalculator = () => {
       entries.push({ start: startTime, end: endTime, duration });
     });
 
-    let total = entries.reduce((sum, entry) => sum + entry.duration, 0);
+    // Einträge nach Startzeit sortieren, um die Pausen korrekt zu berechnen
+    entries.sort((a, b) => parseTimeToMinutes(a.start) - parseTimeToMinutes(b.start));
 
-    // Abzug der Mittagspause: 30 Minuten nach 6 Stunden Arbeitszeit
+    const grossTotalMinutes = entries.reduce((sum, entry) => sum + entry.duration, 0);
+    let total = grossTotalMinutes;
+    let totalBreak = 0;
+
+    // Pausen zwischen den Einträgen berechnen
+    for (let i = 0; i < entries.length - 1; i++) {
+      const currentEntryEnd = parseTimeToMinutes(entries[i].end);
+      const nextEntryStart = parseTimeToMinutes(entries[i + 1].start);
+      const breakDuration = nextEntryStart - currentEntryEnd;
+      if (breakDuration > 0) {
+        totalBreak += breakDuration;
+      }
+    }
+
+    // Abzug der Mittagspause: 30 Minuten nach 6 Stunden Arbeitszeit, wenn nicht schon genug Pause gemacht wurde
     const lunchBreakThreshold = 6 * 60; // 6 Stunden in Minuten
-    const lunchBreakDuration = 30; // 30 Minuten
+    const requiredBreakDuration = 30; // 30 Minuten
+    let breakDeducted = false;
 
-    if (total >= lunchBreakThreshold) {
-      total -= lunchBreakDuration;
+    if (grossTotalMinutes >= lunchBreakThreshold && totalBreak < requiredBreakDuration) {
+      total -= requiredBreakDuration;
+      breakDeducted = true;
     }
     
-    return { timeEntries: entries, errors: validationErrors, totalMinutes: total };
+    return { timeEntries: entries, errors: validationErrors, totalMinutes: total, totalBreak, breakDeducted, grossTotalMinutes };
   }, [input, currentTime]);
 
   // Update document title
@@ -287,7 +304,7 @@ const TimeCalculator = () => {
                   placeholder="Zeitbuchungen eingeben:&#10;08:00 - 12:00&#10;12:30 - 16:42&#10;13:15&#10;Homeoffice"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  className="min-h-[450px] font-mono text-sm resize-none"
+                  className="min-h-[410px] font-mono text-sm resize-none"
                 />
                 
                 <AnimatePresence>
@@ -445,6 +462,35 @@ const TimeCalculator = () => {
                     month: 'long'
                   })}
                 </p>
+              </CardContent>
+            </Card>
+
+            {/* Lunch Break Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Coffee className="h-5 w-5" />
+                  Pauseninfo
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm">Gemachte Pausen</span>
+                    <span className="text-sm font-bold">{formatHoursMinutes(totalBreak)}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground pt-2">
+                    {(() => {
+                      if (breakDeducted) {
+                        return "Gesetzliche Pause (30m) wurde von der Arbeitszeit abgezogen.";
+                      }
+                      if (grossTotalMinutes >= 360) {
+                        return "Die Pausenzeit von 30 Minuten wurde erreicht.";
+                      }
+                      return "Bei über 6h Arbeit sind 30m Pause Pflicht.";
+                    })()}
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
