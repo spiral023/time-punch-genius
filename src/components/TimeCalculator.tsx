@@ -1,22 +1,15 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Clock, Calculator, Target, Trash2, Sun, Moon, Coffee } from 'lucide-react';
+import { Clock, Calculator, Target, Trash2, Coffee, ListChecks } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface TimeEntry {
-  start: string;
-  end: string;
-  duration: number; // in minutes
-}
-
-interface ValidationError {
-  line: number;
-  message: string;
-}
+import { formatMinutesToTime, formatHoursMinutes, addMinutesToTime } from '@/lib/timeUtils';
+import { useTimeCalculator } from '@/hooks/useTimeCalculator';
+import { TimeEntry } from '@/types';
+import { TargetTimeProgress } from './TargetTimeProgress';
 
 const TimeCalculator = () => {
   const [input, setInput] = useState('');
@@ -47,160 +40,8 @@ const TimeCalculator = () => {
     localStorage.setItem('timeCalculatorInput', input);
   }, [input]);
 
-  const parseTimeToMinutes = (time: string): number => {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
-  };
 
-  const formatMinutesToTime = (minutes: number): string => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-  };
-
-  const formatHoursMinutes = (totalMinutes: number): string => {
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return `${hours}h ${minutes}m`;
-  };
-
-  const addMinutesToTime = (baseTime: string, minutesToAdd: number): string => {
-    const baseMinutes = parseTimeToMinutes(baseTime);
-    const newMinutes = baseMinutes + minutesToAdd;
-    return formatMinutesToTime(newMinutes);
-  };
-
-  const { timeEntries, errors, totalMinutes, totalBreak, breakDeducted, grossTotalMinutes } = useMemo(() => {
-    const lines = input.split('\n').filter(line => line.trim());
-    const entries: TimeEntry[] = [];
-    const validationErrors: ValidationError[] = [];
-
-    lines.forEach((line, index) => {
-      const trimmed = line.trim();
-      if (!trimmed) return;
-
-      // Skip lines like "Homeoffice"
-      if (!trimmed.includes('-') && !trimmed.includes(':')) return;
-
-      // Check for open time entry (just start time)
-      const openTimePattern = /^(\d{1,2}:\d{2})$/;
-      const openMatch = trimmed.match(openTimePattern);
-      
-      if (openMatch) {
-        const [, startTime] = openMatch;
-        
-        // Validate time format
-        const timeValidation = /^([01]?\d|2[0-3]):[0-5]\d$/;
-        if (!timeValidation.test(startTime)) {
-          validationErrors.push({
-            line: index + 1,
-            message: 'Ungültige Zeitangabe'
-          });
-          return;
-        }
-
-        const startMinutes = parseTimeToMinutes(startTime);
-        const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
-        
-        if (currentMinutes <= startMinutes) {
-          validationErrors.push({
-            line: index + 1,
-            message: 'Startzeit liegt in der Zukunft'
-          });
-          return;
-        }
-
-        const duration = currentMinutes - startMinutes;
-        const endTime = formatMinutesToTime(currentMinutes);
-        
-        entries.push({ start: startTime, end: endTime, duration });
-        return;
-      }
-
-      // Check for complete time entry (start - end)
-      const timePattern = /^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/;
-      const match = trimmed.match(timePattern);
-
-      if (!match) {
-        validationErrors.push({
-          line: index + 1,
-          message: 'Ungültiges Format. Verwenden Sie HH:MM - HH:MM oder HH:MM'
-        });
-        return;
-      }
-
-      const [, startTime, endTime] = match;
-      
-      // Validate time format
-      const timeValidation = /^([01]?\d|2[0-3]):[0-5]\d$/;
-      if (!timeValidation.test(startTime) || !timeValidation.test(endTime)) {
-        validationErrors.push({
-          line: index + 1,
-          message: 'Ungültige Zeitangabe'
-        });
-        return;
-      }
-
-      const startMinutes = parseTimeToMinutes(startTime);
-      const endMinutes = parseTimeToMinutes(endTime);
-
-      if (endMinutes <= startMinutes) {
-        validationErrors.push({
-          line: index + 1,
-          message: 'Endzeit muss nach Startzeit liegen'
-        });
-        return;
-      }
-
-      const duration = endMinutes - startMinutes;
-      
-      // Check for overlaps with existing entries
-      const hasOverlap = entries.some(entry => {
-        const entryStart = parseTimeToMinutes(entry.start);
-        const entryEnd = parseTimeToMinutes(entry.end);
-        return (startMinutes < entryEnd && endMinutes > entryStart);
-      });
-
-      if (hasOverlap) {
-        validationErrors.push({
-          line: index + 1,
-          message: 'Zeitraum überlappt mit vorherigem Eintrag'
-        });
-        return;
-      }
-
-      entries.push({ start: startTime, end: endTime, duration });
-    });
-
-    // Einträge nach Startzeit sortieren, um die Pausen korrekt zu berechnen
-    entries.sort((a, b) => parseTimeToMinutes(a.start) - parseTimeToMinutes(b.start));
-
-    const grossTotalMinutes = entries.reduce((sum, entry) => sum + entry.duration, 0);
-    let total = grossTotalMinutes;
-    let totalBreak = 0;
-
-    // Pausen zwischen den Einträgen berechnen
-    for (let i = 0; i < entries.length - 1; i++) {
-      const currentEntryEnd = parseTimeToMinutes(entries[i].end);
-      const nextEntryStart = parseTimeToMinutes(entries[i + 1].start);
-      const breakDuration = nextEntryStart - currentEntryEnd;
-      if (breakDuration > 0) {
-        totalBreak += breakDuration;
-      }
-    }
-
-    // Abzug der Mittagspause: 30 Minuten nach 6 Stunden Arbeitszeit, wenn nicht schon genug Pause gemacht wurde
-    const lunchBreakThreshold = 6 * 60; // 6 Stunden in Minuten
-    const requiredBreakDuration = 30; // 30 Minuten
-    let breakDeducted = false;
-
-    if (grossTotalMinutes >= lunchBreakThreshold && totalBreak < requiredBreakDuration) {
-      total -= requiredBreakDuration;
-      breakDeducted = true;
-    }
-    
-    return { timeEntries: entries, errors: validationErrors, totalMinutes: total, totalBreak, breakDeducted, grossTotalMinutes };
-  }, [input, currentTime]);
+  const { timeEntries, errors, totalMinutes, totalBreak, breakDeducted, grossTotalMinutes } = useTimeCalculator(input, currentTime);
 
   // Update document title
   useEffect(() => {
@@ -222,9 +63,9 @@ const TimeCalculator = () => {
     return addMinutesToTime(lastEntry.end, remainingMinutes);
   };
 
-  const target6Hours = 6 * 60; // 360 minutes
-  const target77Minutes = 7.7 * 60; // 462 minutes
-  const target10Hours = 10 * 60; // 600 minutes
+  const TARGET_6_HOURS_MINUTES = 360;
+  const TARGET_7_7_HOURS_MINUTES = 462;
+  const TARGET_10_HOURS_MINUTES = 600;
 
   const clearInput = () => {
     setInput('');
@@ -234,9 +75,9 @@ const TimeCalculator = () => {
     });
   };
 
-  const progress6h = Math.min((totalMinutes / target6Hours) * 100, 100);
-  const progress77 = Math.min((totalMinutes / target77Minutes) * 100, 100);
-  const progress10h = Math.min((totalMinutes / target10Hours) * 100, 100);
+  const progress6h = Math.min((totalMinutes / TARGET_6_HOURS_MINUTES) * 100, 100);
+  const progress77 = Math.min((totalMinutes / TARGET_7_7_HOURS_MINUTES) * 100, 100);
+  const progress10h = Math.min((totalMinutes / TARGET_10_HOURS_MINUTES) * 100, 100);
 
   const getTextColorClass = (minutes: number): string => {
     if (minutes < 360) { // unter 06:00
@@ -269,7 +110,11 @@ const TimeCalculator = () => {
             className="flex items-center gap-3"
           >
             <Clock className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">ZE-Helper</h1>
+            <h1 className="text-3xl font-bold text-foreground">
+              <a href="http://ze-helper.sp23.online/" target="_blank" rel="noopener noreferrer" className="hover:underline">
+                ZE-Helper
+              </a>
+            </h1>
           </motion.div>
         </div>
 
@@ -281,7 +126,7 @@ const TimeCalculator = () => {
             transition={{ delay: 0.3 }}
           >
             <Card className="h-fit hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
-              <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-t-lg">
+              <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <Calculator className="h-5 w-5" />
@@ -373,63 +218,29 @@ const TimeCalculator = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* 6 Hours Target */}
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">6 Stunden</span>
-                    <span className="text-sm text-muted-foreground">
-                      {calculateTargetTime(target6Hours) || '--:--'}
-                    </span>
-                  </div>
-                  <div className="space-y-2">
-                    <Progress value={progress6h} className="h-3 bg-gradient-to-r from-green-200 to-green-300 dark:from-green-800 dark:to-green-700" />
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{(Math.round(progress6h * 10) / 10)}%</span>
-                      <span>{formatHoursMinutes(target6Hours)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 7.7 Hours Target */}
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">7,7 Stunden</span>
-                    <span className="text-sm text-muted-foreground">
-                      {calculateTargetTime(target77Minutes) || '--:--'}
-                    </span>
-                  </div>
-                  <div className="space-y-2">
-                    <Progress value={progress77} className="h-3 bg-gradient-to-r from-yellow-200 to-yellow-300 dark:from-yellow-800 dark:to-yellow-700" />
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{(Math.round(progress77 * 10) / 10)}%</span>
-                      <span>{formatHoursMinutes(target77Minutes)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 10 Hours Target */}
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">10 Stunden</span>
-                    <span className="text-sm text-muted-foreground">
-                      {calculateTargetTime(target10Hours) || '--:--'}
-                    </span>
-                  </div>
-                  <div className="space-y-2">
-                    <Progress value={progress10h} className="h-3 bg-gradient-to-r from-red-200 to-red-300 dark:from-red-800 dark:to-red-700" />
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{(Math.round(progress10h * 10) / 10)}%</span>
-                      <span>{formatHoursMinutes(target10Hours)}</span>
-                    </div>
-                  </div>
-                </div>
+                <TargetTimeProgress
+                  label="6 Stunden"
+                  targetTime={calculateTargetTime(TARGET_6_HOURS_MINUTES)}
+                  progressValue={progress6h}
+                  targetMinutes={TARGET_6_HOURS_MINUTES}
+                  progressClassName="bg-gradient-to-r from-green-200 to-green-300 dark:from-green-800 dark:to-green-700"
+                />
+                <TargetTimeProgress
+                  label="7,7 Stunden"
+                  targetTime={calculateTargetTime(TARGET_7_7_HOURS_MINUTES)}
+                  progressValue={progress77}
+                  targetMinutes={TARGET_7_7_HOURS_MINUTES}
+                  progressClassName="bg-gradient-to-r from-yellow-200 to-yellow-300 dark:from-yellow-800 dark:to-yellow-700"
+                />
+                <TargetTimeProgress
+                  label="10 Stunden"
+                  targetTime={calculateTargetTime(TARGET_10_HOURS_MINUTES)}
+                  progressValue={progress10h}
+                  targetMinutes={TARGET_10_HOURS_MINUTES}
+                  progressClassName="bg-gradient-to-r from-red-200 to-red-300 dark:from-red-800 dark:to-red-700"
+                />
               </CardContent>
             </Card>
-            <div className="text-center text-sm text-muted-foreground mt-4">
-              <a href="http://ze-helper.sp23.online" target="_blank" rel="noopener noreferrer" className="hover:underline">
-                ze-helper.sp23.online
-              </a>
-            </div>
           </motion.div>
 
           {/* Time & Entries Column */}
@@ -498,7 +309,10 @@ const TimeCalculator = () => {
             {timeEntries.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Erfasste Zeiten</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <ListChecks className="h-5 w-5" />
+                    Erfasste Zeiten
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
