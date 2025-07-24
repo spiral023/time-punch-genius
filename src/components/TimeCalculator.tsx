@@ -41,7 +41,7 @@ const TimeCalculator = () => {
   }, [input]);
 
 
-  const { timeEntries, errors, totalMinutes, totalBreak, breakDeducted, grossTotalMinutes } = useTimeCalculator(input, currentTime);
+  const { timeEntries, errors, totalMinutes, totalBreak, breakDeduction, grossTotalMinutes } = useTimeCalculator(input, currentTime);
 
   // Update document title
   useEffect(() => {
@@ -292,11 +292,14 @@ const TimeCalculator = () => {
                   </div>
                   <p className="text-sm text-muted-foreground pt-2">
                     {(() => {
-                      if (breakDeducted) {
-                        return "Gesetzliche Pause (30m) wurde von der Arbeitszeit abgezogen.";
+                      if (breakDeduction > 0) {
+                        return `Gesetzliche Pause (${breakDeduction}m) wurde von der Arbeitszeit abgezogen.`;
                       }
-                      if (grossTotalMinutes >= 360) {
+                      if (grossTotalMinutes >= 360 && totalBreak >= 30) {
                         return "Die Pausenzeit von 30 Minuten wurde erreicht.";
+                      }
+                      if (grossTotalMinutes >= 360 && totalBreak < 30) {
+                        return `Restliche ${30 - totalBreak}m Pause werden noch abgezogen.`;
                       }
                       return "Bei über 6h Arbeit sind 30m Pause Pflicht.";
                     })()}

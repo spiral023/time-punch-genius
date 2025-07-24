@@ -116,13 +116,13 @@ export const useTimeCalculator = (input: string, currentTime: Date) => {
 
     const lunchBreakThreshold = 6 * 60;
     const requiredBreakDuration = 30;
-    let breakDeducted = false;
+    let breakDeduction = 0;
 
     if (grossTotalMinutes >= lunchBreakThreshold && totalBreak < requiredBreakDuration) {
-      total -= requiredBreakDuration;
-      breakDeducted = true;
+      breakDeduction = requiredBreakDuration - totalBreak;
+      total -= breakDeduction;
     }
     
-    return { timeEntries: entries, errors: validationErrors, totalMinutes: total, totalBreak, breakDeducted, grossTotalMinutes };
+    return { timeEntries: entries, errors: validationErrors, totalMinutes: total, totalBreak, breakDeduction, grossTotalMinutes };
   }, [input, currentTime]);
 };
