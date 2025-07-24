@@ -4,8 +4,15 @@ export const parseTimeToMinutes = (time: string): number => {
 };
 
 export const formatMinutesToTime = (minutes: number): string => {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
+  const totalMinutesInDay = 24 * 60;
+  let adjustedMinutes = minutes;
+
+  if (adjustedMinutes >= totalMinutesInDay) {
+    adjustedMinutes = totalMinutesInDay - 1; // Limit to 23:59
+  }
+
+  const hours = Math.floor(adjustedMinutes / 60);
+  const mins = adjustedMinutes % 60;
   return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
 };
 
