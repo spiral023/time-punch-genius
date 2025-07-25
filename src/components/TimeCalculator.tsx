@@ -8,11 +8,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Calendar as CalendarIcon, Clock, Calculator, Target, Trash2, Coffee, ListChecks, ChevronLeft, ChevronRight, CalendarDays, BarChart3, Settings, Download, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { format, addDays, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
+import { format, addDays, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, startOfYear, endOfYear } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { formatMinutesToTime, formatHoursMinutes, addMinutesToTime, parseTimeToMinutes, calculateTimeDetails } from '@/lib/timeUtils';
+import { formatMinutesToTime, formatHoursMinutes, addMinutesToTime, parseTimeToMinutes, calculateTimeDetails, formatDeltaToTime, calculateAverageDay, calculateOutsideRegularHours } from '@/lib/timeUtils';
 import { useTimeCalculator } from '@/hooks/useTimeCalculator';
 import { TimeEntry } from '@/types';
+import { AverageDayCard } from './AverageDayCard';
+import { OutsideRegularHoursCard } from './OutsideRegularHoursCard';
 import { TargetTimeProgress } from './TargetTimeProgress';
 import { WeeklyHoursChart } from './WeeklyHoursChart';
 import { Calendar } from './ui/calendar';
@@ -271,6 +273,49 @@ const TimeCalculator = () => {
   const progress77 = Math.min((totalMinutes / TARGET_7_7_HOURS_MINUTES) * 100, 100);
   const progress10h = Math.min((totalMinutes / TARGET_10_HOURS_MINUTES) * 100, 100);
 
+  const averageDayData = useMemo(() => {
+    const allKeys = Object.keys(localStorage);
+    const dateKeys = allKeys.filter(key => key.startsWith('zehelper_data_'));
+    const allDaysData = dateKeys.map(key => localStorage.getItem(key) || '');
+    return calculateAverageDay(allDaysData);
+  }, [input, selectedDate]); // Recalculate when input changes to reflect new data
+
+  const outsideRegularHours = useMemo(() => {
+    const calculateTotalOutsideHours = (start: Date, end: Date) => {
+      const days = eachDayOfInterval({ start, end });
+      let total = 0;
+
+      days.forEach(day => {
+        const dayKey = format(day, 'yyyy-MM-dd');
+        const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
+        let dayInput = localStorage.getItem(formatDateKey(day)) || '';
+
+        if (dayKey === selectedDateKey) {
+          dayInput = input;
+        }
+
+        if (dayInput) {
+          const details = calculateTimeDetails(dayInput);
+          total += calculateOutsideRegularHours(details.timeEntries, day);
+        }
+      });
+      return total;
+    };
+
+    const weeklyStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
+    const weeklyEnd = endOfWeek(selectedDate, { weekStartsOn: 1 });
+    const monthlyStart = startOfMonth(selectedDate);
+    const monthlyEnd = endOfMonth(selectedDate);
+    const yearlyStart = startOfYear(selectedDate);
+    const yearlyEnd = endOfYear(selectedDate);
+
+    return {
+      week: calculateTotalOutsideHours(weeklyStart, weeklyEnd),
+      month: calculateTotalOutsideHours(monthlyStart, monthlyEnd),
+      year: calculateTotalOutsideHours(yearlyStart, yearlyEnd),
+    };
+  }, [selectedDate, input]);
+
   const getCurrentTimeColor = () => {
     const day = currentTime.getDay();
     const hour = currentTime.getHours();
@@ -325,7 +370,7 @@ const TimeCalculator = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-4xl mx-auto space-y-6"
+        className="max-w-5xl mx-auto space-y-6"
       >
         {/* Header */}
         <div className="flex justify-center items-center mb-8">
@@ -580,6 +625,12 @@ const TimeCalculator = () => {
                     <p>Klicken zum Ein- oder Ausstempeln</p>
                   </TooltipContent>
                 </Tooltip>
+                <div className="text-sm text-muted-foreground mt-2">
+                  Delta:
+                  <span className={`font-bold ${totalMinutes - TARGET_7_7_HOURS_MINUTES >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {formatDeltaToTime(totalMinutes - TARGET_7_7_HOURS_MINUTES)}
+                  </span>
+                </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   {timeEntries.length > 0
                     ? `${timeEntries.length} ${timeEntries.length === 1 ? 'Zeitraum' : 'Zeiträume'} erfasst`
@@ -621,6 +672,12 @@ const TimeCalculator = () => {
                 />
               </CardContent>
             </Card>
+
+            <OutsideRegularHoursCard
+              outsideHoursWeek={formatHoursMinutes(outsideRegularHours.week)}
+              outsideHoursMonth={formatHoursMinutes(outsideRegularHours.month)}
+              outsideHoursYear={formatHoursMinutes(outsideRegularHours.year)}
+            />
 
             {/* Settings Card */}
             <Card>
@@ -690,6 +747,21 @@ const TimeCalculator = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Average Day Card */}
+            {averageDayData && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <AverageDayCard
+                  avgStart={averageDayData.avgStart}
+                  avgEnd={averageDayData.avgEnd}
+                  avgBreak={averageDayData.avgBreak}
+                />
+              </motion.div>
+            )}
 
             {/* Chart */}
             <WeeklyHoursChart data={weeklyChartData} />

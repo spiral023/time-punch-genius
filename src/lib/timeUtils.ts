@@ -35,6 +35,14 @@ export const formatHoursMinutes = (totalMinutes: number): string => {
   return `${formattedHours} ${formattedMinutes}`;
 };
 
+export const formatDeltaToTime = (totalMinutes: number): string => {
+  const sign = totalMinutes < 0 ? '-' : '+';
+  const absMinutes = Math.abs(totalMinutes);
+  const hours = Math.floor(absMinutes / 60);
+  const minutes = absMinutes % 60;
+  return `${sign} ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+};
+
 export const addMinutesToTime = (baseTime: string, minutesToAdd: number): string => {
   const baseMinutes = parseTimeToMinutes(baseTime);
   const newMinutes = baseMinutes + minutesToAdd;
@@ -190,3 +198,81 @@ export const calculateTimeDetails = (input: string, currentTime?: Date) => {
   
   return { timeEntries: entries, errors: validationErrors, totalMinutes: total, totalBreak, breakDeduction, grossTotalMinutes };
 }
+
+export const calculateAverageDay = (allDaysData: string[]) => {
+  const dailyStats: { start: number; end: number; break: number }[] = [];
+
+  allDaysData.forEach(input => {
+    if (!input) return;
+
+    const { timeEntries, totalBreak, breakDeduction } = calculateTimeDetails(input);
+    if (timeEntries.length > 0) {
+      const firstEntry = timeEntries[0];
+      const lastEntry = timeEntries[timeEntries.length - 1];
+      
+      // Only consider days with closed entries
+      if (lastEntry.end.match(/\d{2}:\d{2}/)) {
+        dailyStats.push({
+          start: parseTimeToMinutes(firstEntry.start),
+          end: parseTimeToMinutes(lastEntry.end),
+          break: totalBreak + breakDeduction,
+        });
+      }
+    }
+  });
+
+  if (dailyStats.length === 0) {
+    return null;
+  }
+
+  const total = dailyStats.reduce(
+    (acc, curr) => {
+      acc.start += curr.start;
+      acc.end += curr.end;
+      acc.break += curr.break;
+      return acc;
+    },
+    { start: 0, end: 0, break: 0 }
+  );
+
+  const count = dailyStats.length;
+  return {
+    avgStart: formatMinutesToTime(Math.round(total.start / count)),
+    avgEnd: formatMinutesToTime(Math.round(total.end / count)),
+    avgBreak: Math.round(total.break / count),
+  };
+};
+
+export const calculateOutsideRegularHours = (
+  timeEntries: { start: string; end: string; duration: number }[],
+  date: Date
+): number => {
+  const regularStartMinutes = 6 * 60; // 06:00
+  const regularEndMinutes = 19 * 60; // 19:00
+  const dayOfWeek = date.getDay(); // Sunday = 0, Monday = 1, etc.
+
+  let outsideMinutes = 0;
+
+  // Weekend
+  if (dayOfWeek === 0 || dayOfWeek === 6) {
+    return timeEntries.reduce((sum, entry) => sum + entry.duration, 0);
+  }
+
+  // Weekday
+  for (const entry of timeEntries) {
+    const startMinutes = parseTimeToMinutes(entry.start);
+    const endMinutes = parseTimeToMinutes(entry.end);
+
+    // Time worked before 6:00
+    if (startMinutes < regularStartMinutes) {
+      outsideMinutes += Math.min(endMinutes, regularStartMinutes) - startMinutes;
+    }
+
+    // Time worked after 19:00
+    if (endMinutes > regularEndMinutes) {
+      outsideMinutes += endMinutes - Math.max(startMinutes, regularEndMinutes);
+    }
+  }
+
+  return outsideMinutes;
+};
