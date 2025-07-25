@@ -6,6 +6,7 @@ import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { format } from 'date-fns'
 import { de } from 'date-fns/locale'
+import { BarChart2 } from "lucide-react"
 
 interface WeeklyHoursChartProps {
   data: { date: Date; totalMinutes: number }[]
@@ -46,7 +47,10 @@ export const WeeklyHoursChart: React.FC<WeeklyHoursChartProps> = ({ data }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Wochenübersicht</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <BarChart2 className="h-6 w-6" />
+          Wochenübersicht
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
