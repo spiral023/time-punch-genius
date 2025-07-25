@@ -33,6 +33,61 @@ const TimeCalculator = () => {
   const { handleExportData, handleImportData, handleClearAllData } = useDataManagement();
   const { weeklySummary, monthlySummary, yearlySummary } = useSummary(selectedDate, input, currentTime);
 
+  const handleWebdeskImport = (text: string) => {
+    const lines = text.split('\n');
+    const dateRegex = /(\d{2})\.(\d{2})\.(\d{4})/;
+    const timeRegex = /\d{2}:\d{2}\s*-\s*\d{2}:\d{2}/;
+    let currentDate: Date | null = null;
+    const entries: { [key: string]: string[] } = {};
+
+    for (const line of lines) {
+      const dateMatch = line.match(dateRegex);
+      if (dateMatch) {
+        const [, day, month, year] = dateMatch;
+        currentDate = new Date(`${year}-${month}-${day}`);
+        const dateKey = formatDateKey(currentDate);
+        if (!entries[dateKey]) {
+          entries[dateKey] = [];
+        }
+      }
+
+      if (currentDate) {
+        const timeMatch = line.match(timeRegex);
+        if (timeMatch) {
+          const dateKey = formatDateKey(currentDate);
+          entries[dateKey].push(timeMatch[0]);
+        }
+      }
+    }
+
+    Object.keys(entries).forEach(dateKey => {
+      if (entries[dateKey].length > 0) {
+        localStorage.setItem(dateKey, entries[dateKey].join('\n'));
+      } else {
+        // If a date was found but no entries, we clear it
+        localStorage.removeItem(dateKey);
+      }
+    });
+
+    // Refresh the input for the currently selected date if it was part of the import
+    const selectedDateKey = formatDateKey(selectedDate);
+    if (entries[selectedDateKey]) {
+      setInput(entries[selectedDateKey].join('\n'));
+    } else if (Object.keys(entries).length > 0 && !entries[selectedDateKey]) {
+      // If the selected date was not in the import, but other dates were,
+      // we might need to clear its input if it was previously showing something.
+      // Or just leave it as is. For now, we'll just reload it from localStorage.
+      const savedInput = localStorage.getItem(selectedDateKey) || '';
+      setInput(savedInput);
+    }
+
+
+    toast({
+      title: "Webdesk Import erfolgreich",
+      description: `${Object.keys(entries).length} Tage wurden importiert/aktualisiert.`,
+    });
+  };
+
   useEffect(() => {
     document.documentElement.classList.add('dark');
     const savedHours = localStorage.getItem(WEEKLY_HOURS_KEY);
@@ -326,6 +381,7 @@ const TimeCalculator = () => {
               handleExportData={handleExportData}
               handleImportData={handleImportData}
               handleClearAllData={handleClearAllData}
+              handleWebdeskImport={handleWebdeskImport}
             />
           </div>
         </div>
