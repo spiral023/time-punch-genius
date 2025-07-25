@@ -199,25 +199,22 @@ export const calculateTimeDetails = (input: string, currentTime?: Date) => {
   return { timeEntries: entries, errors: validationErrors, totalMinutes: total, totalBreak, breakDeduction, grossTotalMinutes };
 }
 
-export const calculateAverageDay = (allDaysData: string[]) => {
+export const calculateAverageDay = (allDaysData: string[], currentTime?: Date, currentDateKey?: string) => {
   const dailyStats: { start: number; end: number; break: number }[] = [];
 
   allDaysData.forEach(input => {
     if (!input) return;
 
-    const { timeEntries, totalBreak, breakDeduction } = calculateTimeDetails(input);
+    const { timeEntries, totalBreak, breakDeduction } = calculateTimeDetails(input, currentTime);
     if (timeEntries.length > 0) {
       const firstEntry = timeEntries[0];
       const lastEntry = timeEntries[timeEntries.length - 1];
       
-      // Only consider days with closed entries
-      if (lastEntry.end.match(/\d{2}:\d{2}/)) {
-        dailyStats.push({
-          start: parseTimeToMinutes(firstEntry.start),
-          end: parseTimeToMinutes(lastEntry.end),
-          break: totalBreak + breakDeduction,
-        });
-      }
+      dailyStats.push({
+        start: parseTimeToMinutes(firstEntry.start),
+        end: parseTimeToMinutes(lastEntry.end),
+        break: totalBreak + breakDeduction,
+      });
     }
   });
 

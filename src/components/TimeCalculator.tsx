@@ -20,6 +20,7 @@ import { WeeklyHoursChart } from './WeeklyHoursChart';
 import { Calendar } from './ui/calendar';
 import { Input } from './ui/input';
 import { WelcomePopup } from './WelcomePopup';
+import { FeedbackCard } from './FeedbackCard';
 
 const formatDateKey = (date: Date): string => `zehelper_data_${format(date, 'yyyy-MM-dd')}`;
 const WEEKLY_HOURS_KEY = 'zehelper_weekly_hours';
@@ -108,6 +109,33 @@ const TimeCalculator = () => {
   const monthlySummary = useMemo(() => {
     const start = startOfMonth(selectedDate);
     const end = endOfMonth(selectedDate);
+    const days = eachDayOfInterval({ start, end });
+    let total = 0;
+
+    days.forEach(day => {
+      const dayKey = format(day, 'yyyy-MM-dd');
+      const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
+
+      if (dayKey === selectedDateKey) {
+        if (input) {
+          const dayDetails = calculateTimeDetails(input, currentTime);
+          total += dayDetails.totalMinutes;
+        }
+      } else {
+        const storageKey = formatDateKey(day);
+        const savedInput = localStorage.getItem(storageKey);
+        if (savedInput) {
+          const dayDetails = calculateTimeDetails(savedInput);
+          total += dayDetails.totalMinutes;
+        }
+      }
+    });
+    return total;
+  }, [selectedDate, input, currentTime]); // Re-calculate when date or input changes
+
+  const yearlySummary = useMemo(() => {
+    const start = startOfYear(selectedDate);
+    const end = endOfYear(selectedDate);
     const days = eachDayOfInterval({ start, end });
     let total = 0;
 
@@ -276,9 +304,15 @@ const TimeCalculator = () => {
   const averageDayData = useMemo(() => {
     const allKeys = Object.keys(localStorage);
     const dateKeys = allKeys.filter(key => key.startsWith('zehelper_data_'));
-    const allDaysData = dateKeys.map(key => localStorage.getItem(key) || '');
-    return calculateAverageDay(allDaysData);
-  }, [input, selectedDate]); // Recalculate when input changes to reflect new data
+    const allDaysData = dateKeys.map(key => {
+      const dayKey = key.replace('zehelper_data_', '');
+      if (dayKey === format(selectedDate, 'yyyy-MM-dd')) {
+        return input; // Use current input for the selected day
+      }
+      return localStorage.getItem(key) || '';
+    });
+    return calculateAverageDay(allDaysData, currentTime, format(selectedDate, 'yyyy-MM-dd'));
+  }, [input, selectedDate, currentTime]); // Recalculate when input, selectedDate or currentTime changes
 
   const outsideRegularHours = useMemo(() => {
     const calculateTotalOutsideHours = (start: Date, end: Date) => {
@@ -591,6 +625,11 @@ const TimeCalculator = () => {
                 </CardContent>
               </Card>
             </motion.div>
+
+            {/* Feedback Card */}
+            <motion.div className="mt-6">
+              <FeedbackCard />
+            </motion.div>
           </motion.div>
 
           {/* Results Section */}
@@ -674,17 +713,18 @@ const TimeCalculator = () => {
             </Card>
 
             <OutsideRegularHoursCard
+              selectedDate={selectedDate}
               outsideHoursWeek={formatHoursMinutes(outsideRegularHours.week)}
               outsideHoursMonth={formatHoursMinutes(outsideRegularHours.month)}
               outsideHoursYear={formatHoursMinutes(outsideRegularHours.year)}
             />
 
-            {/* Settings Card */}
+            {/* Data Management Card */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Settings className="h-5 w-5" />
-                  Einstellungen
+                  Datenverwaltung
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -848,6 +888,24 @@ const TimeCalculator = () => {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {format(selectedDate, 'MMMM yyyy', { locale: de })}
+                  </p>
+                </div>
+                <div>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-sm font-medium">Dieses Jahr</span>
+                    <motion.span
+                      key={`yearly-${yearlySummary}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="font-bold text-lg"
+                    >
+                      {formatHoursMinutes(yearlySummary)}
+                    </motion.span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {format(selectedDate, 'yyyy')}
                   </p>
                 </div>
               </CardContent>
