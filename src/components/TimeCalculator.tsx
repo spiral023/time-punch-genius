@@ -613,7 +613,7 @@ const TimeCalculator = () => {
                           return <span className="text-destructive">{`Gesetzliche Pause (${breakDeduction}m) wurde von der Arbeitszeit abgezogen.`}</span>;
                         }
                         if (grossTotalMinutes >= 360 && totalBreak >= 30) {
-                          return "Die Pausenzeit von 30 Minuten wurde erreicht.";
+                          return <span className="text-green-500">Die Pausenzeit von 30 Minuten wurde erreicht.</span>;
                         }
                         if (grossTotalMinutes >= 360 && totalBreak < 30) {
                           return `Restliche ${30 - totalBreak}m Pause werden noch abgezogen.`;
@@ -665,7 +665,7 @@ const TimeCalculator = () => {
                   </TooltipContent>
                 </Tooltip>
                 <div className="text-sm text-muted-foreground mt-2">
-                  Delta:
+                  Delta:&nbsp;
                   <span className={`font-bold ${totalMinutes - TARGET_7_7_HOURS_MINUTES >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {formatDeltaToTime(totalMinutes - TARGET_7_7_HOURS_MINUTES)}
                   </span>
