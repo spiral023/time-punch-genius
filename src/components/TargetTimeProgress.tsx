@@ -4,6 +4,9 @@ import { formatHoursMinutes } from '@/lib/timeUtils';
 import { Button } from './ui/button';
 import { Bell, BellOff } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Slider } from './ui/slider';
+import { Label } from './ui/label';
 
 interface TargetTimeProgressProps {
   label: string;
@@ -22,15 +25,19 @@ export const TargetTimeProgress: React.FC<TargetTimeProgressProps> = ({
 }) => {
   const { scheduleNotification } = useNotifications();
   const [isScheduled, setIsScheduled] = useState(false);
+  const [offsetMinutes, setOffsetMinutes] = useState(5);
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
-  const handleScheduleNotification = async () => {
+  const handleSaveNotification = async () => {
     if (targetTime && targetTime !== "Ziel bereits erreicht") {
       await scheduleNotification(
         targetTime,
         'Zielzeit erreicht!',
-        `Du hast deine Zielzeit von ${label} erreicht.`
+        `Du hast deine Zielzeit von ${label} erreicht.`,
+        offsetMinutes
       );
       setIsScheduled(true);
+      setPopoverOpen(false);
     }
   };
 
@@ -44,19 +51,40 @@ export const TargetTimeProgress: React.FC<TargetTimeProgressProps> = ({
           <span className="text-sm text-muted-foreground">
             {targetTime || '--:--'}
           </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleScheduleNotification}
-            disabled={!targetTime || isAchieved || isScheduled}
-            className="h-7 w-7"
-          >
-            {isScheduled ? (
-              <BellOff className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <Bell className="h-4 w-4" />
-            )}
-          </Button>
+          <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                disabled={!targetTime || isAchieved || isScheduled}
+                className="h-7 w-7"
+              >
+                {isScheduled ? (
+                  <BellOff className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Bell className="h-4 w-4" />
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-4">
+              <div className="space-y-4 text-center">
+                <Label htmlFor="notification-time" className="text-sm font-medium">
+                  Benachrichtigung {offsetMinutes > 0 ? `${offsetMinutes} Minuten früher` : 'genau zur Zielzeit'}
+                </Label>
+                <Slider
+                  id="notification-time"
+                  min={0}
+                  max={30}
+                  step={5}
+                  value={[offsetMinutes]}
+                  onValueChange={(value) => setOffsetMinutes(value[0])}
+                />
+                <Button onClick={handleSaveNotification} className="w-full">
+                  Aktivieren
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
       <div className="space-y-2">

@@ -52,7 +52,7 @@ export const useNotifications = () => {
     }
   };
 
-  const scheduleNotification = async (targetTime: string, title: string, body: string) => {
+  const scheduleNotification = async (targetTime: string, title: string, body: string, offsetMinutes = 0) => {
     const hasPermission = await requestPermission();
     if (!hasPermission) return;
 
@@ -60,6 +60,9 @@ export const useNotifications = () => {
     const now = new Date();
     const targetDate = new Date();
     targetDate.setHours(hours, minutes, 0, 0);
+
+    // Apply the offset
+    targetDate.setMinutes(targetDate.getMinutes() - offsetMinutes);
 
     if (targetDate <= now) {
       toast({
@@ -76,9 +79,11 @@ export const useNotifications = () => {
       new Notification(title, { body });
     }, delay);
 
+    const notificationTime = `${targetDate.getHours().toString().padStart(2, '0')}:${targetDate.getMinutes().toString().padStart(2, '0')}`;
+
     toast({
       title: 'Benachrichtigung geplant',
-      description: `Sie werden um ${targetTime} Uhr benachrichtigt.`,
+      description: `Sie werden um ${notificationTime} Uhr benachrichtigt.`,
     });
   };
 

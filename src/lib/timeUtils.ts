@@ -17,9 +17,22 @@ export const formatMinutesToTime = (minutes: number): string => {
 };
 
 export const formatHoursMinutes = (totalMinutes: number): string => {
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return `${hours}h ${minutes}m`;
+  if (totalMinutes === 0) {
+    return '0h 0m';
+  }
+  const sign = totalMinutes < 0 ? '-' : '';
+  const absMinutes = Math.abs(totalMinutes);
+  const hours = Math.floor(absMinutes / 60);
+  const minutes = absMinutes % 60;
+  
+  const formattedHours = `${hours}h`;
+  const formattedMinutes = `${minutes}m`;
+
+  if (sign) {
+    return `${sign}${formattedHours} ${formattedMinutes}`;
+  }
+  
+  return `${formattedHours} ${formattedMinutes}`;
 };
 
 export const addMinutesToTime = (baseTime: string, minutesToAdd: number): string => {
@@ -27,3 +40,153 @@ export const addMinutesToTime = (baseTime: string, minutesToAdd: number): string
   const newMinutes = baseMinutes + minutesToAdd;
   return formatMinutesToTime(newMinutes);
 };
+
+export const calculateTimeDetails = (input: string, currentTime?: Date) => {
+  const lines = input.split('\n').filter(line => line.trim());
+  const entries: { start: string; end: string; duration: number }[] = [];
+  const validationErrors: { line: number; message: string }[] = [];
+
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+
+    if (!trimmed.includes('-') && !trimmed.includes(':')) return;
+
+    const openTimePattern = /^(\d{1,2}:\d{2})$/;
+    const openMatch = trimmed.match(openTimePattern);
+    
+    if (openMatch && currentTime) {
+      const [, startTime] = openMatch;
+      
+      const timeValidation = /^([01]?\d|2[0-3]):[0-5]\d$/;
+      if (!timeValidation.test(startTime)) {
+        validationErrors.push({
+          line: index + 1,
+          message: 'Ungültige Zeitangabe'
+        });
+        return;
+      }
+
+      const startMinutes = parseTimeToMinutes(startTime);
+      const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+      
+      if (currentMinutes <= startMinutes) {
+        validationErrors.push({
+          line: index + 1,
+          message: 'Startzeit liegt in der Zukunft'
+        });
+        return;
+      }
+
+      const duration = currentMinutes - startMinutes;
+      const endTime = formatMinutesToTime(currentMinutes);
+      
+      entries.push({ start: startTime, end: endTime, duration });
+      return;
+    }
+
+    const timePattern = /^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/;
+    const match = trimmed.match(timePattern);
+
+    if (!match) {
+      // Check for open entry format like "HH:MM - "
+      const openEntryPattern = /^(\d{1,2}:\d{2})\s*-\s*$/;
+      const openEntryMatch = trimmed.match(openEntryPattern);
+
+      if (openEntryMatch && currentTime) {
+        const [, startTime] = openEntryMatch;
+        const timeValidation = /^([01]?\d|2[0-3]):[0-5]\d$/;
+        if (!timeValidation.test(startTime)) {
+          validationErrors.push({
+            line: index + 1,
+            message: 'Ungültige Zeitangabe'
+          });
+          return;
+        }
+
+        const startMinutes = parseTimeToMinutes(startTime);
+        const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+        
+        if (currentMinutes > startMinutes) {
+          const duration = currentMinutes - startMinutes;
+          const endTime = formatMinutesToTime(currentMinutes);
+          entries.push({ start: startTime, end: endTime, duration });
+        }
+        // Don't add to validation errors if it's just an open entry
+        return;
+      }
+
+      validationErrors.push({
+        line: index + 1,
+        message: 'Ungültiges Format. Verwenden Sie HH:MM - HH:MM oder HH:MM'
+      });
+      return;
+    }
+
+    const [, startTime, endTime] = match;
+    
+    const timeValidation = /^([01]?\d|2[0-3]):[0-5]\d$/;
+    if (!timeValidation.test(startTime) || !timeValidation.test(endTime)) {
+      validationErrors.push({
+        line: index + 1,
+        message: 'Ungültige Zeitangabe'
+      });
+      return;
+    }
+
+    const startMinutes = parseTimeToMinutes(startTime);
+    const endMinutes = parseTimeToMinutes(endTime);
+
+    if (endMinutes <= startMinutes) {
+      validationErrors.push({
+        line: index + 1,
+        message: 'Endzeit muss nach Startzeit liegen'
+      });
+      return;
+    }
+
+    const duration = endMinutes - startMinutes;
+    
+    const hasOverlap = entries.some(entry => {
+      const entryStart = parseTimeToMinutes(entry.start);
+      const entryEnd = parseTimeToMinutes(entry.end);
+      return (startMinutes < entryEnd && endMinutes > entryStart);
+    });
+
+    if (hasOverlap) {
+      validationErrors.push({
+        line: index + 1,
+        message: 'Zeitraum überlappt mit vorherigem Eintrag'
+      });
+      return;
+    }
+
+    entries.push({ start: startTime, end: endTime, duration });
+  });
+
+  entries.sort((a, b) => parseTimeToMinutes(a.start) - parseTimeToMinutes(b.start));
+
+  const grossTotalMinutes = entries.reduce((sum, entry) => sum + entry.duration, 0);
+  let total = grossTotalMinutes;
+  let totalBreak = 0;
+
+  for (let i = 0; i < entries.length - 1; i++) {
+    const currentEntryEnd = parseTimeToMinutes(entries[i].end);
+    const nextEntryStart = parseTimeToMinutes(entries[i + 1].start);
+    const breakDuration = nextEntryStart - currentEntryEnd;
+    if (breakDuration > 0) {
+      totalBreak += breakDuration;
+    }
+  }
+
+  const lunchBreakThreshold = 6 * 60;
+  const requiredBreakDuration = 30;
+  let breakDeduction = 0;
+
+  if (grossTotalMinutes >= lunchBreakThreshold && totalBreak < requiredBreakDuration) {
+    breakDeduction = requiredBreakDuration - totalBreak;
+    total -= breakDeduction;
+  }
+  
+  return { timeEntries: entries, errors: validationErrors, totalMinutes: total, totalBreak, breakDeduction, grossTotalMinutes };
+}
