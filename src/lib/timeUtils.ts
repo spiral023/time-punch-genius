@@ -35,14 +35,6 @@ export const formatHoursMinutes = (totalMinutes: number): string => {
   return `${formattedHours} ${formattedMinutes}`;
 };
 
-export const formatDeltaToTime = (totalMinutes: number): string => {
-  const sign = totalMinutes < 0 ? '-' : '+';
-  const absMinutes = Math.abs(totalMinutes);
-  const hours = Math.floor(absMinutes / 60);
-  const minutes = absMinutes % 60;
-  return `${sign} ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-};
-
 export const addMinutesToTime = (baseTime: string, minutesToAdd: number): string => {
   const baseMinutes = parseTimeToMinutes(baseTime);
   const newMinutes = baseMinutes + minutesToAdd;

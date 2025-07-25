@@ -10,7 +10,7 @@ import { Calendar as CalendarIcon, Clock, Calculator, Target, Trash2, Coffee, Li
 import { useToast } from '@/hooks/use-toast';
 import { format, addDays, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, startOfYear, endOfYear } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { formatMinutesToTime, formatHoursMinutes, addMinutesToTime, parseTimeToMinutes, calculateTimeDetails, formatDeltaToTime, calculateAverageDay, calculateOutsideRegularHours } from '@/lib/timeUtils';
+import { formatMinutesToTime, formatHoursMinutes, addMinutesToTime, parseTimeToMinutes, calculateTimeDetails, calculateAverageDay, calculateOutsideRegularHours } from '@/lib/timeUtils';
 import { useTimeCalculator } from '@/hooks/useTimeCalculator';
 import { TimeEntry } from '@/types';
 import { AverageDayCard } from './AverageDayCard';
@@ -667,7 +667,7 @@ const TimeCalculator = () => {
                 <div className="text-sm text-muted-foreground mt-2">
                   Delta:&nbsp;
                   <span className={`font-bold ${totalMinutes - TARGET_7_7_HOURS_MINUTES >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {formatDeltaToTime(totalMinutes - TARGET_7_7_HOURS_MINUTES)}
+                    {totalMinutes - TARGET_7_7_HOURS_MINUTES >= 0 ? '+' : ''}{formatHoursMinutes(totalMinutes - TARGET_7_7_HOURS_MINUTES)}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
