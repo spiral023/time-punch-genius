@@ -7,7 +7,8 @@ const formatDateKey = (date: Date): string => `zehelper_data_${format(date, 'yyy
 const calculateSummary = (
   start: Date,
   end: Date,
-  yearData: { [date: string]: string }
+  yearData: { [date: string]: string },
+  dailyTargetMinutes: number
 ): number => {
   const days = eachDayOfInterval({ start, end });
   let total = 0;
@@ -16,31 +17,31 @@ const calculateSummary = (
     const dayKey = format(day, 'yyyy-MM-dd');
     const dayInput = yearData[dayKey];
     if (dayInput) {
-      const dayDetails = calculateTimeDetails(dayInput);
+      const dayDetails = calculateTimeDetails(dayInput, undefined, dailyTargetMinutes);
       total += dayDetails.totalMinutes;
     }
   });
   return total;
 };
 
-export const useSummary = (selectedDate: Date, yearData: { [date: string]: string }) => {
+export const useSummary = (selectedDate: Date, yearData: { [date: string]: string }, dailyTargetMinutes: number) => {
   const weeklySummary = useMemo(() => {
     const start = startOfWeek(selectedDate, { weekStartsOn: 1 });
     const end = endOfWeek(selectedDate, { weekStartsOn: 1 });
-    return calculateSummary(start, end, yearData);
-  }, [selectedDate, yearData]);
+    return calculateSummary(start, end, yearData, dailyTargetMinutes);
+  }, [selectedDate, yearData, dailyTargetMinutes]);
 
   const monthlySummary = useMemo(() => {
     const start = startOfMonth(selectedDate);
     const end = endOfMonth(selectedDate);
-    return calculateSummary(start, end, yearData);
-  }, [selectedDate, yearData]);
+    return calculateSummary(start, end, yearData, dailyTargetMinutes);
+  }, [selectedDate, yearData, dailyTargetMinutes]);
 
   const yearlySummary = useMemo(() => {
     const start = startOfYear(selectedDate);
     const end = endOfYear(selectedDate);
-    return calculateSummary(start, end, yearData);
-  }, [selectedDate, yearData]);
+    return calculateSummary(start, end, yearData, dailyTargetMinutes);
+  }, [selectedDate, yearData, dailyTargetMinutes]);
 
   return {
     weeklySummary,

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { parse, differenceInMinutes, getDayOfYear, format, isValid, getWeek, startOfWeek, endOfWeek, getDay } from 'date-fns';
 import { calculateTimeDetails } from '@/lib/timeUtils';
 
-export const useStatistics = (yearData: { [date: string]: string }) => {
+export const useStatistics = (yearData: { [date: string]: string }, dailyTargetMinutes: number) => {
   return useMemo(() => {
 
     const daysWithBookings = Object.values(yearData).filter(d => d && d.trim() !== '').length;
@@ -36,8 +36,8 @@ export const useStatistics = (yearData: { [date: string]: string }) => {
       const input = yearData[dateStr];
       if (!input || input.trim() === '') continue;
 
-      const { timeEntries, totalMinutes } = calculateTimeDetails(input);
-      if (timeEntries.length === 0) continue;
+      const { timeEntries, totalMinutes, specialDayType } = calculateTimeDetails(input, undefined, dailyTargetMinutes);
+      if (timeEntries.length === 0 && !specialDayType) continue;
 
       totalBlocks += timeEntries.length;
 

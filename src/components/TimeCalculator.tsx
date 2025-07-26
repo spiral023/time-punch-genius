@@ -38,14 +38,16 @@ const TimeCalculator = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const { toast } = useToast();
   const { yearData, updateYearData } = useYearData(selectedDate);
+  const dailyTargetMinutes = useMemo(() => (weeklyTargetHours / 5) * 60, [weeklyTargetHours]);
   const { handleExportData, handleImportData, handleClearAllData } = useDataManagement();
-  const { weeklySummary, monthlySummary, yearlySummary } = useSummary(selectedDate, yearData);
-  const statistics = useStatistics(yearData);
+  const { weeklySummary, monthlySummary, yearlySummary } = useSummary(selectedDate, yearData, dailyTargetMinutes);
+  const statistics = useStatistics(yearData, dailyTargetMinutes);
 
   const handleWebdeskImport = (text: string) => {
     const lines = text.split('\n');
     const dateRegex = /(\d{2})\.(\d{2})\.(\d{4})/;
     const timeRegex = /\d{2}:\d{2}\s*-\s*\d{2}:\d{2}/;
+    const specialDayRegex = /(Urlaub|Krankenstand)/i;
     let currentDate: Date | null = null;
     const entries: { [key: string]: string[] } = {};
 
@@ -62,9 +64,14 @@ const TimeCalculator = () => {
 
       if (currentDate) {
         const timeMatch = line.match(timeRegex);
+        const specialDayMatch = line.match(specialDayRegex);
+        const dateKey = formatDateKey(currentDate);
+        
         if (timeMatch) {
-          const dateKey = formatDateKey(currentDate);
           entries[dateKey].push(timeMatch[0]);
+        } else if (specialDayMatch) {
+          // Store the special day type directly
+          entries[dateKey] = [specialDayMatch[0]];
         }
       }
     }
@@ -144,7 +151,7 @@ const TimeCalculator = () => {
     }
   }, [notes, selectedDate]);
 
-  const { timeEntries, errors, totalMinutes, totalBreak, breakDeduction, grossTotalMinutes } = useTimeCalculator(input, currentTime);
+  const { timeEntries, errors, totalMinutes, totalBreak, breakDeduction, grossTotalMinutes, specialDayType } = useTimeCalculator(input, currentTime, dailyTargetMinutes);
 
   const weeklyBalance = useMemo(() => {
     const targetMinutes = Math.round(weeklyTargetHours * 60);
@@ -166,11 +173,11 @@ const TimeCalculator = () => {
         dayInput = input;
       }
       
-      const details = calculateTimeDetails(dayInput, dayKey === format(new Date(), 'yyyy-MM-dd') ? currentTime : undefined);
+      const details = calculateTimeDetails(dayInput, dayKey === format(new Date(), 'yyyy-MM-dd') ? currentTime : undefined, dailyTargetMinutes);
       data.push({ date: day, totalMinutes: details.totalMinutes });
     }
     return data;
-  }, [selectedDate, input, currentTime]);
+  }, [selectedDate, input, currentTime, dailyTargetMinutes]);
 
   useEffect(() => {
     if (totalMinutes > 0) {
@@ -189,8 +196,8 @@ const TimeCalculator = () => {
   };
 
   const averageDayData = useMemo(() => {
-    return calculateAverageDay(Object.values(yearData), currentTime, format(selectedDate, 'yyyy-MM-dd'));
-  }, [yearData, currentTime, selectedDate]);
+    return calculateAverageDay(Object.values(yearData), currentTime, dailyTargetMinutes);
+  }, [yearData, currentTime, dailyTargetMinutes]);
 
   const outsideRegularHours = useMemo(() => {
     const calculateTotalOutsideHours = (start: Date, end: Date) => {
@@ -202,7 +209,7 @@ const TimeCalculator = () => {
         const dayInput = yearData[dayKey];
 
         if (dayInput) {
-          const details = calculateTimeDetails(dayInput);
+          const details = calculateTimeDetails(dayInput, undefined, dailyTargetMinutes);
           total += calculateOutsideRegularHours(details.timeEntries, day);
         }
       });
@@ -218,7 +225,7 @@ const TimeCalculator = () => {
         const dayKey = format(day, 'yyyy-MM-dd');
         const dayInput = yearData[dayKey];
         if (dayInput) {
-            const details = calculateTimeDetails(dayInput);
+            const details = calculateTimeDetails(dayInput, undefined, dailyTargetMinutes);
             const outsideMinutes = calculateOutsideRegularHours(details.timeEntries, day);
             if (outsideMinutes > 0) {
                 daysWithOutsideHours++;
@@ -311,6 +318,7 @@ const TimeCalculator = () => {
               timeEntries={timeEntries}
               selectedDate={selectedDate}
               clearInput={clearInput}
+              specialDayType={specialDayType}
             />
             <motion.div className="mt-6">
               <NotesCard notes={notes} setNotes={setNotes} />
@@ -362,6 +370,7 @@ const TimeCalculator = () => {
               totalMinutes={totalMinutes}
               timeEntries={timeEntries}
               handlePunch={handlePunch}
+              specialDayType={specialDayType}
             />
             <OutsideRegularHoursCard
               selectedDate={selectedDate}

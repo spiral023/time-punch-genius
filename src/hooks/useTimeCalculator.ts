@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { calculateTimeDetails } from '@/lib/timeUtils';
 
-export const useTimeCalculator = (input: string, currentTime: Date) => {
+export const useTimeCalculator = (input: string, currentTime: Date, dailyTargetMinutes: number) => {
   return useMemo(() => {
-    return calculateTimeDetails(input, currentTime);
-  }, [input, currentTime]);
+    return calculateTimeDetails(input, currentTime, dailyTargetMinutes);
+  }, [input, currentTime, dailyTargetMinutes]);
 };

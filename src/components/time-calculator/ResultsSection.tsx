@@ -11,6 +11,7 @@ interface ResultsSectionProps {
   totalMinutes: number;
   timeEntries: TimeEntry[];
   handlePunch: () => void;
+  specialDayType: 'vacation' | 'sick' | null;
 }
 
 const TARGET_6_HOURS_MINUTES = 360;
@@ -22,8 +23,10 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({
   totalMinutes,
   timeEntries,
   handlePunch,
+  specialDayType,
 }) => {
   const getTextColorClass = (minutes: number): string => {
+    if (specialDayType) return 'text-blue-500';
     if (minutes < 360) { // unter 06:00
       return 'text-red-500';
     } else if (minutes >= 360 && minutes < 462) { // zwischen 06:00 und 07:42
@@ -38,7 +41,7 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({
   };
 
   const calculateTargetTime = (targetMinutes: number): string | null => {
-    if (timeEntries.length === 0) return null;
+    if (timeEntries.length === 0 || specialDayType) return null;
     
     const remainingMinutes = targetMinutes - totalMinutes;
     if (remainingMinutes <= 0) return "Ziel bereits erreicht";
@@ -80,7 +83,7 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({
               </motion.div>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Klicken zum Ein- oder Ausstempeln</p>
+              <p>{specialDayType ? 'Aktion nicht verfügbar' : 'Klicken zum Ein- oder Ausstempeln'}</p>
             </TooltipContent>
           </Tooltip>
           <div className="text-sm text-muted-foreground mt-2">
@@ -90,7 +93,9 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            {timeEntries.length > 0
+            {specialDayType
+              ? ''
+              : timeEntries.length > 0
               ? `${timeEntries.length} ${timeEntries.length === 1 ? 'Zeitraum' : 'Zeiträume'} erfasst`
               : "Keine Einträge"
             }
@@ -98,6 +103,7 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({
         </CardContent>
       </Card>
 
+      {!specialDayType && (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -136,6 +142,7 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({
           />
         </CardContent>
       </Card>
+      )}
     </motion.div>
   );
 };

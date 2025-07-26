@@ -41,7 +41,25 @@ export const addMinutesToTime = (baseTime: string, minutesToAdd: number): string
   return formatMinutesToTime(newMinutes);
 };
 
-export const calculateTimeDetails = (input: string, currentTime?: Date) => {
+export const calculateTimeDetails = (
+  input: string,
+  currentTime?: Date,
+  dailyTargetMinutes = 0
+) => {
+  const trimmedInput = input.trim().toLowerCase();
+
+  if (trimmedInput === 'urlaub' || trimmedInput === 'krankenstand') {
+    return {
+      timeEntries: [],
+      errors: [],
+      totalMinutes: dailyTargetMinutes,
+      totalBreak: 0,
+      breakDeduction: 0,
+      grossTotalMinutes: dailyTargetMinutes,
+      specialDayType: trimmedInput === 'urlaub' ? 'vacation' : 'sick',
+    };
+  }
+
   const lines = input.split('\n').filter(line => line.trim());
   const entries: { start: string; end: string; duration: number }[] = [];
   const validationErrors: { line: number; message: string }[] = [];
@@ -50,7 +68,16 @@ export const calculateTimeDetails = (input: string, currentTime?: Date) => {
     const trimmed = line.trim();
     if (!trimmed) return;
 
-    if (!trimmed.includes('-') && !trimmed.includes(':')) return;
+    const specialDayPattern = /^(urlaub|krankenstand)$/i;
+    if (specialDayPattern.test(trimmed)) {
+      if (lines.length === 1) return;
+    }
+
+    if (!trimmed.includes('-') && !trimmed.includes(':')) {
+      if (!specialDayPattern.test(trimmed)) {
+        return;
+      }
+    }
 
     const openTimePattern = /^(\d{1,2}:\d{2})$/;
     const openMatch = trimmed.match(openTimePattern);
@@ -188,17 +215,25 @@ export const calculateTimeDetails = (input: string, currentTime?: Date) => {
     total -= breakDeduction;
   }
   
-  return { timeEntries: entries, errors: validationErrors, totalMinutes: total, totalBreak, breakDeduction, grossTotalMinutes };
+  return { timeEntries: entries, errors: validationErrors, totalMinutes: total, totalBreak, breakDeduction, grossTotalMinutes, specialDayType: null };
 }
 
-export const calculateAverageDay = (allDaysData: string[], currentTime?: Date, currentDateKey?: string) => {
+export const calculateAverageDay = (allDaysData: string[], currentTime?: Date, dailyTargetMinutes = 0) => {
   const dailyStats: { start: number; end: number; break: number, duration: number }[] = [];
 
   allDaysData.forEach(input => {
     if (!input) return;
 
-    const { timeEntries, totalBreak, breakDeduction, totalMinutes } = calculateTimeDetails(input, currentTime);
-    if (timeEntries.length > 0) {
+    const { timeEntries, totalBreak, breakDeduction, totalMinutes, specialDayType } = calculateTimeDetails(input, currentTime, dailyTargetMinutes);
+    
+    if (specialDayType) {
+      dailyStats.push({
+        start: 0, // No specific start/end time for special days
+        end: 0,
+        break: 0,
+        duration: totalMinutes,
+      });
+    } else if (timeEntries.length > 0) {
       const firstEntry = timeEntries[0];
       const lastEntry = timeEntries[timeEntries.length - 1];
       

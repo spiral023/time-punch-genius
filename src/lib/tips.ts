@@ -5,20 +5,28 @@ export interface Tip {
 
 export const tips: Tip[] = [
   {
-    title: 'Schnell zum aktuellen Tag wechseln',
-    description: 'Klicke oben mittig auf den Titel der Seite, "ZE-Helper", und du wechselst sofort zum heutigen Datum.',
+    title: 'Schnell zum aktuellen Tag',
+    description: 'Klicke oben mittig auf den Titel der Seite, "ZE-Helper", und du wechselst sofort zum heutigen Tag',
   },
   {
     title: 'Wochenstunden anpassen',
-    description: 'In der Zusammenfassung kannst du deine vertraglichen Wochenstunden anpassen, um deine Überstunden korrekt zu berechnen.',
+    description: 'In der Zusammenfassung kannst du deine vertraglichen Wochenstunden anpassem.',
   },
   {
     title: 'Daten exportieren und importieren',
-    description: 'Unter "Datenverwaltung" kannst du alle deine erfassten Zeiten als JSON-Datei sichern oder von einem anderen Gerät importieren.',
+    description: 'Unter "Datenverwaltung" kannst du alle deine erfassten Zeiten als JSON-Datei sichern oder aus einem Backup importieren importieren.',
+  },
+  {
+    title: 'Rein lokale Speicherung',
+    description: 'Deine Daten (Einstellungen und Tagesbuchungen) werden nur im Browser gespeichert und verlassen zu keinem Zeitpunkt deinen Browser. Beachte dass dies Vorteile und Nachteile hat.',
   },
   {
     title: 'Webdesk-Import',
-    description: 'Du kannst deine Zeiten direkt aus Webdesk exportieren und hier über die Datenverwaltung importieren, um deine Einträge schnell zu synchronisieren.',
+    description: 'Du kannst dein Monatsjournal (Druckansicht) direkt aus Webdesk kopieren und hier über die Datenverwaltung importieren. Die Daten werden dann im Browser gespeichert.',
+  },
+  {
+    title: 'Achtung!',
+    description: 'Die Daten werden nur bei dir im Local Storage vom jeweiligen Browser gespeichert. Löscht du den Cache dann sind diese Daten weg. Du kannst sie aber exportieren und importieren.',
   },
   {
     title: 'Tages-Statistiken',
@@ -29,16 +37,12 @@ export const tips: Tip[] = [
     description: 'Nutze die Notizkarte, um wichtige Ereignisse oder Aufgaben des Tages festzuhalten. So vergisst du nichts!',
   },
   {
-    title: 'Jahresübersicht',
-    description: 'Die App speichert deine Daten für das ganze Jahr. Wechsle die Monate, um deine Arbeitszeiten über das Jahr hinweg zu verfolgen.',
-  },
-  {
     title: 'Durchschnittliche Arbeitszeit',
-    description: 'Die Karte "Durchschnittlicher Arbeitstag" zeigt dir, wie dein typischer Arbeitstag aussieht, inklusive Pausen.',
+    description: 'Die Karte "Durchschnittlicher Tag" zeigt dir, wie dein typischer Arbeitstag aussieht, inklusive Pausen.',
   },
   {
     title: 'Wochenstunden-Diagramm',
-    description: 'Das Wochenstunden-Diagramm visualisiert deine geleisteten Stunden und hilft dir, deine Arbeitsbelastung im Auge zu behalten.',
+    description: '"Diese Woche" visualisiert deine geleisteten Stunden der entsprechenden Woche und hilft dir, deine Arbeitsbelastung im Auge zu behalten.',
   },
   {
     title: 'Zielzeiterreichung',
@@ -46,22 +50,10 @@ export const tips: Tip[] = [
   },
   {
     title: 'Arbeit außerhalb der Reihe',
-    description: 'Die Karte "Außerhalb der Regelarbeitszeit" zeigt dir, wann du außerhalb deiner normalen Arbeitszeiten tätig warst.',
+    description: 'Die Karte "Außerhalb Normalzeit" zeigt dir, wieviel du außerhalb deiner normalen Arbeitszeiten tätig warst.',
   },
   {
     title: 'Tastaturkürzel',
-    description: 'Bewege dich schnell durch die Eingabefelder für die Uhrzeit mit der Tab-Taste, um deine Zeiten noch schneller einzutragen.',
-  },
-  {
-    title: 'Mobiles Erlebnis',
-    description: 'Die Seite ist mobilfreundlich. Füge sie zu deinem Startbildschirm hinzu, um sie wie eine native App zu verwenden.',
-  },
-  {
-    title: 'Detaillierte Tagesergebnisse',
-    description: 'Der Ergebnisbereich zeigt dir nicht nur deine Arbeitszeit, sondern auch die genaue Dauer deiner Pausen und deine Überstunden für den Tag.',
-  },
-  {
-    title: 'Datensicherung ist wichtig',
-    description: 'Denke daran, deine Daten regelmäßig über die "Datenverwaltung" zu exportieren, um einem Datenverlust vorzubeugen.',
+    description: 'Bewege dich mithilfe der Tab & Enter Taste schnell durch die Eingabefelder oder Tage.',
   },
 ];

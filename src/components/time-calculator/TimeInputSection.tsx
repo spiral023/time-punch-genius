@@ -9,6 +9,8 @@ import { format } from 'date-fns';
 import { TimeEntry } from '@/types';
 import { formatHoursMinutes } from '@/lib/timeUtils';
 
+import { Briefcase, HeartPulse } from 'lucide-react';
+
 interface TimeInputSectionProps {
   input: string;
   setInput: (input: string) => void;
@@ -16,6 +18,7 @@ interface TimeInputSectionProps {
   timeEntries: TimeEntry[];
   selectedDate: Date;
   clearInput: () => void;
+  specialDayType: 'vacation' | 'sick' | null;
 }
 
 export const TimeInputSection: React.FC<TimeInputSectionProps> = ({
@@ -25,7 +28,21 @@ export const TimeInputSection: React.FC<TimeInputSectionProps> = ({
   timeEntries,
   selectedDate,
   clearInput,
+  specialDayType,
 }) => {
+  const specialDayContent = {
+    vacation: {
+      icon: <Briefcase className="h-8 w-8 text-blue-500" />,
+      title: 'Urlaub',
+      description: 'Dieser Tag ist als Urlaubstag erfasst.',
+    },
+    sick: {
+      icon: <HeartPulse className="h-8 w-8 text-red-500" />,
+      title: 'Krankenstand',
+      description: 'Dieser Tag ist als Krankenstand erfasst.',
+    },
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -67,23 +84,37 @@ export const TimeInputSection: React.FC<TimeInputSectionProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <AnimatePresence mode="wait">
-            <motion.div
-              key={format(selectedDate, 'yyyy-MM-dd')}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Textarea
-                placeholder="Noch keine Einträge für diesen Tag"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                className="min-h-[164px] font-mono text-sm resize-none"
-              />
-            </motion.div>
+            {specialDayType ? (
+              <motion.div
+                key="special-day"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex flex-col items-center justify-center min-h-[164px] text-center p-4 bg-muted/50 rounded-md"
+              >
+                {specialDayContent[specialDayType].icon}
+                <p className="mt-2 text-lg font-semibold">{specialDayContent[specialDayType].title}</p>
+                <p className="text-sm text-muted-foreground">{specialDayContent[specialDayType].description}</p>
+              </motion.div>
+            ) : (
+              <motion.div
+                key={format(selectedDate, 'yyyy-MM-dd')}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Textarea
+                  placeholder="Noch keine Einträge für diesen Tag. 'Urlaub' oder 'Krankenstand' eingeben, um den Tag zu markieren."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  className="min-h-[164px] font-mono text-sm resize-none"
+                />
+              </motion.div>
+            )}
           </AnimatePresence>
           <AnimatePresence>
-            {errors.length > 0 && (
+            {errors.length > 0 && !specialDayType && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -109,7 +140,7 @@ export const TimeInputSection: React.FC<TimeInputSectionProps> = ({
       </Card>
 
       <AnimatePresence>
-        {timeEntries.length > 0 && (
+        {timeEntries.length > 0 && !specialDayType && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
