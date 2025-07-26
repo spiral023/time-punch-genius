@@ -19,6 +19,7 @@ interface StatisticsCardProps {
   longestWeek: number | null;
   longestWeekStart: string | null;
   longestWeekEnd: string | null;
+  averageBlocksPerDay: number;
 }
 
 export const StatisticsCard: React.FC<StatisticsCardProps> = ({
@@ -34,6 +35,7 @@ export const StatisticsCard: React.FC<StatisticsCardProps> = ({
   longestWeek,
   longestWeekStart,
   longestWeekEnd,
+  averageBlocksPerDay,
 }) => {
   const bookedDaysPercentage = daysInYear > 0 ? ((daysWithBookings / daysInYear) * 100).toFixed(1) : 0;
   const over9HoursPercentage = daysWithBookings > 0 ? ((daysOver9Hours / daysWithBookings) * 100).toFixed(1) : 0;
@@ -162,6 +164,21 @@ export const StatisticsCard: React.FC<StatisticsCardProps> = ({
                 })})`
               : ''}
           </p>
+        </div>
+        <div>
+          <div className="flex justify-between items-baseline">
+            <span className="text-sm font-medium">Ø Blöcke pro Tag</span>
+            <motion.span
+              key={`average-blocks-${averageBlocksPerDay}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="font-bold text-lg"
+            >
+              {averageBlocksPerDay > 0 ? `${averageBlocksPerDay.toLocaleString('de-DE', { maximumFractionDigits: 1 })} Blöcke` : '-'}
+            </motion.span>
+          </div>
         </div>
       </CardContent>
     </Card>

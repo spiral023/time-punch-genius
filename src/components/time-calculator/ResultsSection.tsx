@@ -16,6 +16,7 @@ interface ResultsSectionProps {
 const TARGET_6_HOURS_MINUTES = 360;
 const TARGET_7_7_HOURS_MINUTES = 462;
 const TARGET_10_HOURS_MINUTES = 600;
+const TARGET_12_HOURS_MINUTES = 720;
 
 export const ResultsSection: React.FC<ResultsSectionProps> = ({
   totalMinutes,
@@ -49,6 +50,7 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({
   const progress6h = Math.min((totalMinutes / TARGET_6_HOURS_MINUTES) * 100, 100);
   const progress77 = Math.min((totalMinutes / TARGET_7_7_HOURS_MINUTES) * 100, 100);
   const progress10h = Math.min((totalMinutes / TARGET_10_HOURS_MINUTES) * 100, 100);
+  const progress12h = Math.min((totalMinutes / TARGET_12_HOURS_MINUTES) * 100, 100);
 
   return (
     <motion.div
@@ -124,6 +126,13 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({
             progressValue={progress10h}
             targetMinutes={TARGET_10_HOURS_MINUTES}
             progressClassName="bg-gradient-to-r from-red-200 to-red-300 dark:from-red-800 dark:to-red-700"
+          />
+          <TargetTimeProgress
+            label="12 Stunden"
+            targetTime={calculateTargetTime(TARGET_12_HOURS_MINUTES)}
+            progressValue={progress12h}
+            targetMinutes={TARGET_12_HOURS_MINUTES}
+            progressClassName="bg-gradient-to-r from-red-400 to-red-500 dark:from-red-900 dark:to-red-800"
           />
         </CardContent>
       </Card>

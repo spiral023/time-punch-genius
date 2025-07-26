@@ -33,6 +33,7 @@ export const useStatistics = (selectedDate: Date, currentDayInput: string) => {
     let longestBreak: number | null = null;
     let longestBreakDate: string | null = null;
     let daysOver9Hours = 0;
+    let totalBlocks = 0;
     const weeklyMinutes: { [week: string]: { totalMinutes: number, date: Date } } = {};
     const dailyMinutes: { [day: number]: { totalMinutes: number, count: number } } = {
       0: { totalMinutes: 0, count: 0 }, // Sunday
@@ -50,6 +51,8 @@ export const useStatistics = (selectedDate: Date, currentDayInput: string) => {
 
       const { timeEntries, totalMinutes } = calculateTimeDetails(input);
       if (timeEntries.length === 0) continue;
+
+      totalBlocks += timeEntries.length;
 
       const entryDate = new Date(dateStr);
       const weekNumber = getWeek(entryDate, { weekStartsOn: 1 });
@@ -126,7 +129,10 @@ export const useStatistics = (selectedDate: Date, currentDayInput: string) => {
         };
     });
 
+    const averageBlocksPerDay = daysWithBookings > 0 ? totalBlocks / daysWithBookings : 0;
+
     return {
+      averageBlocksPerDay,
       averageDailyMinutes,
       daysWithBookings,
       daysInYear,

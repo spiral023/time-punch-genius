@@ -23,6 +23,7 @@ import { ResultsSection } from './time-calculator/ResultsSection';
 import { SummarySection } from './time-calculator/SummarySection';
 import { DataManagement } from './time-calculator/DataManagement';
 import { NotesCard } from './NotesCard';
+import { TipsCard } from './TipsCard';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 const formatDateKey = (date: Date): string => `zehelper_data_${format(date, 'yyyy-MM-dd')}`;
@@ -339,6 +340,14 @@ const TimeCalculator = () => {
                 </CardContent>
               </Card>
             </motion.div>
+            <motion.div className="mt-6">
+              <DataManagement
+                handleExportData={handleExportData}
+                handleImportData={handleImportData}
+                handleClearAllData={handleClearAllData}
+                handleWebdeskImport={handleWebdeskImport}
+              />
+            </motion.div>
           </div>
 
           <div className="space-y-6">
@@ -398,15 +407,10 @@ const TimeCalculator = () => {
             />
           </div>
           <div className="space-y-6">
-            <StatisticsCard {...statistics} />
+            <TipsCard />
+            <StatisticsCard {...statistics} averageBlocksPerDay={statistics.averageBlocksPerDay} />
             <AverageWorkdayHoursChart data={statistics.averageDailyMinutes} />
             <FeedbackCard />
-            <DataManagement
-              handleExportData={handleExportData}
-              handleImportData={handleImportData}
-              handleClearAllData={handleClearAllData}
-              handleWebdeskImport={handleWebdeskImport}
-            />
           </div>
         </div>
       </motion.div>
