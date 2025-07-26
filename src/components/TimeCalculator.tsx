@@ -375,6 +375,14 @@ const TimeCalculator = () => {
               setWeeklyTargetHours={setWeeklyTargetHours}
               selectedDate={selectedDate}
             />
+            <motion.div className="mt-6">
+              <DataManagement
+                handleExportData={handleExportData}
+                handleImportData={handleImportData}
+                handleClearAllData={handleClearAllData}
+                handleWebdeskImport={handleWebdeskImport}
+              />
+            </motion.div>
           </div>
           <div>
             <TimeInputSection
@@ -418,19 +426,13 @@ const TimeCalculator = () => {
                       })()}
                     </p>
                   </div>
+                  <div className="flex justify-center mt-4">
+                    <a href='https://ko-fi.com/R6R21IOETB' target='_blank' rel="noopener noreferrer">
+                      <img height='36' style={{ border: 0, height: '36px' }} src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' alt='Buy Me a Coffee at ko-fi.com' />
+                    </a>
+                  </div>
                 </CardContent>
               </Card>
-            </motion.div>
-            <motion.div className="mt-6">
-              <VacationPlanningCard />
-            </motion.div>
-            <motion.div className="mt-6">
-              <DataManagement
-                handleExportData={handleExportData}
-                handleImportData={handleImportData}
-                handleClearAllData={handleClearAllData}
-                handleWebdeskImport={handleWebdeskImport}
-              />
             </motion.div>
           </div>
 
@@ -442,6 +444,7 @@ const TimeCalculator = () => {
               specialDayType={specialDayType as "vacation" | "sick" | "holiday" | null}
               selectedDate={selectedDate}
             />
+            <VacationPlanningCard />
             <OutsideRegularHoursCard
               selectedDate={selectedDate}
               outsideHoursWeek={formatHoursMinutes(outsideRegularHours.week)}
