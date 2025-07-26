@@ -108,6 +108,11 @@ export const calculateAverageDay = (allDaysData: string[], currentTime?: Date, d
 
     const { timeEntries, totalBreak, breakDeduction, totalMinutes, specialDayType } = calculateTimeDetails(input, currentTime, dailyTargetMinutes);
     
+    if (specialDayType === 'vacation' || specialDayType === 'sick') {
+      // Skip vacation and sick days from average calculation
+      return;
+    }
+    
     if (specialDayType) {
       dailyStats.push({
         start: 0, // No specific start/end time for special days
