@@ -13,6 +13,7 @@ import { useStatistics } from '@/hooks/useStatistics';
 import { AverageDayCard } from './AverageDayCard';
 import { OutsideRegularHoursCard } from './OutsideRegularHoursCard';
 import { StatisticsCard } from './time-calculator/StatisticsCard';
+import { AverageWorkdayHoursChart } from './AverageWorkdayHoursChart';
 import { WeeklyHoursChart } from './WeeklyHoursChart';
 import { WelcomePopup } from './WelcomePopup';
 import { FeedbackCard } from './FeedbackCard';
@@ -398,6 +399,7 @@ const TimeCalculator = () => {
           </div>
           <div className="space-y-6">
             <StatisticsCard {...statistics} />
+            <AverageWorkdayHoursChart data={statistics.averageDailyMinutes} />
             <FeedbackCard />
             <DataManagement
               handleExportData={handleExportData}

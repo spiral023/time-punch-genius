@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { parse, differenceInMinutes, getDayOfYear, format, isValid, getWeek, startOfWeek, endOfWeek } from 'date-fns';
+import { parse, differenceInMinutes, getDayOfYear, format, isValid, getWeek, startOfWeek, endOfWeek, getDay } from 'date-fns';
 import { calculateTimeDetails } from '@/lib/timeUtils';
 
 const formatDateKey = (date: Date): string => `zehelper_data_${format(date, 'yyyy-MM-dd')}`;
@@ -34,6 +34,15 @@ export const useStatistics = (selectedDate: Date, currentDayInput: string) => {
     let longestBreakDate: string | null = null;
     let daysOver9Hours = 0;
     const weeklyMinutes: { [week: string]: { totalMinutes: number, date: Date } } = {};
+    const dailyMinutes: { [day: number]: { totalMinutes: number, count: number } } = {
+      0: { totalMinutes: 0, count: 0 }, // Sunday
+      1: { totalMinutes: 0, count: 0 }, // Monday
+      2: { totalMinutes: 0, count: 0 }, // Tuesday
+      3: { totalMinutes: 0, count: 0 }, // Wednesday
+      4: { totalMinutes: 0, count: 0 }, // Thursday
+      5: { totalMinutes: 0, count: 0 }, // Friday
+      6: { totalMinutes: 0, count: 0 }, // Saturday
+    };
 
     for (const dateStr in yearData) {
       const input = yearData[dateStr];
@@ -54,6 +63,10 @@ export const useStatistics = (selectedDate: Date, currentDayInput: string) => {
       if (totalMinutes > 540) { // 9 hours * 60 minutes
         daysOver9Hours++;
       }
+
+      const dayOfWeek = getDay(entryDate);
+      dailyMinutes[dayOfWeek].totalMinutes += totalMinutes;
+      dailyMinutes[dayOfWeek].count++;
 
       const parsedEntries = timeEntries.map(entry => {
         const start = parse(entry.start, 'HH:mm', new Date(dateStr));
@@ -103,7 +116,18 @@ export const useStatistics = (selectedDate: Date, currentDayInput: string) => {
       longestWeekEnd = format(endOfWeek(weekDate, { weekStartsOn: 1 }), 'yyyy-MM-dd');
     }
 
+    const averageDailyMinutes = Object.keys(dailyMinutes).map(day => {
+        const dayIndex = parseInt(day);
+        const data = dailyMinutes[dayIndex];
+        const average = data.count > 0 ? data.totalMinutes / data.count : 0;
+        return {
+            day: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][dayIndex],
+            averageMinutes: average
+        };
+    });
+
     return {
+      averageDailyMinutes,
       daysWithBookings,
       daysInYear,
       earliestStart,
