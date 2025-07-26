@@ -9,8 +9,10 @@ import { formatMinutesToTime, formatHoursMinutes, calculateTimeDetails, calculat
 import { useTimeCalculator } from '@/hooks/useTimeCalculator';
 import { useDataManagement } from '@/hooks/useDataManagement';
 import { useSummary } from '@/hooks/useSummary';
+import { useStatistics } from '@/hooks/useStatistics';
 import { AverageDayCard } from './AverageDayCard';
 import { OutsideRegularHoursCard } from './OutsideRegularHoursCard';
+import { StatisticsCard } from './time-calculator/StatisticsCard';
 import { WeeklyHoursChart } from './WeeklyHoursChart';
 import { WelcomePopup } from './WelcomePopup';
 import { FeedbackCard } from './FeedbackCard';
@@ -32,6 +34,7 @@ const TimeCalculator = () => {
   const { toast } = useToast();
   const { handleExportData, handleImportData, handleClearAllData } = useDataManagement();
   const { weeklySummary, monthlySummary, yearlySummary } = useSummary(selectedDate, input, currentTime);
+  const statistics = useStatistics(selectedDate, input);
 
   const handleWebdeskImport = (text: string) => {
     const lines = text.split('\n');
@@ -361,6 +364,7 @@ const TimeCalculator = () => {
                   avgStart={averageDayData.avgStart}
                   avgEnd={averageDayData.avgEnd}
                   avgBreak={averageDayData.avgBreak}
+                  avgHours={averageDayData.avgHours}
                 />
               </motion.div>
             )}
@@ -376,6 +380,8 @@ const TimeCalculator = () => {
               setWeeklyTargetHours={setWeeklyTargetHours}
               selectedDate={selectedDate}
             />
+
+            <StatisticsCard {...statistics} />
 
             <DataManagement
               handleExportData={handleExportData}

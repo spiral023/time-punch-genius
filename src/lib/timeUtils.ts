@@ -192,12 +192,12 @@ export const calculateTimeDetails = (input: string, currentTime?: Date) => {
 }
 
 export const calculateAverageDay = (allDaysData: string[], currentTime?: Date, currentDateKey?: string) => {
-  const dailyStats: { start: number; end: number; break: number }[] = [];
+  const dailyStats: { start: number; end: number; break: number, duration: number }[] = [];
 
   allDaysData.forEach(input => {
     if (!input) return;
 
-    const { timeEntries, totalBreak, breakDeduction } = calculateTimeDetails(input, currentTime);
+    const { timeEntries, totalBreak, breakDeduction, totalMinutes } = calculateTimeDetails(input, currentTime);
     if (timeEntries.length > 0) {
       const firstEntry = timeEntries[0];
       const lastEntry = timeEntries[timeEntries.length - 1];
@@ -206,6 +206,7 @@ export const calculateAverageDay = (allDaysData: string[], currentTime?: Date, c
         start: parseTimeToMinutes(firstEntry.start),
         end: parseTimeToMinutes(lastEntry.end),
         break: totalBreak + breakDeduction,
+        duration: totalMinutes,
       });
     }
   });
@@ -219,9 +220,10 @@ export const calculateAverageDay = (allDaysData: string[], currentTime?: Date, c
       acc.start += curr.start;
       acc.end += curr.end;
       acc.break += curr.break;
+      acc.duration += curr.duration;
       return acc;
     },
-    { start: 0, end: 0, break: 0 }
+    { start: 0, end: 0, break: 0, duration: 0 }
   );
 
   const count = dailyStats.length;
@@ -229,6 +231,7 @@ export const calculateAverageDay = (allDaysData: string[], currentTime?: Date, c
     avgStart: formatMinutesToTime(Math.round(total.start / count)),
     avgEnd: formatMinutesToTime(Math.round(total.end / count)),
     avgBreak: Math.round(total.break / count),
+    avgHours: formatHoursMinutes(Math.round(total.duration / count)),
   };
 };
 

@@ -6,9 +6,10 @@ interface AverageDayCardProps {
   avgStart: string;
   avgEnd: string;
   avgBreak: number;
+  avgHours: string;
 }
 
-export const AverageDayCard: React.FC<AverageDayCardProps> = ({ avgStart, avgEnd, avgBreak }) => {
+export const AverageDayCard: React.FC<AverageDayCardProps> = ({ avgStart, avgEnd, avgBreak, avgHours }) => {
   return (
     <Card>
       <CardHeader>
@@ -19,7 +20,7 @@ export const AverageDayCard: React.FC<AverageDayCardProps> = ({ avgStart, avgEnd
       </CardHeader>
       <CardContent>
         <blockquote className="italic text-muted-foreground">
-          "Ich arbeite im Schnitt von <strong className="text-foreground">{avgStart}</strong> bis <strong className="text-foreground">{avgEnd}</strong> und mache dabei <strong className="text-foreground">{avgBreak}</strong> Minuten Pause."
+          "Ich arbeite im Schnitt von <strong className="text-foreground">{avgStart}</strong> bis <strong className="text-foreground">{avgEnd} ({avgHours})</strong> und mache dabei <strong className="text-foreground">{avgBreak}</strong> Minuten Pause."
         </blockquote>
       </CardContent>
     </Card>
