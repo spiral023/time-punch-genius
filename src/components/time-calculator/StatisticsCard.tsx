@@ -19,6 +19,11 @@ interface StatisticsCardProps {
   longestWeek: number | null;
   longestWeekStart: string | null;
   longestWeekEnd: string | null;
+  longestDay: number | null;
+  longestDayDate: string | null;
+  longestStreak: number;
+  longestStreakStart: string | null;
+  longestStreakEnd: string | null;
   averageBlocksPerDay: number;
 }
 
@@ -35,6 +40,11 @@ export const StatisticsCard: React.FC<StatisticsCardProps> = ({
   longestWeek,
   longestWeekStart,
   longestWeekEnd,
+  longestDay,
+  longestDayDate,
+  longestStreak,
+  longestStreakStart,
+  longestStreakEnd,
   averageBlocksPerDay,
 }) => {
   const bookedDaysPercentage = daysInYear > 0 ? ((daysWithBookings / daysInYear) * 100).toFixed(1) : 0;
@@ -141,6 +151,24 @@ export const StatisticsCard: React.FC<StatisticsCardProps> = ({
         </div>
         <div>
           <div className="flex justify-between items-baseline">
+            <span className="text-sm font-medium">Längster Tag</span>
+            <motion.span
+              key={`longest-day-${longestDay}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="font-bold text-lg"
+            >
+              {longestDay ? formatHoursMinutes(longestDay) : '-'}
+            </motion.span>
+          </div>
+          <p className="text-xs text-muted-foreground text-right">
+            {longestDayDate ? format(new Date(longestDayDate), 'dd.MM.yyyy', { locale: de }) : ''}
+          </p>
+        </div>
+        <div>
+          <div className="flex justify-between items-baseline">
             <span className="text-sm font-medium">Längste Woche</span>
             <motion.span
               key={`longest-week-${longestWeek}`}
@@ -162,6 +190,26 @@ export const StatisticsCard: React.FC<StatisticsCardProps> = ({
                 })}–${format(new Date(longestWeekEnd), 'dd. MMM', {
                   locale: de,
                 })})`
+              : ''}
+          </p>
+        </div>
+        <div>
+          <div className="flex justify-between items-baseline">
+            <span className="text-sm font-medium">Längste Streak</span>
+            <motion.span
+              key={`longest-streak-${longestStreak}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="font-bold text-lg"
+            >
+              {longestStreak > 0 ? `${longestStreak} Tage` : '-'}
+            </motion.span>
+          </div>
+          <p className="text-xs text-muted-foreground text-right">
+            {longestStreakStart && longestStreakEnd
+              ? `${format(new Date(longestStreakStart), 'dd.MM')}–${format(new Date(longestStreakEnd), 'dd.MM')}`
               : ''}
           </p>
         </div>

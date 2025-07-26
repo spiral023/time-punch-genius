@@ -2,26 +2,8 @@ import { useMemo } from 'react';
 import { parse, differenceInMinutes, getDayOfYear, format, isValid, getWeek, startOfWeek, endOfWeek, getDay } from 'date-fns';
 import { calculateTimeDetails } from '@/lib/timeUtils';
 
-const formatDateKey = (date: Date): string => `zehelper_data_${format(date, 'yyyy-MM-dd')}`;
-
-export const useStatistics = (selectedDate: Date, currentDayInput: string) => {
+export const useStatistics = (yearData: { [date: string]: string }) => {
   return useMemo(() => {
-    const year = selectedDate.getFullYear();
-    const allKeys = Object.keys(localStorage);
-    const yearData: { [date: string]: string } = {};
-
-    for (const key of allKeys) {
-      if (key.startsWith('zehelper_data_')) {
-        const dateStr = key.replace('zehelper_data_', '');
-        if (dateStr.startsWith(year.toString())) {
-          yearData[dateStr] = localStorage.getItem(key) || '';
-        }
-      }
-    }
-    
-    // Make sure current day's (potentially unsaved) data is included
-    const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
-    yearData[selectedDateKey] = currentDayInput;
 
     const daysWithBookings = Object.values(yearData).filter(d => d && d.trim() !== '').length;
     const daysInYear = getDayOfYear(new Date());
@@ -32,7 +14,12 @@ export const useStatistics = (selectedDate: Date, currentDayInput: string) => {
     let latestEndDate: string | null = null;
     let longestBreak: number | null = null;
     let longestBreakDate: string | null = null;
+    let longestDay: number | null = null;
+    let longestDayDate: string | null = null;
     let daysOver9Hours = 0;
+    let longestStreak = 0;
+    let longestStreakStart: string | null = null;
+    let longestStreakEnd: string | null = null;
     let totalBlocks = 0;
     const weeklyMinutes: { [week: string]: { totalMinutes: number, date: Date } } = {};
     const dailyMinutes: { [day: number]: { totalMinutes: number, count: number } } = {
@@ -55,6 +42,7 @@ export const useStatistics = (selectedDate: Date, currentDayInput: string) => {
       totalBlocks += timeEntries.length;
 
       const entryDate = new Date(dateStr);
+      const year = entryDate.getFullYear();
       const weekNumber = getWeek(entryDate, { weekStartsOn: 1 });
       const weekKey = `${year}-${weekNumber}`;
 
@@ -65,6 +53,11 @@ export const useStatistics = (selectedDate: Date, currentDayInput: string) => {
 
       if (totalMinutes > 540) { // 9 hours * 60 minutes
         daysOver9Hours++;
+      }
+
+      if (longestDay === null || totalMinutes > longestDay) {
+        longestDay = totalMinutes;
+        longestDayDate = dateStr;
       }
 
       const dayOfWeek = getDay(entryDate);
@@ -102,6 +95,46 @@ export const useStatistics = (selectedDate: Date, currentDayInput: string) => {
           longestBreakDate = dateStr;
         }
       }
+    }
+
+    const sortedDates = Object.keys(yearData)
+      .filter(dateStr => yearData[dateStr] && yearData[dateStr].trim() !== '')
+      .sort();
+
+    if (sortedDates.length > 0) {
+      let currentStreak = 1;
+      let currentStreakStartDate = sortedDates[0];
+      let maxStreak = 1;
+      let maxStreakStartDate = sortedDates[0];
+      let maxStreakEndDate = sortedDates[0];
+
+      for (let i = 1; i < sortedDates.length; i++) {
+        const currentDate = new Date(sortedDates[i]);
+        const prevDate = new Date(sortedDates[i - 1]);
+        const diffInDays = (currentDate.getTime() - prevDate.getTime()) / (1000 * 3600 * 24);
+
+        if (diffInDays === 1) {
+          currentStreak++;
+        } else {
+          if (currentStreak > maxStreak) {
+            maxStreak = currentStreak;
+            maxStreakStartDate = currentStreakStartDate;
+            maxStreakEndDate = sortedDates[i - 1];
+          }
+          currentStreak = 1;
+          currentStreakStartDate = sortedDates[i];
+        }
+      }
+
+      if (currentStreak > maxStreak) {
+        maxStreak = currentStreak;
+        maxStreakStartDate = currentStreakStartDate;
+        maxStreakEndDate = sortedDates[sortedDates.length - 1];
+      }
+      
+      longestStreak = maxStreak;
+      longestStreakStart = maxStreakStartDate;
+      longestStreakEnd = maxStreakEndDate;
     }
 
     let longestWeek: number | null = null;
@@ -146,6 +179,11 @@ export const useStatistics = (selectedDate: Date, currentDayInput: string) => {
       longestWeek,
       longestWeekStart,
       longestWeekEnd,
+      longestDay,
+      longestDayDate,
+      longestStreak,
+      longestStreakStart,
+      longestStreakEnd,
     };
-  }, [selectedDate, currentDayInput]);
+  }, [yearData]);
 };

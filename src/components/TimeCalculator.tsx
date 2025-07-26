@@ -10,13 +10,13 @@ import { useTimeCalculator } from '@/hooks/useTimeCalculator';
 import { useDataManagement } from '@/hooks/useDataManagement';
 import { useSummary } from '@/hooks/useSummary';
 import { useStatistics } from '@/hooks/useStatistics';
+import { useYearData } from '@/hooks/useYearData';
 import { AverageDayCard } from './AverageDayCard';
 import { OutsideRegularHoursCard } from './OutsideRegularHoursCard';
 import { StatisticsCard } from './time-calculator/StatisticsCard';
 import { AverageWorkdayHoursChart } from './AverageWorkdayHoursChart';
 import { WeeklyHoursChart } from './WeeklyHoursChart';
 import { WelcomePopup } from './WelcomePopup';
-import { FeedbackCard } from './FeedbackCard';
 import { DateNavigator } from './time-calculator/DateNavigator';
 import { TimeInputSection } from './time-calculator/TimeInputSection';
 import { ResultsSection } from './time-calculator/ResultsSection';
@@ -37,9 +37,10 @@ const TimeCalculator = () => {
   const [weeklyTargetHours, setWeeklyTargetHours] = useState<number>(38.5);
   const [currentTime, setCurrentTime] = useState(new Date());
   const { toast } = useToast();
+  const { yearData, updateYearData } = useYearData(selectedDate);
   const { handleExportData, handleImportData, handleClearAllData } = useDataManagement();
-  const { weeklySummary, monthlySummary, yearlySummary } = useSummary(selectedDate, input, currentTime);
-  const statistics = useStatistics(selectedDate, input);
+  const { weeklySummary, monthlySummary, yearlySummary } = useSummary(selectedDate, yearData);
+  const statistics = useStatistics(yearData);
 
   const handleWebdeskImport = (text: string) => {
     const lines = text.split('\n');
@@ -131,7 +132,8 @@ const TimeCalculator = () => {
     } else {
       localStorage.removeItem(dateKey);
     }
-  }, [input, selectedDate]);
+    updateYearData(selectedDate, input);
+  }, [input, selectedDate, updateYearData]);
 
   useEffect(() => {
     const notesKey = formatNotesKey(selectedDate);
@@ -187,17 +189,8 @@ const TimeCalculator = () => {
   };
 
   const averageDayData = useMemo(() => {
-    const allKeys = Object.keys(localStorage);
-    const dateKeys = allKeys.filter(key => key.startsWith('zehelper_data_'));
-    const allDaysData = dateKeys.map(key => {
-      const dayKey = key.replace('zehelper_data_', '');
-      if (dayKey === format(selectedDate, 'yyyy-MM-dd')) {
-        return input;
-      }
-      return localStorage.getItem(key) || '';
-    });
-    return calculateAverageDay(allDaysData, currentTime, format(selectedDate, 'yyyy-MM-dd'));
-  }, [input, selectedDate, currentTime]);
+    return calculateAverageDay(Object.values(yearData), currentTime, format(selectedDate, 'yyyy-MM-dd'));
+  }, [yearData, currentTime, selectedDate]);
 
   const outsideRegularHours = useMemo(() => {
     const calculateTotalOutsideHours = (start: Date, end: Date) => {
@@ -206,12 +199,7 @@ const TimeCalculator = () => {
 
       days.forEach(day => {
         const dayKey = format(day, 'yyyy-MM-dd');
-        const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
-        let dayInput = localStorage.getItem(formatDateKey(day)) || '';
-
-        if (dayKey === selectedDateKey) {
-          dayInput = input;
-        }
+        const dayInput = yearData[dayKey];
 
         if (dayInput) {
           const details = calculateTimeDetails(dayInput);
@@ -233,7 +221,7 @@ const TimeCalculator = () => {
       month: calculateTotalOutsideHours(monthlyStart, monthlyEnd),
       year: calculateTotalOutsideHours(yearlyStart, yearlyEnd),
     };
-  }, [selectedDate, input]);
+  }, [selectedDate, yearData]);
 
   const getCurrentTimeColor = () => {
     const day = currentTime.getDay();
@@ -410,7 +398,6 @@ const TimeCalculator = () => {
             <TipsCard />
             <StatisticsCard {...statistics} averageBlocksPerDay={statistics.averageBlocksPerDay} />
             <AverageWorkdayHoursChart data={statistics.averageDailyMinutes} />
-            <FeedbackCard />
           </div>
         </div>
       </motion.div>
