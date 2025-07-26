@@ -21,14 +21,17 @@ import { TimeInputSection } from './time-calculator/TimeInputSection';
 import { ResultsSection } from './time-calculator/ResultsSection';
 import { SummarySection } from './time-calculator/SummarySection';
 import { DataManagement } from './time-calculator/DataManagement';
+import { NotesCard } from './NotesCard';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 const formatDateKey = (date: Date): string => `zehelper_data_${format(date, 'yyyy-MM-dd')}`;
+const formatNotesKey = (date: Date): string => `zehelper_notes_${format(date, 'yyyy-MM-dd')}`;
 const WEEKLY_HOURS_KEY = 'zehelper_weekly_hours';
 
 const TimeCalculator = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [input, setInput] = useState('');
+  const [notes, setNotes] = useState('');
   const [weeklyTargetHours, setWeeklyTargetHours] = useState<number>(38.5);
   const [currentTime, setCurrentTime] = useState(new Date());
   const { toast } = useToast();
@@ -101,8 +104,11 @@ const TimeCalculator = () => {
 
   useEffect(() => {
     const dateKey = formatDateKey(selectedDate);
+    const notesKey = formatNotesKey(selectedDate);
     const savedInput = localStorage.getItem(dateKey) || '';
+    const savedNotes = localStorage.getItem(notesKey) || '';
     setInput(savedInput);
+    setNotes(savedNotes);
   }, [selectedDate]);
 
   useEffect(() => {
@@ -124,6 +130,15 @@ const TimeCalculator = () => {
       localStorage.removeItem(dateKey);
     }
   }, [input, selectedDate]);
+
+  useEffect(() => {
+    const notesKey = formatNotesKey(selectedDate);
+    if (notes) {
+      localStorage.setItem(notesKey, notes);
+    } else {
+      localStorage.removeItem(notesKey);
+    }
+  }, [notes, selectedDate]);
 
   const { timeEntries, errors, totalMinutes, totalBreak, breakDeduction, grossTotalMinutes } = useTimeCalculator(input, currentTime);
 
@@ -288,6 +303,9 @@ const TimeCalculator = () => {
               selectedDate={selectedDate}
               clearInput={clearInput}
             />
+            <motion.div className="mt-6">
+              <NotesCard notes={notes} setNotes={setNotes} />
+            </motion.div>
             <motion.div className="mt-6">
               <Card>
                 <CardHeader>
