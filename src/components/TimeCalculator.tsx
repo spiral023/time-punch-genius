@@ -265,7 +265,7 @@ const TimeCalculator = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-5xl mx-auto space-y-6"
+        className="max-w-7xl mx-auto space-y-6"
       >
         <div className="flex justify-center items-center mb-8">
           <motion.div
@@ -293,7 +293,7 @@ const TimeCalculator = () => {
 
         <DateNavigator selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div>
             <TimeInputSection
               input={input}
@@ -337,9 +337,6 @@ const TimeCalculator = () => {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
-            <motion.div className="mt-6">
-              <FeedbackCard />
             </motion.div>
           </div>
 
@@ -398,9 +395,10 @@ const TimeCalculator = () => {
               setWeeklyTargetHours={setWeeklyTargetHours}
               selectedDate={selectedDate}
             />
-
+          </div>
+          <div className="space-y-6">
             <StatisticsCard {...statistics} />
-
+            <FeedbackCard />
             <DataManagement
               handleExportData={handleExportData}
               handleImportData={handleImportData}
