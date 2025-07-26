@@ -11,7 +11,7 @@ interface ResultsSectionProps {
   totalMinutes: number;
   timeEntries: TimeEntry[];
   handlePunch: () => void;
-  specialDayType: 'vacation' | 'sick' | null;
+  specialDayType: 'vacation' | 'sick' | 'holiday' | null;
 }
 
 const TARGET_6_HOURS_MINUTES = 360;
@@ -88,8 +88,8 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({
           </Tooltip>
           <div className="text-sm text-muted-foreground mt-2">
             Delta:&nbsp;
-            <span className={`font-bold ${totalMinutes - TARGET_7_7_HOURS_MINUTES >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {totalMinutes - TARGET_7_7_HOURS_MINUTES >= 0 ? '+' : ''}{formatHoursMinutes(totalMinutes - TARGET_7_7_HOURS_MINUTES)}
+            <span className={`font-bold ${specialDayType === 'holiday' ? 'text-gray-500' : totalMinutes - TARGET_7_7_HOURS_MINUTES >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              {specialDayType === 'holiday' ? formatHoursMinutes(0) : `${totalMinutes - TARGET_7_7_HOURS_MINUTES >= 0 ? '+' : ''}${formatHoursMinutes(totalMinutes - TARGET_7_7_HOURS_MINUTES)}`}
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-1">

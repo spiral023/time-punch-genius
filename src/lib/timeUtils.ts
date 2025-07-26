@@ -44,9 +44,22 @@ export const addMinutesToTime = (baseTime: string, minutesToAdd: number): string
 export const calculateTimeDetails = (
   input: string,
   currentTime?: Date,
-  dailyTargetMinutes = 0
+  dailyTargetMinutes = 0,
+  isHoliday = false
 ) => {
   const trimmedInput = input.trim().toLowerCase();
+
+  if (isHoliday && !input.trim()) {
+    return {
+      timeEntries: [],
+      errors: [],
+      totalMinutes: 0,
+      totalBreak: 0,
+      breakDeduction: 0,
+      grossTotalMinutes: 0,
+      specialDayType: 'holiday',
+    };
+  }
 
   if (trimmedInput === 'urlaub' || trimmedInput === 'krankenstand') {
     return {
@@ -60,6 +73,86 @@ export const calculateTimeDetails = (
     };
   }
 
+  const { entries, validationErrors } = parseTimeEntries(input, currentTime);
+
+  const grossTotalMinutes = entries.reduce((sum, entry) => sum + entry.duration, 0);
+  let total = grossTotalMinutes;
+  let totalBreak = 0;
+
+  for (let i = 0; i < entries.length - 1; i++) {
+    const currentEntryEnd = parseTimeToMinutes(entries[i].end);
+    const nextEntryStart = parseTimeToMinutes(entries[i + 1].start);
+    const breakDuration = nextEntryStart - currentEntryEnd;
+    if (breakDuration > 0) {
+      totalBreak += breakDuration;
+    }
+  }
+
+  const lunchBreakThreshold = 6 * 60;
+  const requiredBreakDuration = 30;
+  let breakDeduction = 0;
+
+  if (grossTotalMinutes >= lunchBreakThreshold && totalBreak < requiredBreakDuration) {
+    breakDeduction = requiredBreakDuration - totalBreak;
+    total -= breakDeduction;
+  }
+  
+  return { timeEntries: entries, errors: validationErrors, totalMinutes: total, totalBreak, breakDeduction, grossTotalMinutes, specialDayType: null };
+}
+
+export const calculateAverageDay = (allDaysData: string[], currentTime?: Date, dailyTargetMinutes = 0) => {
+  const dailyStats: { start: number; end: number; break: number, duration: number }[] = [];
+
+  allDaysData.forEach(input => {
+    if (!input) return;
+
+    const { timeEntries, totalBreak, breakDeduction, totalMinutes, specialDayType } = calculateTimeDetails(input, currentTime, dailyTargetMinutes);
+    
+    if (specialDayType) {
+      dailyStats.push({
+        start: 0, // No specific start/end time for special days
+        end: 0,
+        break: 0,
+        duration: totalMinutes,
+      });
+    } else if (timeEntries.length > 0) {
+      const firstEntry = timeEntries[0];
+      const lastEntry = timeEntries[timeEntries.length - 1];
+      
+      dailyStats.push({
+        start: parseTimeToMinutes(firstEntry.start),
+        end: parseTimeToMinutes(lastEntry.end),
+        break: totalBreak + breakDeduction,
+        duration: totalMinutes,
+      });
+    }
+  });
+
+  if (dailyStats.length === 0) {
+    return null;
+  }
+
+  const total = dailyStats.reduce(
+    (acc, curr) => {
+      acc.start += curr.start;
+      acc.end += curr.end;
+      acc.break += curr.break;
+      acc.duration += curr.duration;
+      return acc;
+    },
+    { start: 0, end: 0, break: 0, duration: 0 }
+  );
+
+  const count = dailyStats.length;
+  return {
+    avgStart: formatMinutesToTime(Math.round(total.start / count)),
+    avgEnd: formatMinutesToTime(Math.round(total.end / count)),
+    avgBreak: Math.round(total.break / count),
+    avgHours: formatHoursMinutes(Math.round(total.duration / count)),
+  };
+};
+
+const parseTimeEntries = (input: string, currentTime?: Date) => {
   const lines = input.split('\n').filter(line => line.trim());
   const entries: { start: string; end: string; duration: number }[] = [];
   const validationErrors: { line: number; message: string }[] = [];
@@ -192,87 +285,13 @@ export const calculateTimeDetails = (
   });
 
   entries.sort((a, b) => parseTimeToMinutes(a.start) - parseTimeToMinutes(b.start));
-
-  const grossTotalMinutes = entries.reduce((sum, entry) => sum + entry.duration, 0);
-  let total = grossTotalMinutes;
-  let totalBreak = 0;
-
-  for (let i = 0; i < entries.length - 1; i++) {
-    const currentEntryEnd = parseTimeToMinutes(entries[i].end);
-    const nextEntryStart = parseTimeToMinutes(entries[i + 1].start);
-    const breakDuration = nextEntryStart - currentEntryEnd;
-    if (breakDuration > 0) {
-      totalBreak += breakDuration;
-    }
-  }
-
-  const lunchBreakThreshold = 6 * 60;
-  const requiredBreakDuration = 30;
-  let breakDeduction = 0;
-
-  if (grossTotalMinutes >= lunchBreakThreshold && totalBreak < requiredBreakDuration) {
-    breakDeduction = requiredBreakDuration - totalBreak;
-    total -= breakDeduction;
-  }
-  
-  return { timeEntries: entries, errors: validationErrors, totalMinutes: total, totalBreak, breakDeduction, grossTotalMinutes, specialDayType: null };
-}
-
-export const calculateAverageDay = (allDaysData: string[], currentTime?: Date, dailyTargetMinutes = 0) => {
-  const dailyStats: { start: number; end: number; break: number, duration: number }[] = [];
-
-  allDaysData.forEach(input => {
-    if (!input) return;
-
-    const { timeEntries, totalBreak, breakDeduction, totalMinutes, specialDayType } = calculateTimeDetails(input, currentTime, dailyTargetMinutes);
-    
-    if (specialDayType) {
-      dailyStats.push({
-        start: 0, // No specific start/end time for special days
-        end: 0,
-        break: 0,
-        duration: totalMinutes,
-      });
-    } else if (timeEntries.length > 0) {
-      const firstEntry = timeEntries[0];
-      const lastEntry = timeEntries[timeEntries.length - 1];
-      
-      dailyStats.push({
-        start: parseTimeToMinutes(firstEntry.start),
-        end: parseTimeToMinutes(lastEntry.end),
-        break: totalBreak + breakDeduction,
-        duration: totalMinutes,
-      });
-    }
-  });
-
-  if (dailyStats.length === 0) {
-    return null;
-  }
-
-  const total = dailyStats.reduce(
-    (acc, curr) => {
-      acc.start += curr.start;
-      acc.end += curr.end;
-      acc.break += curr.break;
-      acc.duration += curr.duration;
-      return acc;
-    },
-    { start: 0, end: 0, break: 0, duration: 0 }
-  );
-
-  const count = dailyStats.length;
-  return {
-    avgStart: formatMinutesToTime(Math.round(total.start / count)),
-    avgEnd: formatMinutesToTime(Math.round(total.end / count)),
-    avgBreak: Math.round(total.break / count),
-    avgHours: formatHoursMinutes(Math.round(total.duration / count)),
-  };
+  return { entries, validationErrors };
 };
 
 export const calculateOutsideRegularHours = (
   timeEntries: { start: string; end: string; duration: number }[],
-  date: Date
+  date: Date,
+  isHoliday: boolean
 ): number => {
   const regularStartMinutes = 6 * 60; // 06:00
   const regularEndMinutes = 19 * 60; // 19:00
@@ -280,8 +299,8 @@ export const calculateOutsideRegularHours = (
 
   let outsideMinutes = 0;
 
-  // Weekend
-  if (dayOfWeek === 0 || dayOfWeek === 6) {
+  // Weekend or Holiday
+  if (dayOfWeek === 0 || dayOfWeek === 6 || isHoliday) {
     return timeEntries.reduce((sum, entry) => sum + entry.duration, 0);
   }
 

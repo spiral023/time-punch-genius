@@ -3,10 +3,12 @@ import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Clock, Coffee } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfYear, endOfYear, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfYear, endOfYear, startOfMonth, endOfMonth, isToday } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { formatMinutesToTime, formatHoursMinutes, calculateTimeDetails, calculateAverageDay, calculateOutsideRegularHours } from '@/lib/timeUtils';
 import { useTimeCalculator } from '@/hooks/useTimeCalculator';
+import { getHolidays, isHoliday } from '@/lib/holidays';
+import { Holiday } from '@/types';
 import { useDataManagement } from '@/hooks/useDataManagement';
 import { useSummary } from '@/hooks/useSummary';
 import { useStatistics } from '@/hooks/useStatistics';
@@ -36,6 +38,7 @@ const TimeCalculator = () => {
   const [notes, setNotes] = useState('');
   const [weeklyTargetHours, setWeeklyTargetHours] = useState<number>(38.5);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [holidays, setHolidays] = useState<Holiday[]>([]);
   const { toast } = useToast();
   const { yearData, updateYearData } = useYearData(selectedDate);
   const dailyTargetMinutes = useMemo(() => (weeklyTargetHours / 5) * 60, [weeklyTargetHours]);
@@ -110,7 +113,14 @@ const TimeCalculator = () => {
     if (savedHours) {
       setWeeklyTargetHours(parseFloat(savedHours));
     }
-  }, []);
+
+    const fetchHolidays = async () => {
+      const year = selectedDate.getFullYear();
+      const fetchedHolidays = await getHolidays(year, 'AT');
+      setHolidays(fetchedHolidays);
+    };
+    fetchHolidays();
+  }, [selectedDate]);
 
   useEffect(() => {
     const dateKey = formatDateKey(selectedDate);
@@ -151,7 +161,7 @@ const TimeCalculator = () => {
     }
   }, [notes, selectedDate]);
 
-  const { timeEntries, errors, totalMinutes, totalBreak, breakDeduction, grossTotalMinutes, specialDayType } = useTimeCalculator(input, currentTime, dailyTargetMinutes);
+  const { timeEntries, errors, totalMinutes, totalBreak, breakDeduction, grossTotalMinutes, specialDayType } = useTimeCalculator(input, selectedDate, dailyTargetMinutes);
 
   const weeklyBalance = useMemo(() => {
     const targetMinutes = Math.round(weeklyTargetHours * 60);
@@ -173,7 +183,7 @@ const TimeCalculator = () => {
         dayInput = input;
       }
       
-      const details = calculateTimeDetails(dayInput, dayKey === format(new Date(), 'yyyy-MM-dd') ? currentTime : undefined, dailyTargetMinutes);
+      const details = calculateTimeDetails(dayInput, dayKey === format(new Date(), 'yyyy-MM-dd') ? currentTime : undefined, dailyTargetMinutes, false);
       data.push({ date: day, totalMinutes: details.totalMinutes });
     }
     return data;
@@ -209,8 +219,8 @@ const TimeCalculator = () => {
         const dayInput = yearData[dayKey];
 
         if (dayInput) {
-          const details = calculateTimeDetails(dayInput, undefined, dailyTargetMinutes);
-          total += calculateOutsideRegularHours(details.timeEntries, day);
+          const details = calculateTimeDetails(dayInput, undefined, dailyTargetMinutes, false);
+          total += calculateOutsideRegularHours(details.timeEntries, day, false);
         }
       });
       return total;
@@ -225,8 +235,8 @@ const TimeCalculator = () => {
         const dayKey = format(day, 'yyyy-MM-dd');
         const dayInput = yearData[dayKey];
         if (dayInput) {
-            const details = calculateTimeDetails(dayInput, undefined, dailyTargetMinutes);
-            const outsideMinutes = calculateOutsideRegularHours(details.timeEntries, day);
+            const details = calculateTimeDetails(dayInput, undefined, dailyTargetMinutes, false);
+            const outsideMinutes = calculateOutsideRegularHours(details.timeEntries, day, false);
             if (outsideMinutes > 0) {
                 daysWithOutsideHours++;
             }
@@ -250,6 +260,9 @@ const TimeCalculator = () => {
   }, [selectedDate, yearData]);
 
   const getCurrentTimeColor = () => {
+    if (isHoliday(selectedDate, holidays)) {
+      return 'text-yellow-500';
+    }
     const day = currentTime.getDay();
     const hour = currentTime.getHours();
     const isWeekday = day >= 1 && day <= 5;
@@ -318,7 +331,7 @@ const TimeCalculator = () => {
               timeEntries={timeEntries}
               selectedDate={selectedDate}
               clearInput={clearInput}
-              specialDayType={specialDayType}
+              specialDayType={specialDayType as "vacation" | "sick" | "holiday" | null}
             />
             <motion.div className="mt-6">
               <NotesCard notes={notes} setNotes={setNotes} />
@@ -370,7 +383,7 @@ const TimeCalculator = () => {
               totalMinutes={totalMinutes}
               timeEntries={timeEntries}
               handlePunch={handlePunch}
-              specialDayType={specialDayType}
+              specialDayType={specialDayType as "vacation" | "sick" | "holiday" | null}
             />
             <OutsideRegularHoursCard
               selectedDate={selectedDate}
@@ -387,12 +400,16 @@ const TimeCalculator = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5" />
-                  Aktuelle Uhrzeit
+                  {isToday(selectedDate) ? 'Aktuelle Uhrzeit' : 'Tag'}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className={`text-2xl font-bold ${getCurrentTimeColor()}`}>
-                  {format(currentTime, 'HH:mm:ss')}
+                  {isToday(selectedDate)
+                    ? format(currentTime, 'HH:mm:ss')
+                    : isHoliday(selectedDate, holidays)
+                    ? holidays.find(h => h.date === format(selectedDate, 'yyyy-MM-dd'))?.localName
+                    : format(selectedDate, 'eeee', { locale: de })}
                 </div>
               </CardContent>
             </Card>
