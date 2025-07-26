@@ -12,6 +12,7 @@ interface ResultsSectionProps {
   timeEntries: TimeEntry[];
   handlePunch: () => void;
   specialDayType: 'vacation' | 'sick' | 'holiday' | null;
+  selectedDate: Date;
 }
 
 const TARGET_6_HOURS_MINUTES = 360;
@@ -24,7 +25,10 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({
   timeEntries,
   handlePunch,
   specialDayType,
+  selectedDate,
 }) => {
+  const isWeekend = selectedDate.getDay() === 0 || selectedDate.getDay() === 6;
+
   const getTextColorClass = (minutes: number): string => {
     if (specialDayType) return 'text-blue-500';
     if (minutes < 360) { // unter 06:00
@@ -88,8 +92,8 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({
           </Tooltip>
           <div className="text-sm text-muted-foreground mt-2">
             Delta:&nbsp;
-            <span className={`font-bold ${specialDayType === 'holiday' ? 'text-gray-500' : totalMinutes - TARGET_7_7_HOURS_MINUTES >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {specialDayType === 'holiday' ? formatHoursMinutes(0) : `${totalMinutes - TARGET_7_7_HOURS_MINUTES >= 0 ? '+' : ''}${formatHoursMinutes(totalMinutes - TARGET_7_7_HOURS_MINUTES)}`}
+            <span className={`font-bold ${specialDayType === 'holiday' || isWeekend ? 'text-gray-500' : totalMinutes - TARGET_7_7_HOURS_MINUTES >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              {specialDayType === 'holiday' || isWeekend ? formatHoursMinutes(0) : `${totalMinutes - TARGET_7_7_HOURS_MINUTES >= 0 ? '+' : ''}${formatHoursMinutes(totalMinutes - TARGET_7_7_HOURS_MINUTES)}`}
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-1">

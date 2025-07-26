@@ -4,12 +4,16 @@ import * as React from "react"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ReferenceLine, Cell } from "recharts"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { format } from 'date-fns'
+import { format, isToday } from 'date-fns'
 import { de } from 'date-fns/locale'
 import { BarChart2 } from "lucide-react"
+import { formatHoursMinutes } from "@/lib/timeUtils"
 
 interface WeeklyHoursChartProps {
   data: { date: Date; totalMinutes: number }[]
+  currentWeekTotalMinutes: number
+  previousWeekTotalMinutes: number
+  selectedDate: Date
 }
 
 const chartConfig = {
@@ -37,7 +41,7 @@ const getBarColorByMinutes = (minutes: number): string => {
   }
 };
 
-export const WeeklyHoursChart: React.FC<WeeklyHoursChartProps> = ({ data }) => {
+export const WeeklyHoursChart: React.FC<WeeklyHoursChartProps> = ({ data, currentWeekTotalMinutes, previousWeekTotalMinutes, selectedDate }) => {
   const chartData = data.map(item => ({
     date: format(item.date, 'eee', { locale: de }),
     hours: parseFloat((item.totalMinutes / 60).toFixed(2)),
@@ -91,6 +95,15 @@ export const WeeklyHoursChart: React.FC<WeeklyHoursChartProps> = ({ data }) => {
             />
           </BarChart>
         </ChartContainer>
+        {isToday(selectedDate) && (
+          <div className="text-center text-sm text-muted-foreground mt-4">
+            <p>
+              <strong className={currentWeekTotalMinutes >= previousWeekTotalMinutes ? "text-green-500" : "text-red-500"}>
+                {currentWeekTotalMinutes >= previousWeekTotalMinutes ? "Du hast" : "Du hast"} {formatHoursMinutes(Math.abs(currentWeekTotalMinutes - previousWeekTotalMinutes))} {currentWeekTotalMinutes >= previousWeekTotalMinutes ? "mehr" : "weniger"} gearbeitet als letzte Woche.
+              </strong>
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

@@ -152,6 +152,15 @@ export const useStatistics = (yearData: { [date: string]: string }, dailyTargetM
       longestWeekEnd = format(endOfWeek(weekDate, { weekStartsOn: 1 }), 'yyyy-MM-dd');
     }
 
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentWeekNumber = getWeek(today, { weekStartsOn: 1 });
+    const currentWeekKey = `${currentYear}-${currentWeekNumber}`;
+    const previousWeekKey = `${currentYear}-${currentWeekNumber - 1}`;
+
+    const currentWeekTotalMinutes = weeklyMinutes[currentWeekKey]?.totalMinutes || 0;
+    const previousWeekTotalMinutes = weeklyMinutes[previousWeekKey]?.totalMinutes || 0;
+
     const averageDailyMinutes = Object.keys(dailyMinutes).map(day => {
         const dayIndex = parseInt(day);
         const data = dailyMinutes[dayIndex];
@@ -184,6 +193,8 @@ export const useStatistics = (yearData: { [date: string]: string }, dailyTargetM
       longestStreak,
       longestStreakStart,
       longestStreakEnd,
+      currentWeekTotalMinutes,
+      previousWeekTotalMinutes,
     };
   }, [yearData]);
 };

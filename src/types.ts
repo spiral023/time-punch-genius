@@ -20,3 +20,7 @@ export type Holiday = {
   launchYear: number | null;
   types: string[];
 };
+
+export interface AppSettings {
+  personalVacationDays: number;
+}

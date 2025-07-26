@@ -14,6 +14,7 @@ import { useSummary } from '@/hooks/useSummary';
 import { useStatistics } from '@/hooks/useStatistics';
 import { useYearData } from '@/hooks/useYearData';
 import { AverageDayCard } from './AverageDayCard';
+import { FreeDaysCard } from './FreeDaysCard';
 import { OutsideRegularHoursCard } from './OutsideRegularHoursCard';
 import { StatisticsCard } from './time-calculator/StatisticsCard';
 import { AverageWorkdayHoursChart } from './AverageWorkdayHoursChart';
@@ -323,6 +324,57 @@ const TimeCalculator = () => {
         <DateNavigator selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  {isToday(selectedDate) ? 'Aktuelle Uhrzeit' : 'Tag'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className={`text-2xl font-bold ${getCurrentTimeColor()}`}>
+                  {isToday(selectedDate)
+                    ? format(currentTime, 'HH:mm:ss')
+                    : isHoliday(selectedDate, holidays)
+                    ? holidays.find(h => h.date === format(selectedDate, 'yyyy-MM-dd'))?.localName
+                    : format(selectedDate, 'eeee', { locale: de })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {averageDayData && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <AverageDayCard
+                  avgStart={averageDayData.avgStart}
+                  avgEnd={averageDayData.avgEnd}
+                  avgBreak={averageDayData.avgBreak}
+                  avgHours={averageDayData.avgHours}
+                />
+              </motion.div>
+            )}
+
+            <WeeklyHoursChart
+              data={weeklyChartData}
+              currentWeekTotalMinutes={statistics.currentWeekTotalMinutes}
+              previousWeekTotalMinutes={statistics.previousWeekTotalMinutes}
+              selectedDate={selectedDate}
+            />
+
+            <SummarySection
+              weeklySummary={weeklySummary}
+              monthlySummary={monthlySummary}
+              yearlySummary={yearlySummary}
+              weeklyBalance={weeklyBalance}
+              weeklyTargetHours={weeklyTargetHours}
+              setWeeklyTargetHours={setWeeklyTargetHours}
+              selectedDate={selectedDate}
+            />
+          </div>
           <div>
             <TimeInputSection
               input={input}
@@ -384,6 +436,7 @@ const TimeCalculator = () => {
               timeEntries={timeEntries}
               handlePunch={handlePunch}
               specialDayType={specialDayType as "vacation" | "sick" | "holiday" | null}
+              selectedDate={selectedDate}
             />
             <OutsideRegularHoursCard
               selectedDate={selectedDate}
@@ -394,55 +447,9 @@ const TimeCalculator = () => {
               totalDaysWithEntries={outsideRegularHours.totalDaysWithEntries}
             />
           </div>
-
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  {isToday(selectedDate) ? 'Aktuelle Uhrzeit' : 'Tag'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className={`text-2xl font-bold ${getCurrentTimeColor()}`}>
-                  {isToday(selectedDate)
-                    ? format(currentTime, 'HH:mm:ss')
-                    : isHoliday(selectedDate, holidays)
-                    ? holidays.find(h => h.date === format(selectedDate, 'yyyy-MM-dd'))?.localName
-                    : format(selectedDate, 'eeee', { locale: de })}
-                </div>
-              </CardContent>
-            </Card>
-
-            {averageDayData && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-              >
-                <AverageDayCard
-                  avgStart={averageDayData.avgStart}
-                  avgEnd={averageDayData.avgEnd}
-                  avgBreak={averageDayData.avgBreak}
-                  avgHours={averageDayData.avgHours}
-                />
-              </motion.div>
-            )}
-
-            <WeeklyHoursChart data={weeklyChartData} />
-
-            <SummarySection
-              weeklySummary={weeklySummary}
-              monthlySummary={monthlySummary}
-              yearlySummary={yearlySummary}
-              weeklyBalance={weeklyBalance}
-              weeklyTargetHours={weeklyTargetHours}
-              setWeeklyTargetHours={setWeeklyTargetHours}
-              selectedDate={selectedDate}
-            />
-          </div>
           <div className="space-y-6">
             <TipsCard />
+            <FreeDaysCard year={selectedDate.getFullYear()} />
             <AverageWorkdayHoursChart data={statistics.averageDailyMinutes} />
             <StatisticsCard {...statistics} averageBlocksPerDay={statistics.averageBlocksPerDay} />
           </div>
