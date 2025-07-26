@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Settings, Download, Upload } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface DataManagementProps {
   handleExportData: () => void;
@@ -35,45 +36,72 @@ export const DataManagement: React.FC<DataManagementProps> = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <Button variant="outline" onClick={handleExportData}>
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-          <Button variant="outline" asChild>
-            <label htmlFor="import-file">
-              <Upload className="mr-2 h-4 w-4" />
-              Import
-              <input type="file" id="import-file" accept=".json" className="hidden" onChange={handleImportData} />
-            </label>
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" onClick={handleExportData}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Exportiert ein Backup aller Daten aus dem Browser-Cache.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" asChild>
+                  <label htmlFor="import-file">
+                    <Upload className="mr-2 h-4 w-4" />
+                    Import
+                    <input type="file" id="import-file" accept=".json" className="hidden" onChange={handleImportData} />
+                  </label>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Importiert ein ZE-Helper .json Backup in die Webanwendung.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="outline" className="w-full">
-              Webdesk Import
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Webdesk Daten importieren</AlertDialogTitle>
-              <AlertDialogDescription>
-                Geh in die Webdesk Monatsjournal Ansicht und geh auf -> Druck. Kopiere die Daten von "Datum" bis zur letzten Zeit (0:00) und füge sie hier ein. Klicke dann auf "Importieren". Mach dies pro Monat einzeln. Bestehende Daten werden überschrieben.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <Textarea
-              placeholder="Hier die Daten aus Webdesk Ansicht Druck einfügen..."
-              value={webdeskInput}
-              onChange={(e) => setWebdeskInput(e.target.value)}
-              rows={10}
-            />
-            <AlertDialogFooter>
-              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-              <AlertDialogAction onClick={onWebdeskImport}>
-                Importieren
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <TooltipProvider>
+          <AlertDialog>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" className="w-full">
+                    Webdesk Import
+                  </Button>
+                </AlertDialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Via Webdesk Monatsjournal (Druckansicht) massenhaft Buchungsdaten importieren</p>
+              </TooltipContent>
+            </Tooltip>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Webdesk Daten importieren</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Geh in die Webdesk Monatsjournal Ansicht und geh auf -{'>'} Druck. Kopiere die Daten von "Datum" bis zur letzten Zeit (0:00) und füge sie hier ein. Klicke dann auf "Importieren". Mach dies pro Monat einzeln. Bestehende Daten werden überschrieben.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <Textarea
+                placeholder="Hier die Daten aus Webdesk Ansicht Druck einfügen..."
+                value={webdeskInput}
+                onChange={(e) => setWebdeskInput(e.target.value)}
+                rows={10}
+              />
+              <AlertDialogFooter>
+                <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                <AlertDialogAction onClick={onWebdeskImport}>
+                  Importieren
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </TooltipProvider>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" className="w-full">

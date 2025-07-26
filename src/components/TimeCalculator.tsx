@@ -417,8 +417,8 @@ const TimeCalculator = () => {
           </div>
           <div className="space-y-6">
             <TipsCard />
-            <StatisticsCard {...statistics} averageBlocksPerDay={statistics.averageBlocksPerDay} />
             <AverageWorkdayHoursChart data={statistics.averageDailyMinutes} />
+            <StatisticsCard {...statistics} averageBlocksPerDay={statistics.averageBlocksPerDay} />
           </div>
         </div>
       </motion.div>

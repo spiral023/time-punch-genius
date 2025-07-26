@@ -49,7 +49,7 @@ export const WeeklyHoursChart: React.FC<WeeklyHoursChartProps> = ({ data }) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart2 className="h-6 w-6" />
-          Wochenübersicht
+          Diese Woche
         </CardTitle>
       </CardHeader>
       <CardContent>
