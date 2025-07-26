@@ -456,6 +456,12 @@ const TimeCalculator = () => {
               outsideHoursYear={formatHoursMinutes(outsideRegularHours.year)}
               daysWithOutsideHours={outsideRegularHours.daysWithOutsideHours}
               totalDaysWithEntries={outsideRegularHours.totalDaysWithEntries}
+              totalWeekMinutes={weeklySummary}
+              totalMonthMinutes={monthlySummary}
+              totalYearMinutes={yearlySummary}
+              rawOutsideHoursWeek={outsideRegularHours.week}
+              rawOutsideHoursMonth={outsideRegularHours.month}
+              rawOutsideHoursYear={outsideRegularHours.year}
             />
           </div>
           <div className="space-y-6">

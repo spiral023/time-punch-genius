@@ -13,16 +13,44 @@ interface OutsideRegularHoursCardProps {
   outsideHoursYear: string;
   daysWithOutsideHours: number;
   totalDaysWithEntries: number;
+  totalWeekMinutes: number;
+  totalMonthMinutes: number;
+  totalYearMinutes: number;
+  rawOutsideHoursWeek: number;
+  rawOutsideHoursMonth: number;
+  rawOutsideHoursYear: number;
 }
 
-export const OutsideRegularHoursCard: React.FC<OutsideRegularHoursCardProps> = ({ 
-  selectedDate, 
-  outsideHoursWeek, 
-  outsideHoursMonth, 
+export const OutsideRegularHoursCard: React.FC<OutsideRegularHoursCardProps> = ({
+  selectedDate,
+  outsideHoursWeek,
+  outsideHoursMonth,
   outsideHoursYear,
   daysWithOutsideHours,
-  totalDaysWithEntries
+  totalDaysWithEntries,
+  totalWeekMinutes,
+  totalMonthMinutes,
+  totalYearMinutes,
+  rawOutsideHoursWeek,
+  rawOutsideHoursMonth,
+  rawOutsideHoursYear,
 }) => {
+  const daysPercentage = totalDaysWithEntries > 0
+    ? ((daysWithOutsideHours / totalDaysWithEntries) * 100).toFixed(0)
+    : 0;
+
+  const weekPercentage = totalWeekMinutes > 0
+    ? ((rawOutsideHoursWeek / totalWeekMinutes) * 100).toFixed(0)
+    : 0;
+
+  const monthPercentage = totalMonthMinutes > 0
+    ? ((rawOutsideHoursMonth / totalMonthMinutes) * 100).toFixed(0)
+    : 0;
+
+  const yearPercentage = totalYearMinutes > 0
+    ? ((rawOutsideHoursYear / totalYearMinutes) * 100).toFixed(0)
+    : 0;
+
   return (
     <Card>
       <CardHeader>
@@ -35,7 +63,9 @@ export const OutsideRegularHoursCard: React.FC<OutsideRegularHoursCardProps> = (
         <div>
           <div className="flex justify-between items-baseline">
             <span className="text-sm font-medium">Diese Woche</span>
-            <span className="font-bold text-lg">{outsideHoursWeek}</span>
+            <span className="font-bold text-lg">
+              {outsideHoursWeek} {totalWeekMinutes > 0 && `(${weekPercentage}%)`}
+            </span>
           </div>
           <p className="text-xs text-muted-foreground">
             {format(startOfWeek(selectedDate, { weekStartsOn: 1 }), 'dd.MM')} - {format(endOfWeek(selectedDate, { weekStartsOn: 1 }), 'dd.MM')}
@@ -44,7 +74,9 @@ export const OutsideRegularHoursCard: React.FC<OutsideRegularHoursCardProps> = (
         <div>
           <div className="flex justify-between items-baseline">
             <span className="text-sm font-medium">Dieser Monat</span>
-            <span className="font-bold text-lg">{outsideHoursMonth}</span>
+            <span className="font-bold text-lg">
+              {outsideHoursMonth} {totalMonthMinutes > 0 && `(${monthPercentage}%)`}
+            </span>
           </div>
           <p className="text-xs text-muted-foreground">
             {format(selectedDate, 'MMMM yyyy', { locale: de })}
@@ -54,22 +86,26 @@ export const OutsideRegularHoursCard: React.FC<OutsideRegularHoursCardProps> = (
         <div>
           <div className="flex justify-between items-baseline">
             <span className="text-sm font-medium">Dieses Jahr</span>
-            <span className="font-bold text-lg">{outsideHoursYear}</span>
+            <span className="font-bold text-lg">
+              {outsideHoursYear} {totalYearMinutes > 0 && `(${yearPercentage}%)`}
+            </span>
           </div>
           <p className="text-xs text-muted-foreground">
             {format(selectedDate, 'yyyy')}
           </p>
         </div>
-        
+
         <Separator />
 
         <div>
           <div className="flex justify-between items-baseline">
             <span className="text-sm font-medium">Gesamt</span>
-            <span className="font-bold text-lg">{outsideHoursYear}</span>
+            <span className="font-bold text-lg">
+              {outsideHoursYear} {totalYearMinutes > 0 && `(${yearPercentage}%)`}
+            </span>
           </div>
           <p className="text-xs text-muted-foreground">
-            {daysWithOutsideHours} von {totalDaysWithEntries} Tagen mit Buchung
+            {daysWithOutsideHours} von {totalDaysWithEntries} Tagen mit Buchung ({daysPercentage}%)
           </p>
         </div>
         <p className="text-xs text-muted-foreground pt-2">
