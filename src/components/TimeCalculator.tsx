@@ -27,6 +27,7 @@ import { SummarySection } from './time-calculator/SummarySection';
 import { DataManagement } from './time-calculator/DataManagement';
 import { NotesCard } from './NotesCard';
 import { TipsCard } from './TipsCard';
+import VacationPlanningCard from './VacationPlanningCard';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 const formatDateKey = (date: Date): string => `zehelper_data_${format(date, 'yyyy-MM-dd')}`;
@@ -419,6 +420,9 @@ const TimeCalculator = () => {
                   </div>
                 </CardContent>
               </Card>
+            </motion.div>
+            <motion.div className="mt-6">
+              <VacationPlanningCard />
             </motion.div>
             <motion.div className="mt-6">
               <DataManagement
