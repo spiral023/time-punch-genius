@@ -209,17 +209,36 @@ const TimeCalculator = () => {
       return total;
     };
 
+    const yearlyStart = startOfYear(selectedDate);
+    const yearlyEnd = endOfYear(selectedDate);
+    
+    let daysWithOutsideHours = 0;
+    const yearDays = eachDayOfInterval({ start: yearlyStart, end: yearlyEnd });
+    yearDays.forEach(day => {
+        const dayKey = format(day, 'yyyy-MM-dd');
+        const dayInput = yearData[dayKey];
+        if (dayInput) {
+            const details = calculateTimeDetails(dayInput);
+            const outsideMinutes = calculateOutsideRegularHours(details.timeEntries, day);
+            if (outsideMinutes > 0) {
+                daysWithOutsideHours++;
+            }
+        }
+    });
+
+    const totalDaysWithEntries = Object.values(yearData).filter(d => d && d.trim() !== '').length;
+
     const weeklyStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
     const weeklyEnd = endOfWeek(selectedDate, { weekStartsOn: 1 });
     const monthlyStart = startOfMonth(selectedDate);
     const monthlyEnd = endOfMonth(selectedDate);
-    const yearlyStart = startOfYear(selectedDate);
-    const yearlyEnd = endOfYear(selectedDate);
 
     return {
       week: calculateTotalOutsideHours(weeklyStart, weeklyEnd),
       month: calculateTotalOutsideHours(monthlyStart, monthlyEnd),
       year: calculateTotalOutsideHours(yearlyStart, yearlyEnd),
+      daysWithOutsideHours: daysWithOutsideHours,
+      totalDaysWithEntries: totalDaysWithEntries,
     };
   }, [selectedDate, yearData]);
 
@@ -349,6 +368,8 @@ const TimeCalculator = () => {
               outsideHoursWeek={formatHoursMinutes(outsideRegularHours.week)}
               outsideHoursMonth={formatHoursMinutes(outsideRegularHours.month)}
               outsideHoursYear={formatHoursMinutes(outsideRegularHours.year)}
+              daysWithOutsideHours={outsideRegularHours.daysWithOutsideHours}
+              totalDaysWithEntries={outsideRegularHours.totalDaysWithEntries}
             />
           </div>
 

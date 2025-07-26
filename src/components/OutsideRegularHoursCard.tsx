@@ -4,14 +4,25 @@ import { Clock } from 'lucide-react';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { de } from 'date-fns/locale';
 
+import { Separator } from './ui/separator';
+
 interface OutsideRegularHoursCardProps {
   selectedDate: Date;
   outsideHoursWeek: string;
   outsideHoursMonth: string;
   outsideHoursYear: string;
+  daysWithOutsideHours: number;
+  totalDaysWithEntries: number;
 }
 
-export const OutsideRegularHoursCard: React.FC<OutsideRegularHoursCardProps> = ({ selectedDate, outsideHoursWeek, outsideHoursMonth, outsideHoursYear }) => {
+export const OutsideRegularHoursCard: React.FC<OutsideRegularHoursCardProps> = ({ 
+  selectedDate, 
+  outsideHoursWeek, 
+  outsideHoursMonth, 
+  outsideHoursYear,
+  daysWithOutsideHours,
+  totalDaysWithEntries
+}) => {
   return (
     <Card>
       <CardHeader>
@@ -39,6 +50,7 @@ export const OutsideRegularHoursCard: React.FC<OutsideRegularHoursCardProps> = (
             {format(selectedDate, 'MMMM yyyy', { locale: de })}
           </p>
         </div>
+
         <div>
           <div className="flex justify-between items-baseline">
             <span className="text-sm font-medium">Dieses Jahr</span>
@@ -46,6 +58,18 @@ export const OutsideRegularHoursCard: React.FC<OutsideRegularHoursCardProps> = (
           </div>
           <p className="text-xs text-muted-foreground">
             {format(selectedDate, 'yyyy')}
+          </p>
+        </div>
+        
+        <Separator />
+
+        <div>
+          <div className="flex justify-between items-baseline">
+            <span className="text-sm font-medium">Gesamt</span>
+            <span className="font-bold text-lg">{outsideHoursYear}</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {daysWithOutsideHours} von {totalDaysWithEntries} Tagen mit Buchung
           </p>
         </div>
         <p className="text-xs text-muted-foreground pt-2">

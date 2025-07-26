@@ -130,6 +130,24 @@ export const SummarySection: React.FC<SummarySectionProps> = ({
             {format(selectedDate, 'yyyy')}
           </p>
         </div>
+        <div>
+          <div className="flex justify-between items-baseline">
+            <span className="text-sm font-medium">Gesamt</span>
+            <motion.span
+              key={`total-${yearlySummary}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="font-bold text-lg"
+            >
+              {formatHoursMinutes(yearlySummary)}
+            </motion.span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Alle erfassten Daten
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

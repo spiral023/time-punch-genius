@@ -5,15 +5,19 @@ import { tips, Tip } from '@/lib/tips';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './ui/button';
 
-const getRandomTip = () => {
-  return tips[Math.floor(Math.random() * tips.length)];
+const getRandomTip = (currentTip?: Tip): Tip => {
+  let newTip: Tip;
+  do {
+    newTip = tips[Math.floor(Math.random() * tips.length)];
+  } while (tips.length > 1 && newTip.title === currentTip?.title);
+  return newTip;
 };
 
 export const TipsCard: React.FC = () => {
-  const [randomTip, setRandomTip] = useState<Tip>(getRandomTip);
+  const [randomTip, setRandomTip] = useState<Tip>(() => getRandomTip());
 
   const refreshTip = useCallback(() => {
-    setRandomTip(getRandomTip());
+    setRandomTip((prevTip) => getRandomTip(prevTip));
   }, []);
 
   if (!randomTip) {
