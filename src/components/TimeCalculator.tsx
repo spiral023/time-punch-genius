@@ -10,6 +10,7 @@ import { formatMinutesToTime, formatHoursMinutes, calculateTimeDetails, calculat
 import { useTimeCalculator } from '@/hooks/useTimeCalculator';
 import { getHolidays, isHoliday } from '@/lib/holidays';
 import { Holiday } from '@/types';
+import { useAppSettings } from '@/hooks/useAppSettings';
 import { useDataManagement } from '@/hooks/useDataManagement';
 import { HomeOfficeCard } from './HomeOfficeCard';
 import { useSummary } from '@/hooks/useSummary';
@@ -39,6 +40,7 @@ const formatNotesKey = (date: Date): string => `zehelper_notes_${format(date, 'y
 const WEEKLY_HOURS_KEY = 'zehelper_weekly_hours';
 
 const TimeCalculator = () => {
+  const { cardVisibility } = useAppSettings();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [input, setInput] = useState('');
   const [notes, setNotes] = useState('');
@@ -376,7 +378,7 @@ const TimeCalculator = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="space-y-6">
-            <Card>
+            {cardVisibility['currentTime'] !== false && <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5" />
@@ -392,9 +394,9 @@ const TimeCalculator = () => {
                     : format(selectedDate, 'eeee', { locale: de })}
                 </div>
               </CardContent>
-            </Card>
+            </Card>}
 
-            {averageDayData && (
+            {cardVisibility['averageDay'] !== false && averageDayData && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -409,14 +411,14 @@ const TimeCalculator = () => {
               </motion.div>
             )}
 
-            <WeeklyHoursChart
+            {cardVisibility['weeklyHours'] !== false && <WeeklyHoursChart
               data={weeklyChartData}
               currentWeekTotalMinutes={statistics.currentWeekTotalMinutes}
               previousWeekTotalMinutes={statistics.previousWeekTotalMinutes}
               selectedDate={selectedDate}
-            />
+            />}
 
-            <SummarySection
+            {cardVisibility['summary'] !== false && <SummarySection
               weeklySummary={weeklySummary}
               monthlySummary={monthlySummary}
               yearlySummary={yearlySummary}
@@ -424,7 +426,7 @@ const TimeCalculator = () => {
               weeklyTargetHours={weeklyTargetHours}
               setWeeklyTargetHours={setWeeklyTargetHours}
               selectedDate={selectedDate}
-            />
+            />}
             <motion.div className="mt-6">
               <DataManagement
                 ref={dataManagementRef}
@@ -434,7 +436,7 @@ const TimeCalculator = () => {
                 handleWebdeskImport={handleWebdeskImport}
               />
             </motion.div>
-            <motion.div className="mt-6">
+            {cardVisibility['homeOffice'] !== false && <motion.div className="mt-6">
               <HomeOfficeCard
                 workdays={homeOfficeStats.homeOfficeDaysWorkdays}
                 weekendsAndHolidays={homeOfficeStats.homeOfficeDaysWeekendsAndHolidays}
@@ -445,10 +447,10 @@ const TimeCalculator = () => {
                 hoHoursPercentage={homeOfficeStats.hoHoursPercentage}
                 hoDaysPercentage={homeOfficeStats.hoDaysPercentage}
               />
-            </motion.div>
+            </motion.div>}
           </div>
           <div>
-            <TimeInputSection
+            {cardVisibility['timeInput'] !== false && <TimeInputSection
               input={input}
               setInput={setInput}
               errors={errors}
@@ -456,11 +458,11 @@ const TimeCalculator = () => {
               selectedDate={selectedDate}
               clearInput={clearInput}
               specialDayType={specialDayType as "vacation" | "sick" | "holiday" | null}
-            />
-            <motion.div className="mt-6">
+            />}
+            {cardVisibility['notes'] !== false && <motion.div className="mt-6">
               <NotesCard notes={notes} setNotes={setNotes} />
-            </motion.div>
-            <motion.div className="mt-6">
+            </motion.div>}
+            {cardVisibility['breakInfo'] !== false && <motion.div className="mt-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -496,22 +498,22 @@ const TimeCalculator = () => {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
-            <motion.div className="mt-6">
+            </motion.div>}
+            {cardVisibility['info'] !== false && <motion.div className="mt-6">
               <InfoCard />
-            </motion.div>
+            </motion.div>}
           </div>
 
           <div className="space-y-6">
-            <ResultsSection
+            {cardVisibility['results'] !== false && <ResultsSection
               totalMinutes={totalMinutes}
               timeEntries={timeEntries}
               handlePunch={handlePunch}
               specialDayType={specialDayType as "vacation" | "sick" | "holiday" | null}
               selectedDate={selectedDate}
-            />
-            <VacationPlanningCard />
-            <OutsideRegularHoursCard
+            />}
+            {cardVisibility['vacation'] !== false && <VacationPlanningCard />}
+            {cardVisibility['outsideRegularHours'] !== false && <OutsideRegularHoursCard
               selectedDate={selectedDate}
               outsideHoursWeek={formatHoursMinutes(outsideRegularHours.week)}
               outsideHoursMonth={formatHoursMinutes(outsideRegularHours.month)}
@@ -524,13 +526,13 @@ const TimeCalculator = () => {
               rawOutsideHoursWeek={outsideRegularHours.week}
               rawOutsideHoursMonth={outsideRegularHours.month}
               rawOutsideHoursYear={outsideRegularHours.year}
-            />
+            />}
           </div>
           <div className="space-y-6">
-            <TipsCard />
-            <FreeDaysCard year={selectedDate.getFullYear()} />
-            <AverageWorkdayHoursChart data={statistics.averageDailyMinutes} />
-            <StatisticsCard {...statistics} averageBlocksPerDay={statistics.averageBlocksPerDay} />
+            {cardVisibility['tips'] !== false && <TipsCard />}
+            {cardVisibility['freeDays'] !== false && <FreeDaysCard year={selectedDate.getFullYear()} />}
+            {cardVisibility['averageWorkdayHours'] !== false && <AverageWorkdayHoursChart data={statistics.averageDailyMinutes} />}
+            {cardVisibility['statistics'] !== false && <StatisticsCard {...statistics} averageBlocksPerDay={statistics.averageBlocksPerDay} />}
           </div>
         </div>
         <NotificationManager />

@@ -25,4 +25,5 @@ export type Holiday = {
 
 export interface AppSettings {
   personalVacationDays: number;
+  cardVisibility: { [key: string]: boolean };
 }

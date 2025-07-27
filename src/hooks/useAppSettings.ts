@@ -5,6 +5,7 @@ const SETTINGS_KEY = 'zehelper_settings';
 
 const defaultSettings: AppSettings = {
   personalVacationDays: 25,
+  cardVisibility: {},
 };
 
 export const useAppSettings = () => {
@@ -42,9 +43,25 @@ export const useAppSettings = () => {
     updateSettings({ personalVacationDays: days });
   }, [updateSettings]);
 
+  const setCardVisibility = useCallback((cardId: string, isVisible: boolean) => {
+    updateSettings({
+      cardVisibility: {
+        ...settings.cardVisibility,
+        [cardId]: isVisible,
+      },
+    });
+  }, [settings.cardVisibility, updateSettings]);
+
+  const setAllCardsVisibility = useCallback((newVisibility: { [key: string]: boolean }) => {
+    updateSettings({ cardVisibility: newVisibility });
+  }, [updateSettings]);
+
   return {
     settings,
     setPersonalVacationDays,
     personalVacationDays: settings.personalVacationDays,
+    cardVisibility: settings.cardVisibility || {},
+    setCardVisibility,
+    setAllCardsVisibility,
   };
 };

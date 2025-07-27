@@ -101,7 +101,9 @@ const processGroupedData = (groupedData: { [key: string]: WebdeskRow[] }): Proce
     const timeEntries = dayEntries
       .filter(entry => entry.von && entry.bis)
       .map(entry => {
-        const reason = entry['Fehlgründe (Code)'] || '';
+        const rawReason = entry['Fehlgründe (Code)'] || '';
+        // Remove numbers in brackets, e.g., "Homeoffice (123)" -> "Homeoffice"
+        const reason = rawReason.replace(/\s*\(\d+\)$/, '').trim();
         const type = reason.includes('Homeoffice') ? 'homeoffice' : (reason ? 'absence' : 'office');
         return { start: entry.von, end: entry.bis, type: type as 'office' | 'homeoffice' | 'absence', reason };
       });

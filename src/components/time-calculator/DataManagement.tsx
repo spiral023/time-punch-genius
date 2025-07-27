@@ -5,6 +5,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Settings, Download, Upload, FileUp } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { CardManager } from '@/components/CardManager';
 
 interface DataManagementProps {
   handleExportData: () => void;
@@ -25,13 +26,14 @@ export const DataManagement = React.forwardRef<DataManagementHandles, DataManage
   handleWebdeskImport,
 }, ref) => {
   const importRef = useRef<HTMLLabelElement>(null);
+  const webdeskImportTriggerRef = useRef<HTMLButtonElement>(null);
 
   useImperativeHandle(ref, () => ({
     triggerImport: () => {
       importRef.current?.click();
     },
     triggerWebdeskImport: () => {
-      // This might need to open the dialog now
+      webdeskImportTriggerRef.current?.click();
     },
   }));
 
@@ -88,7 +90,7 @@ export const DataManagement = React.forwardRef<DataManagementHandles, DataManage
         </div>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full" ref={webdeskImportTriggerRef}>
               Webdesk Import (XLSX)
             </Button>
           </AlertDialogTrigger>
@@ -118,6 +120,7 @@ export const DataManagement = React.forwardRef<DataManagementHandles, DataManage
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        <CardManager />
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" className="w-full">
