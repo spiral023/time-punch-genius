@@ -262,7 +262,7 @@ const parseTimeEntries = (input: string, currentTime?: Date) => {
     const startMinutes = parseTimeToMinutes(startTime);
     const endMinutes = parseTimeToMinutes(endTime);
 
-    if (endMinutes <= startMinutes) {
+    if (endMinutes < startMinutes) {
       validationErrors.push({
         line: index + 1,
         message: 'Endzeit muss nach Startzeit liegen'

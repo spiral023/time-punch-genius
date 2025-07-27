@@ -29,6 +29,7 @@ import { NotesCard } from './NotesCard';
 import { TipsCard } from './TipsCard';
 import VacationPlanningCard from './VacationPlanningCard';
 import InfoCard from './InfoCard';
+import { NotificationManager } from './NotificationManager';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 const formatDateKey = (date: Date): string => `zehelper_data_${format(date, 'yyyy-MM-dd')}`;
@@ -470,6 +471,9 @@ const TimeCalculator = () => {
             <AverageWorkdayHoursChart data={statistics.averageDailyMinutes} />
             <StatisticsCard {...statistics} averageBlocksPerDay={statistics.averageBlocksPerDay} />
           </div>
+        </div>
+        <div className="max-w-md mx-auto">
+          <NotificationManager />
         </div>
       </motion.div>
     </div>

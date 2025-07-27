@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Progress } from '@/components/ui/progress';
+import { format, formatDistanceToNow } from 'date-fns';
+import { de } from 'date-fns/locale';
 import { formatHoursMinutes } from '@/lib/timeUtils';
 import { Button } from './ui/button';
-import { Bell, BellOff } from 'lucide-react';
+import { Bell, BellOff, Trash2 } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Slider } from './ui/slider';
@@ -23,7 +25,7 @@ export const TargetTimeProgress: React.FC<TargetTimeProgressProps> = ({
   targetMinutes,
   progressClassName,
 }) => {
-  const { scheduleNotification } = useNotifications();
+  const { scheduleNotification, scheduledNotifications, removeNotification } = useNotifications();
   const [isScheduled, setIsScheduled] = useState(false);
   const [offsetMinutes, setOffsetMinutes] = useState(5);
   const [popoverOpen, setPopoverOpen] = useState(false);
@@ -34,7 +36,9 @@ export const TargetTimeProgress: React.FC<TargetTimeProgressProps> = ({
         targetTime,
         'Zielzeit erreicht!',
         `Du hast deine Zielzeit von ${label} erreicht.`,
-        offsetMinutes
+        offsetMinutes,
+        label,
+        progressValue
       );
       setIsScheduled(true);
       setPopoverOpen(false);

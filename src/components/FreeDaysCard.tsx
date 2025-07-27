@@ -32,19 +32,19 @@ export const FreeDaysCard: React.FC<FreeDaysCardProps> = ({ year }) => {
         </div>
       </CardHeader>
       <CardContent className="space-y-4 pt-2">
-        <div>
-          <div className="flex justify-between text-sm text-muted-foreground">
+        <div className="space-y-2">
+          <Progress value={vacationPercentage} className="h-3" />
+          <div className="flex justify-between text-xs text-muted-foreground">
             <span>{`Urlaubstage: ${usedVacationDays}/${personalVacationDays}`}</span>
             <span>{`${vacationPercentage.toFixed(0)}%`}</span>
           </div>
-          <Progress value={vacationPercentage} className="mt-1" />
         </div>
-        <div>
-          <div className="flex justify-between text-sm text-muted-foreground">
+        <div className="space-y-2">
+          <Progress value={holidayPercentage} className="h-3" />
+          <div className="flex justify-between text-xs text-muted-foreground">
             <span>{`Feiertage: ${pastPublicHolidays}/${publicHolidays}`}</span>
             <span>{`${holidayPercentage.toFixed(0)}%`}</span>
           </div>
-          <Progress value={holidayPercentage} className="mt-1" />
         </div>
       </CardContent>
     </Card>

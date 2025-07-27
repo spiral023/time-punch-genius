@@ -36,19 +36,19 @@ export const OutsideRegularHoursCard: React.FC<OutsideRegularHoursCardProps> = (
   rawOutsideHoursYear,
 }) => {
   const daysPercentage = totalDaysWithEntries > 0
-    ? ((daysWithOutsideHours / totalDaysWithEntries) * 100).toFixed(0)
+    ? ((daysWithOutsideHours / totalDaysWithEntries) * 100).toFixed(1)
     : 0;
 
   const weekPercentage = totalWeekMinutes > 0
-    ? ((rawOutsideHoursWeek / totalWeekMinutes) * 100).toFixed(0)
+    ? ((rawOutsideHoursWeek / totalWeekMinutes) * 100).toFixed(1)
     : 0;
 
   const monthPercentage = totalMonthMinutes > 0
-    ? ((rawOutsideHoursMonth / totalMonthMinutes) * 100).toFixed(0)
+    ? ((rawOutsideHoursMonth / totalMonthMinutes) * 100).toFixed(1)
     : 0;
 
   const yearPercentage = totalYearMinutes > 0
-    ? ((rawOutsideHoursYear / totalYearMinutes) * 100).toFixed(0)
+    ? ((rawOutsideHoursYear / totalYearMinutes) * 100).toFixed(1)
     : 0;
 
   return (

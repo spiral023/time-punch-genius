@@ -224,7 +224,7 @@ export const StatisticsCard: React.FC<StatisticsCardProps> = ({
               transition={{ duration: 0.2 }}
               className="font-bold text-lg"
             >
-              {averageBlocksPerDay > 0 ? `${averageBlocksPerDay.toLocaleString('de-DE', { maximumFractionDigits: 1 })} Blöcke` : '-'}
+              {averageBlocksPerDay > 0 ? `${averageBlocksPerDay.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Blöcke` : '-'}
             </motion.span>
           </div>
         </div>
