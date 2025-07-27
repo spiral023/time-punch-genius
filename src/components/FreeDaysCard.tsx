@@ -20,6 +20,16 @@ export const FreeDaysCard: React.FC<FreeDaysCardProps> = ({ year }) => {
   const vacationPercentage = personalVacationDays > 0 ? (usedVacationDays / personalVacationDays) * 100 : 0;
   const holidayPercentage = publicHolidays > 0 ? (pastPublicHolidays / publicHolidays) * 100 : 0;
 
+  const getProgressColor = (percentage: number) => {
+    if (percentage > 75) {
+      return "bg-red-500";
+    }
+    if (percentage > 50) {
+      return "bg-yellow-500";
+    }
+    return "bg-primary";
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -33,14 +43,22 @@ export const FreeDaysCard: React.FC<FreeDaysCardProps> = ({ year }) => {
       </CardHeader>
       <CardContent className="space-y-4 pt-2">
         <div className="space-y-2">
-          <Progress value={vacationPercentage} className="h-3" />
+          <Progress
+            value={vacationPercentage}
+            className="h-3"
+            indicatorClassName={getProgressColor(vacationPercentage)}
+          />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>{`Urlaubstage: ${usedVacationDays}/${personalVacationDays}`}</span>
             <span>{`${vacationPercentage.toFixed(0)}%`}</span>
           </div>
         </div>
         <div className="space-y-2">
-          <Progress value={holidayPercentage} className="h-3" />
+          <Progress
+            value={holidayPercentage}
+            className="h-3"
+            indicatorClassName={getProgressColor(holidayPercentage)}
+          />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>{`Feiertage: ${pastPublicHolidays}/${publicHolidays}`}</span>
             <span>{`${holidayPercentage.toFixed(0)}%`}</span>

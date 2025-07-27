@@ -1,6 +1,6 @@
 // src/lib/holidays.ts
 
-type Holiday = {
+export type Holiday = {
   date: string;
   localName: string;
   name: string;

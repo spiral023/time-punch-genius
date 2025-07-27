@@ -1,15 +1,17 @@
-import React, { useState, useEffect, useMemo } from 'react';
+// TimeCalculator.tsx
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Clock, Coffee } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfYear, endOfYear, startOfMonth, endOfMonth, isToday } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { formatMinutesToTime, formatHoursMinutes, calculateTimeDetails, calculateAverageDay, calculateOutsideRegularHours } from '@/lib/timeUtils';
+import { formatMinutesToTime, formatHoursMinutes, calculateTimeDetails, calculateAverageDay, calculateOutsideRegularHours, parseTimeToMinutes } from '@/lib/timeUtils';
 import { useTimeCalculator } from '@/hooks/useTimeCalculator';
 import { getHolidays, isHoliday } from '@/lib/holidays';
 import { Holiday } from '@/types';
 import { useDataManagement } from '@/hooks/useDataManagement';
+import { HomeOfficeCard } from './HomeOfficeCard';
 import { useSummary } from '@/hooks/useSummary';
 import { useStatistics } from '@/hooks/useStatistics';
 import { useYearData } from '@/hooks/useYearData';
@@ -24,7 +26,7 @@ import { DateNavigator } from './time-calculator/DateNavigator';
 import { TimeInputSection } from './time-calculator/TimeInputSection';
 import { ResultsSection } from './time-calculator/ResultsSection';
 import { SummarySection } from './time-calculator/SummarySection';
-import { DataManagement } from './time-calculator/DataManagement';
+import { DataManagement, DataManagementHandles } from './time-calculator/DataManagement';
 import { NotesCard } from './NotesCard';
 import { TipsCard } from './TipsCard';
 import VacationPlanningCard from './VacationPlanningCard';
@@ -44,71 +46,114 @@ const TimeCalculator = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const { toast } = useToast();
+  const dataManagementRef = useRef<DataManagementHandles>(null);
   const { yearData, updateYearData } = useYearData(selectedDate);
   const dailyTargetMinutes = useMemo(() => (weeklyTargetHours / 5) * 60, [weeklyTargetHours]);
-  const { handleExportData, handleImportData, handleClearAllData } = useDataManagement();
+  const { handleExportData, handleImportData, handleClearAllData, handleWebdeskImport } = useDataManagement();
   const { weeklySummary, monthlySummary, yearlySummary } = useSummary(selectedDate, yearData, dailyTargetMinutes);
   const statistics = useStatistics(yearData, dailyTargetMinutes);
 
-  const handleWebdeskImport = (text: string) => {
-    const lines = text.split('\n');
-    const dateRegex = /(\d{2})\.(\d{2})\.(\d{4})/;
-    const timeRegex = /\d{2}:\d{2}\s*-\s*\d{2}:\d{2}/;
-    const specialDayRegex = /(Urlaub|Krankenstand)/i;
-    let currentDate: Date | null = null;
-    const entries: { [key: string]: string[] } = {};
+  const [homeOfficeStats, setHomeOfficeStats] = useState({
+    homeOfficeDaysWorkdays: 0,
+    homeOfficeDaysWeekendsAndHolidays: 0,
+    totalHomeOfficeHoursInNormalTime: 0,
+    totalHomeOfficeHoursOutsideNormalTime: 0,
+    pureOfficeDays: 0,
+    hybridDays: 0,
+    hoHoursPercentage: 0,
+    hoDaysPercentage: 0,
+  });
 
-    for (const line of lines) {
-      const dateMatch = line.match(dateRegex);
-      if (dateMatch) {
-        const [, day, month, year] = dateMatch;
-        currentDate = new Date(`${year}-${month}-${day}`);
-        const dateKey = formatDateKey(currentDate);
-        if (!entries[dateKey]) {
-          entries[dateKey] = [];
-        }
-      }
+  useEffect(() => {
+    let homeOfficeDaysWorkdays = 0;
+    let homeOfficeDaysWeekendsAndHolidays = 0;
+    let pureOfficeDays = 0;
+    let hybridDays = 0;
+    let totalHomeOfficeHours = 0;
+    let totalOfficeHours = 0;
+    let totalHomeOfficeHoursInNormalTime = 0;
+    let totalHomeOfficeHoursOutsideNormalTime = 0;
 
-      if (currentDate) {
-        const timeMatch = line.match(timeRegex);
-        const specialDayMatch = line.match(specialDayRegex);
-        const dateKey = formatDateKey(currentDate);
-        
-        if (timeMatch) {
-          entries[dateKey].push(timeMatch[0]);
-        } else if (specialDayMatch) {
-          // Store the special day type directly
-          entries[dateKey] = [specialDayMatch[0]];
-        }
-      }
-    }
+    const NORMAL_WORK_START = 6 * 60;
+    const NORMAL_WORK_END = 19 * 60;
 
-    Object.keys(entries).forEach(dateKey => {
-      if (entries[dateKey].length > 0) {
-        localStorage.setItem(dateKey, entries[dateKey].join('\n'));
+    Object.keys(yearData).forEach(dateKey => {
+      const input = yearData[dateKey];
+      if (!input) return;
+
+      const date = new Date(dateKey);
+      const dayOfWeek = date.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const holiday = isHoliday(date, holidays);
+      
+      const lines = input.split('\n');
+      const hasHomeOffice = lines.some(line => line.toLowerCase().includes('homeoffice'));
+      const hasOffice = lines.some(line => !line.toLowerCase().includes('homeoffice') && line.match(/\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}/));
+
+      if (isWeekend || holiday) {
+        if (hasHomeOffice) homeOfficeDaysWeekendsAndHolidays++;
       } else {
-        // If a date was found but no entries, we clear it
-        localStorage.removeItem(dateKey);
+        if (hasHomeOffice && !hasOffice) homeOfficeDaysWorkdays++;
+        else if (hasOffice && !hasHomeOffice) pureOfficeDays++;
+        else if (hasHomeOffice && hasOffice) hybridDays++;
       }
+
+      lines.forEach(line => {
+        const match = line.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+        if (match) {
+          const startMinutes = parseTimeToMinutes(match[1]);
+          const endMinutes = parseTimeToMinutes(match[2]);
+          const duration = endMinutes - startMinutes;
+
+          if (line.toLowerCase().includes('homeoffice')) {
+            totalHomeOfficeHours += duration;
+            
+            if (isWeekend || holiday) {
+              totalHomeOfficeHoursOutsideNormalTime += duration;
+            } else {
+              const overlapStart = Math.max(startMinutes, NORMAL_WORK_START);
+              const overlapEnd = Math.min(endMinutes, NORMAL_WORK_END);
+              if (overlapEnd > overlapStart) {
+                totalHomeOfficeHoursInNormalTime += (overlapEnd - overlapStart);
+              }
+              if (startMinutes < NORMAL_WORK_START) {
+                totalHomeOfficeHoursOutsideNormalTime += Math.min(endMinutes, NORMAL_WORK_START) - startMinutes;
+              }
+              if (endMinutes > NORMAL_WORK_END) {
+                totalHomeOfficeHoursOutsideNormalTime += endMinutes - Math.max(startMinutes, NORMAL_WORK_END);
+              }
+            }
+          } else {
+            totalOfficeHours += duration;
+          }
+        }
+      });
     });
 
-    // Refresh the input for the currently selected date if it was part of the import
-    const selectedDateKey = formatDateKey(selectedDate);
-    if (entries[selectedDateKey]) {
-      setInput(entries[selectedDateKey].join('\n'));
-    } else if (Object.keys(entries).length > 0 && !entries[selectedDateKey]) {
-      // If the selected date was not in the import, but other dates were,
-      // we might need to clear its input if it was previously showing something.
-      // Or just leave it as is. For now, we'll just reload it from localStorage.
-      const savedInput = localStorage.getItem(selectedDateKey) || '';
-      setInput(savedInput);
-    }
+    const totalHours = totalHomeOfficeHours + totalOfficeHours;
+    const hoHoursPercentage = totalHours > 0 ? (totalHomeOfficeHours / totalHours) * 100 : 0;
+    
+    const totalDays = homeOfficeDaysWorkdays + pureOfficeDays + hybridDays;
+    const hoDaysPercentage = totalDays > 0 ? ((homeOfficeDaysWorkdays + hybridDays) / totalDays) * 100 : 0;
 
-
-    toast({
-      title: "Webdesk Import erfolgreich",
-      description: `${Object.keys(entries).length} Tage wurden importiert/aktualisiert.`,
+    setHomeOfficeStats({
+      homeOfficeDaysWorkdays,
+      homeOfficeDaysWeekendsAndHolidays,
+      totalHomeOfficeHoursInNormalTime,
+      totalHomeOfficeHoursOutsideNormalTime,
+      pureOfficeDays,
+      hybridDays,
+      hoHoursPercentage,
+      hoDaysPercentage,
     });
+  }, [yearData, holidays]);
+
+  const triggerImport = () => {
+    dataManagementRef.current?.triggerImport();
+  };
+
+  const triggerWebdeskImport = () => {
+    dataManagementRef.current?.triggerWebdeskImport();
   };
 
   useEffect(() => {
@@ -148,12 +193,15 @@ const TimeCalculator = () => {
 
   useEffect(() => {
     const dateKey = formatDateKey(selectedDate);
-    if (input) {
-      localStorage.setItem(dateKey, input);
-    } else {
-      localStorage.removeItem(dateKey);
+    const currentData = localStorage.getItem(dateKey);
+    if (input !== currentData) {
+        if (input) {
+            localStorage.setItem(dateKey, input);
+        } else {
+            localStorage.removeItem(dateKey);
+        }
+        updateYearData(selectedDate, input);
     }
-    updateYearData(selectedDate, input);
   }, [input, selectedDate, updateYearData]);
 
   useEffect(() => {
@@ -293,7 +341,7 @@ const TimeCalculator = () => {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
-      <WelcomePopup />
+      <WelcomePopup onTriggerImport={triggerImport} onTriggerWebdeskImport={triggerWebdeskImport} />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -379,10 +427,23 @@ const TimeCalculator = () => {
             />
             <motion.div className="mt-6">
               <DataManagement
+                ref={dataManagementRef}
                 handleExportData={handleExportData}
                 handleImportData={handleImportData}
                 handleClearAllData={handleClearAllData}
                 handleWebdeskImport={handleWebdeskImport}
+              />
+            </motion.div>
+            <motion.div className="mt-6">
+              <HomeOfficeCard
+                workdays={homeOfficeStats.homeOfficeDaysWorkdays}
+                weekendsAndHolidays={homeOfficeStats.homeOfficeDaysWeekendsAndHolidays}
+                hoursInNormalTime={formatHoursMinutes(homeOfficeStats.totalHomeOfficeHoursInNormalTime)}
+                hoursOutsideNormalTime={formatHoursMinutes(homeOfficeStats.totalHomeOfficeHoursOutsideNormalTime)}
+                pureOfficeDays={homeOfficeStats.pureOfficeDays}
+                hybridDays={homeOfficeStats.hybridDays}
+                hoHoursPercentage={homeOfficeStats.hoHoursPercentage}
+                hoDaysPercentage={homeOfficeStats.hoDaysPercentage}
               />
             </motion.div>
           </div>

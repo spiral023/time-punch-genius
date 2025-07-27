@@ -1,30 +1,50 @@
-import React, { useState } from 'react';
+import React, { useCallback, useImperativeHandle, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Settings, Download, Upload } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
+import { Settings, Download, Upload, FileUp } from 'lucide-react';
+import { useDropzone } from 'react-dropzone';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface DataManagementProps {
   handleExportData: () => void;
   handleImportData: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleClearAllData: () => void;
-  handleWebdeskImport: (text: string) => void;
+  handleWebdeskImport: (files: File[]) => void;
 }
 
-export const DataManagement: React.FC<DataManagementProps> = ({
+export interface DataManagementHandles {
+  triggerImport: () => void;
+  triggerWebdeskImport: () => void;
+}
+
+export const DataManagement = React.forwardRef<DataManagementHandles, DataManagementProps>(({
   handleExportData,
   handleImportData,
   handleClearAllData,
   handleWebdeskImport,
-}) => {
-  const [webdeskInput, setWebdeskInput] = useState('');
+}, ref) => {
+  const importRef = useRef<HTMLLabelElement>(null);
 
-  const onWebdeskImport = () => {
-    handleWebdeskImport(webdeskInput);
-    setWebdeskInput('');
-  };
+  useImperativeHandle(ref, () => ({
+    triggerImport: () => {
+      importRef.current?.click();
+    },
+    triggerWebdeskImport: () => {
+      // This might need to open the dialog now
+    },
+  }));
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    handleWebdeskImport(acceptedFiles);
+  }, [handleWebdeskImport]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+    },
+  });
 
   return (
     <Card>
@@ -53,7 +73,7 @@ export const DataManagement: React.FC<DataManagementProps> = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" asChild>
-                  <label htmlFor="import-file">
+                  <label htmlFor="import-file" ref={importRef}>
                     <Upload className="mr-2 h-4 w-4" />
                     Import
                     <input type="file" id="import-file" accept=".json" className="hidden" onChange={handleImportData} />
@@ -66,42 +86,38 @@ export const DataManagement: React.FC<DataManagementProps> = ({
             </Tooltip>
           </TooltipProvider>
         </div>
-        <TooltipProvider>
-          <AlertDialog>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="w-full">
-                    Webdesk Import
-                  </Button>
-                </AlertDialogTrigger>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Via Webdesk Monatsjournal (Druckansicht) massenhaft Buchungsdaten importieren</p>
-              </TooltipContent>
-            </Tooltip>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Webdesk Daten importieren</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Geh in die Webdesk Monatsjournal Ansicht und geh auf -{'>'} Druck. Kopiere die Daten von "Datum" bis zur letzten Zeit (0:00) und füge sie hier ein. Klicke dann auf "Importieren". Mach dies pro Monat einzeln. Bestehende Daten werden überschrieben.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <Textarea
-                placeholder="Hier die Daten aus Webdesk Ansicht Druck einfügen..."
-                value={webdeskInput}
-                onChange={(e) => setWebdeskInput(e.target.value)}
-                rows={10}
-              />
-              <AlertDialogFooter>
-                <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                <AlertDialogAction onClick={onWebdeskImport}>
-                  Importieren
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </TooltipProvider>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="outline" className="w-full">
+              Webdesk Import (XLSX)
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Webdesk-Dateien importieren</AlertDialogTitle>
+              <AlertDialogDescription>
+                Ziehen Sie eine oder mehrere XLSX-Dateien hierher oder klicken Sie, um Dateien auszuwählen.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div
+              {...getRootProps()}
+              className={`mt-4 p-8 border-2 border-dashed rounded-lg text-center cursor-pointer ${
+                isDragActive ? 'border-primary' : 'border-muted-foreground'
+              }`}
+            >
+              <input {...getInputProps()} />
+              <FileUp className="mx-auto h-12 w-12 text-muted-foreground" />
+              {isDragActive ? (
+                <p className="mt-2">Dateien hier ablegen...</p>
+              ) : (
+                <p className="mt-2">Dateien hierher ziehen oder klicken, um sie auszuwählen</p>
+              )}
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Schließen</AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" className="w-full">
@@ -126,4 +142,4 @@ export const DataManagement: React.FC<DataManagementProps> = ({
       </CardContent>
     </Card>
   );
-};
+});

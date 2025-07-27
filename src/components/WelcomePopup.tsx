@@ -2,62 +2,74 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Rocket, Palette, BarChart3, Lock, GitBranch, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Hand, Upload, FileText, Sparkles, ShieldCheck, ChevronRight } from 'lucide-react';
 
-const WELCOME_KEY = 'zehelper_welcome_seen';
+const WELCOME_KEY = 'zehelper_welcome_seen_v2';
 
-const features = [
-  {
-    icon: <Rocket className="h-8 w-8 text-primary" />,
-    title: 'Hauptfunktionen',
-    content: [
-      'Zeitbuchungen (z.B. `08:00 - 12:00` oder `13:00`) ins Textfeld kopieren.',
-      'Automatische Berechnung der Gesamtarbeitszeit.',
-      'Einzelzeiten werden live bis zur aktuellen Browser-Uhrzeit ergänzt.',
-      'Fortschrittsbalken für 6h, 7.7h und 10h mit Zieluhrzeiten.',
-      'Browser-Benachrichtigungen für wichtige Zeitmarken (optional auch früher).',
-    ],
-  },
-  {
-    icon: <Palette className="h-8 w-8 text-primary" />,
-    title: 'Design & Bedienung',
-    content: [
-      'Modernes, aufgeräumtes Design mit Dark Mode.',
-      'Ein-Klick-Reset für einen neuen Arbeitstag.',
-      'Farbige Anzeige der Arbeitszeit zur schnellen Orientierung.',
-      'Automatischer Hinweis auf gesetzliche Pausenzeiten.',
-    ],
-  },
-  {
-    icon: <BarChart3 className="h-8 w-8 text-primary" />,
-    title: 'Zusätzliche Funktionen',
-    content: [
-        'Wöchentliche Übersicht als Balkendiagramm.',
-        'Darstellung aller Zeiten im Format HH:mm.',
-        'Aktuelle Uhrzeit wird außerhalb der Normalarbeitszeit rot dargestellt.',
-    ],
-  },
-  {
-    icon: <Lock className="h-8 w-8 text-primary" />,
-    title: 'Datenschutz',
-    content: [
-      'Deine Eingaben werden nur lokal im Browser gespeichert (`localStorage`).',
-      'Keine Datenübertragung an Server – alles bleibt privat.',
-    ],
-  },
-  {
-    icon: <GitBranch className="h-8 w-8 text-primary" />,
-    title: 'Offen & transparent',
-    content: [
-      'Der Quellcode ist vollständig KI-generiert.',
-      'Öffentlich einsehbar auf GitHub.',
-    ],
-  },
-];
+interface WelcomePopupProps {
+  onTriggerImport: () => void;
+  onTriggerWebdeskImport: () => void;
+}
 
-export const WelcomePopup = () => {
+const WelcomeStep1 = () => (
+  <div className="text-center">
+    <div className="flex justify-center mb-4">
+      <Hand className="h-10 w-10 text-primary" />
+    </div>
+    <h3 className="text-xl font-semibold mb-2">Willkommen beim ZE-Helper!</h3>
+    <p className="text-muted-foreground mb-6">Hier sind ein paar coole Features:</p>
+    <ul className="space-y-3 text-sm text-left">
+      <li className="flex items-start">
+        <Sparkles className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+        <span>Automatische Berechnung der Gesamtarbeitszeit und Fortschrittsbalken mit Zieluhrzeiten & Browserbenachrichtigung.</span>
+      </li>
+      <li className="flex items-start">
+        <ShieldCheck className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+        <span>Deine Eingaben werden nur lokal im Browser gespeichert (`localStorage`). Keine Datenübertragung an Server.</span>
+      </li>
+      <li className="flex items-start">
+        <Sparkles className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+        <span>PS: Die Anwendung ist vollständig mit KI erstellt worden.</span>
+      </li>
+    </ul>
+  </div>
+);
+
+const WelcomeStep2 = ({ onImportBackup, onImportWebdesk }: { onImportBackup: () => void; onImportWebdesk: () => void; }) => (
+    <div className="text-center">
+      <h3 className="text-xl font-semibold mb-4">Du scheinst neu hier zu sein!</h3>
+      <p className="text-muted-foreground mb-6">Möchtest du zu Beginn Daten importieren? Sie werden nur bei dir am Gerät verarbeitet.</p>
+      <div className="space-y-4">
+        <Button className="w-full justify-start" variant="outline" onClick={onImportBackup}>
+          <Upload className="h-5 w-5 mr-3" />
+          Backup importieren
+        </Button>
+        <Button className="w-full justify-start" variant="outline" onClick={onImportWebdesk}>
+          <FileText className="h-5 w-5 mr-3" />
+          Webdesk Monatsjournal importieren
+        </Button>
+      </div>
+    </div>
+  );
+
+
+export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onTriggerImport, onTriggerWebdeskImport }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(0);
+
+  const handleImportBackup = () => {
+    handleClose();
+    setTimeout(() => {
+      onTriggerImport();
+    }, 500);
+  };
+
+  const handleImportWebdesk = () => {
+    handleClose();
+    setTimeout(() => {
+      onTriggerWebdeskImport();
+    }, 500);
+  };
 
   useEffect(() => {
     const hasSeenWelcome = localStorage.getItem(WELCOME_KEY);
@@ -72,62 +84,50 @@ export const WelcomePopup = () => {
   };
 
   const handleNext = () => {
-    if (step < features.length - 1) {
+    if (step < 1) {
       setStep(step + 1);
     } else {
       handleClose();
     }
   };
 
-  const handlePrev = () => {
-    if (step > 0) {
-      setStep(step - 1);
-    }
-  };
-
-  const currentFeature = features[step];
+  const steps = [
+    <WelcomeStep1 />,
+    <WelcomeStep2 onImportBackup={handleImportBackup} onImportWebdesk={handleImportWebdesk} />,
+  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[480px] p-0">
+      <DialogContent className="sm:max-w-[480px] p-0 flex flex-col" style={{ height: '420px' }}>
         <DialogHeader className="p-6 pb-4">
           <DialogTitle className="text-2xl font-bold text-center">
-            Willkommen beim ZE-Helper!
+            {step === 0 ? 'Willkommen!' : 'Starthilfe'}
           </DialogTitle>
         </DialogHeader>
-        <div className="px-6 py-4">
+        <div className="px-6 py-4 flex-grow flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="flex flex-col items-center text-center"
+              className="w-full"
             >
-              <div className="mb-4">{currentFeature.icon}</div>
-              <h3 className="text-xl font-semibold mb-3">{currentFeature.title}</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
-                {currentFeature.content.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
+              {steps[step]}
             </motion.div>
           </AnimatePresence>
         </div>
-        <DialogFooter className="p-6 pt-4 flex justify-between w-full">
-          {step > 0 ? (
-            <Button variant="outline" onClick={handlePrev}>
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Zurück
+        <DialogFooter className="p-6 pt-4 mt-auto flex justify-end w-full">
+          {step === 0 ? (
+            <Button onClick={handleNext} className="w-full">
+              Next <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           ) : (
-            <div /> 
+            <Button onClick={handleClose} variant="outline" className="w-full">
+              Überspringen
+            </Button>
           )}
-          <Button onClick={handleNext}>
-            {step === features.length - 1 ? 'Fertig' : 'Weiter'}
-            {step < features.length - 1 && <ChevronRight className="h-4 w-4 ml-1" />}
-          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

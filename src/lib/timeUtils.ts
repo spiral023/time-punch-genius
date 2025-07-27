@@ -210,7 +210,7 @@ const parseTimeEntries = (input: string, currentTime?: Date) => {
       return;
     }
 
-    const timePattern = /^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/;
+    const timePattern = /^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/;
     const match = trimmed.match(timePattern);
 
     if (!match) {
