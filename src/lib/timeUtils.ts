@@ -244,7 +244,7 @@ const parseTimeEntries = (input: string, currentTime?: Date) => {
 
       validationErrors.push({
         line: index + 1,
-        message: 'Ungültiges Format. Verwenden Sie HH:MM - HH:MM oder HH:MM'
+        message: 'Ungültiges Format. Verwende HH:MM - HH:MM oder HH:MM'
       });
       return;
     }

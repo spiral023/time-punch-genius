@@ -23,13 +23,13 @@ export const getHolidays = async (year: number, countryCode: string): Promise<Ho
   try {
     const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode}`);
     if (!response.ok) {
-      throw new Error('Failed to fetch holidays');
+      throw new Error('Feiertage konnten nicht von date.nager.at abgerufen werden.');
     }
     const holidays: Holiday[] = await response.json();
     holidayCache[cacheKey] = holidays;
     return holidays;
   } catch (error) {
-    console.error('Error fetching holidays:', error);
+    console.error('Fehler beim Abruf der Feiertage:', error);
     return [];
   }
 };

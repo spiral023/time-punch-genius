@@ -21,7 +21,7 @@ const NotificationsProvider = ({ children }: { children: ReactNode }) => {
       const storableNotifications = notifications.map(({ timerId, ...rest }) => rest);
       localStorage.setItem('scheduledNotifications', JSON.stringify(storableNotifications));
     } catch (error) {
-      console.error("Could not save notifications to localStorage", error);
+      console.error("Benachrichtigungen konnten nicht in localStorage gespeichert werden", error);
     }
   }, []);
 
@@ -54,7 +54,7 @@ const NotificationsProvider = ({ children }: { children: ReactNode }) => {
         setScheduledNotifications(rescheduledNotifications);
       }
     } catch (error) {
-      console.error("Could not load notifications from localStorage", error);
+      console.error("Benachrichtigungen konnten nicht aus localStorage geladen werden", error);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -72,7 +72,7 @@ const NotificationsProvider = ({ children }: { children: ReactNode }) => {
     if (permission === 'denied') {
       toast({
         title: 'Berechtigung verweigert',
-        description: 'Bitte aktivieren Sie Benachrichtigungen in den Browsereinstellungen.',
+        description: 'Bitte aktiviere Benachrichtigungen in den Browsereinstellungen.',
         variant: 'destructive',
       });
       return false;
@@ -134,7 +134,7 @@ const NotificationsProvider = ({ children }: { children: ReactNode }) => {
     });
 
     const notificationTime = `${targetDate.getHours().toString().padStart(2, '0')}:${targetDate.getMinutes().toString().padStart(2, '0')}`;
-    toast({ title: 'Benachrichtigung geplant', description: `Sie werden um ${notificationTime} Uhr benachrichtigt.` });
+    toast({ title: 'Benachrichtigung geplant', description: `Du wirst um ${notificationTime} Uhr benachrichtigt.` });
   };
 
   const removeNotification = (id: number) => {
