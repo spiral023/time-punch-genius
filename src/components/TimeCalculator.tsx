@@ -533,9 +533,7 @@ const TimeCalculator = () => {
             <StatisticsCard {...statistics} averageBlocksPerDay={statistics.averageBlocksPerDay} />
           </div>
         </div>
-        <div className="max-w-md mx-auto">
-          <NotificationManager />
-        </div>
+        <NotificationManager />
       </motion.div>
     </div>
   );

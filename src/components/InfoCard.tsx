@@ -23,6 +23,15 @@ const InfoCard: React.FC = () => {
         <Button asChild>
           <a href="mailto:philipp.asanger@gmail.com">Feedback</a>
         </Button>
+        <Button asChild>
+          <a
+            href="https://www.wko.at/oe/kollektivvertrag/kv-informationstechnologie-2025.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            IT-KV 2025
+          </a>
+        </Button>
         <Dialog>
           <DialogTrigger asChild>
             <Button>Impressum</Button>

@@ -17,13 +17,14 @@ export const NotificationManager: React.FC = () => {
   const { scheduledNotifications, removeNotification } = useNotifications();
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="w-full mt-4">
-          Aktive Alerts verwalten {scheduledNotifications.length > 0 && `(${scheduledNotifications.length})`}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-full max-w-md z-50 px-4">
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="outline" className="w-full mt-4 bg-background/80 backdrop-blur-sm">
+            Aktive Alerts verwalten {scheduledNotifications.length > 0 && `(${scheduledNotifications.length})`}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Aktive Alarme</DialogTitle>
         </DialogHeader>
@@ -71,7 +72,8 @@ export const NotificationManager: React.FC = () => {
             Keine aktiven Alarme gefunden.
           </p>
         )}
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };

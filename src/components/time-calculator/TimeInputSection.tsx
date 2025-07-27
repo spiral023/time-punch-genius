@@ -30,6 +30,11 @@ export const TimeInputSection: React.FC<TimeInputSectionProps> = ({
   clearInput,
   specialDayType,
 }) => {
+  const handleDeleteEntry = (originalLine: string) => {
+    const lines = input.split('\n');
+    const newLines = lines.filter(line => line !== originalLine);
+    setInput(newLines.join('\n'));
+  };
   const specialDayContent = {
     vacation: {
       icon: <Briefcase className="h-8 w-8 text-blue-500" />,
@@ -155,12 +160,34 @@ export const TimeInputSection: React.FC<TimeInputSectionProps> = ({
                         transition={{ delay: index * 0.05 }}
                         className="flex justify-between items-center p-3 rounded-md bg-muted/50"
                       >
-                        <span className="font-mono text-sm">
-                          {entry.start} - {entry.end}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          {formatHoursMinutes(entry.duration)}
-                        </span>
+                        <div>
+                          <span className="font-mono text-sm">
+                            {entry.start} - {entry.end}
+                          </span>
+                          {entry.reason && (
+                            <p className="text-xs text-muted-foreground">{entry.reason.replace(/\(\d+\)/, '').trim()}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">
+                            {formatHoursMinutes(entry.duration)}
+                          </span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteEntry(entry.originalLine)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Diesen Eintrag löschen</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
                       </motion.div>
                     ))}
                   </AnimatePresence>

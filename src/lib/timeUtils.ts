@@ -159,7 +159,7 @@ export const calculateAverageDay = (allDaysData: string[], currentTime?: Date, d
 
 const parseTimeEntries = (input: string, currentTime?: Date) => {
   const lines = input.split('\n').filter(line => line.trim());
-  const entries: { start: string; end: string; duration: number }[] = [];
+  const entries: { start: string; end: string; duration: number, reason?: string, originalLine: string }[] = [];
   const validationErrors: { line: number; message: string }[] = [];
 
   lines.forEach((line, index) => {
@@ -206,13 +206,13 @@ const parseTimeEntries = (input: string, currentTime?: Date) => {
       const duration = currentMinutes - startMinutes;
       const endTime = formatMinutesToTime(currentMinutes);
       
-      entries.push({ start: startTime, end: endTime, duration });
+      entries.push({ start: startTime, end: endTime, duration, originalLine: line });
       return;
     }
 
     const timePattern = /^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/;
     const match = trimmed.match(timePattern);
-
+    
     if (!match) {
       // Check for open entry format like "HH:MM - "
       const openEntryPattern = /^(\d{1,2}:\d{2})\s*-\s*$/;
@@ -220,6 +220,7 @@ const parseTimeEntries = (input: string, currentTime?: Date) => {
 
       if (openEntryMatch && currentTime) {
         const [, startTime] = openEntryMatch;
+        const reason = trimmed.substring(openEntryMatch[0].length).trim();
         const timeValidation = /^([01]?\d|2[0-3]):[0-5]\d$/;
         if (!timeValidation.test(startTime)) {
           validationErrors.push({
@@ -235,7 +236,7 @@ const parseTimeEntries = (input: string, currentTime?: Date) => {
         if (currentMinutes > startMinutes) {
           const duration = currentMinutes - startMinutes;
           const endTime = formatMinutesToTime(currentMinutes);
-          entries.push({ start: startTime, end: endTime, duration });
+          entries.push({ start: startTime, end: endTime, duration, reason: reason ? reason : undefined, originalLine: line });
         }
         // Don't add to validation errors if it's just an open entry
         return;
@@ -249,6 +250,7 @@ const parseTimeEntries = (input: string, currentTime?: Date) => {
     }
 
     const [, startTime, endTime] = match;
+    const reason = trimmed.substring(match[0].length).trim();
     
     const timeValidation = /^([01]?\d|2[0-3]):[0-5]\d$/;
     if (!timeValidation.test(startTime) || !timeValidation.test(endTime)) {
@@ -286,7 +288,7 @@ const parseTimeEntries = (input: string, currentTime?: Date) => {
       return;
     }
 
-    entries.push({ start: startTime, end: endTime, duration });
+    entries.push({ start: startTime, end: endTime, duration, reason: reason ? reason : undefined, originalLine: line });
   });
 
   entries.sort((a, b) => parseTimeToMinutes(a.start) - parseTimeToMinutes(b.start));

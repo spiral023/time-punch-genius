@@ -2,6 +2,8 @@ export interface TimeEntry {
   start: string;
   end: string;
   duration: number; // in minutes
+  reason?: string;
+  originalLine: string;
 }
 
 export interface ValidationError {
