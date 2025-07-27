@@ -25,7 +25,7 @@ export const TargetTimeProgress: React.FC<TargetTimeProgressProps> = ({
   targetMinutes,
   progressClassName,
 }) => {
-  const { scheduleNotification, scheduledNotifications, removeNotification } = useNotifications();
+  const { scheduleNotification } = useNotifications();
   const [isScheduled, setIsScheduled] = useState(false);
   const [offsetMinutes, setOffsetMinutes] = useState(5);
   const [popoverOpen, setPopoverOpen] = useState(false);
@@ -48,13 +48,11 @@ export const TargetTimeProgress: React.FC<TargetTimeProgressProps> = ({
   const isAchieved = targetTime === "Ziel bereits erreicht";
 
   return (
-    <div className="space-y-3">
-      <div className="flex justify-between items-center">
-        <span className="text-sm font-medium">{label}</span>
+    <div className="space-y-2">
+      <div className="flex justify-between items-center text-sm">
+        <span className="font-medium">{label}</span>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            {targetTime || '--:--'}
-          </span>
+          <span className="text-muted-foreground">{targetTime || '--:--'}</span>
           <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -63,14 +61,10 @@ export const TargetTimeProgress: React.FC<TargetTimeProgressProps> = ({
                 disabled={!targetTime || isAchieved || isScheduled}
                 className="h-7 w-7"
               >
-                {isScheduled ? (
-                  <BellOff className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Bell className="h-4 w-4" />
-                )}
+                {isScheduled ? <BellOff className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80 p-4">
+            <PopoverContent className="w-64 p-4">
               <div className="space-y-4 text-center">
                 <Label htmlFor="notification-time" className="text-sm font-medium">
                   Benachrichtigung {offsetMinutes > 0 ? `${offsetMinutes} Minuten früher` : 'genau zur Zielzeit'}
@@ -91,12 +85,9 @@ export const TargetTimeProgress: React.FC<TargetTimeProgressProps> = ({
           </Popover>
         </div>
       </div>
-      <div className="space-y-2">
-        <Progress value={progressValue} className={`h-3 ${progressClassName}`} />
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>{Math.round(progressValue * 10) / 10}%</span>
-          <span>{formatHoursMinutes(targetMinutes)}</span>
-        </div>
+      <Progress value={progressValue} className={`h-2 ${progressClassName}`} />
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span>{formatHoursMinutes(targetMinutes)}</span>
       </div>
     </div>
   );

@@ -35,18 +35,18 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({ selectedDate, setS
     : null;
 
   return (
-    <div className="flex justify-center items-center gap-4 mb-6">
+    <div className="flex justify-center items-center gap-2 mb-6">
       <Button variant="outline" size="icon" onClick={() => changeDay('prev')}>
         <ChevronLeft className="h-4 w-4" />
       </Button>
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="w-64 justify-start text-left font-normal flex-col h-auto">
+          <Button variant="outline" className="w-72 justify-center text-center font-normal flex-col h-auto py-2">
             <div className="flex items-center">
               <CalendarDays className="mr-2 h-4 w-4" />
               {format(selectedDate, 'eeee, dd. MMMM yyyy', { locale: de })}
             </div>
-            {holidayName && <div className="text-xs text-yellow-500">{holidayName}</div>}
+            {holidayName && <div className="text-xs text-yellow-500 font-semibold">{holidayName}</div>}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
@@ -57,7 +57,7 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({ selectedDate, setS
             initialFocus
             locale={de}
             modifiers={{ holiday: (date) => isHoliday(date, holidays) }}
-            modifiersClassNames={{ holiday: 'text-yellow-500' }}
+            modifiersClassNames={{ holiday: 'text-yellow-500 font-bold' }}
           />
         </PopoverContent>
       </Popover>

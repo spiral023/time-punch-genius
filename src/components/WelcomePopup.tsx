@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Hand, Upload, FileText, Sparkles, ShieldCheck, ChevronRight } from 'lucide-react';
 
 const WELCOME_KEY = 'zehelper_welcome_seen_v2';
@@ -98,30 +97,19 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onTriggerImport, onT
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[480px] p-0 flex flex-col" style={{ height: '420px' }}>
-        <DialogHeader className="p-6 pb-4">
+      <DialogContent className="sm:max-w-[480px]">
+        <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">
             {step === 0 ? 'Willkommen!' : 'Starthilfe'}
           </DialogTitle>
         </DialogHeader>
-        <div className="px-6 py-4 flex-grow flex items-center justify-center">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={step}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="w-full"
-            >
-              {steps[step]}
-            </motion.div>
-          </AnimatePresence>
+        <div className="transition-opacity duration-300">
+          {steps[step]}
         </div>
-        <DialogFooter className="p-6 pt-4 mt-auto flex justify-end w-full">
+        <DialogFooter>
           {step === 0 ? (
             <Button onClick={handleNext} className="w-full">
-              Next <ChevronRight className="h-4 w-4 ml-1" />
+              Weiter <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           ) : (
             <Button onClick={handleClose} variant="outline" className="w-full">

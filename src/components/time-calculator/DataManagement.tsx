@@ -2,9 +2,10 @@ import React, { useCallback, useImperativeHandle, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Settings, Download, Upload, FileUp } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CardManager } from '@/components/CardManager';
 
 interface DataManagementProps {
@@ -58,49 +59,45 @@ export const DataManagement = React.forwardRef<DataManagementHandles, DataManage
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" onClick={handleExportData}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Export
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Exportiert ein Backup aller Daten aus dem Browser-Cache.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" asChild>
-                  <label htmlFor="import-file" ref={importRef}>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Import
-                    <input type="file" id="import-file" accept=".json" className="hidden" onChange={handleImportData} />
-                  </label>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Importiert ein ZE-Helper .json Backup in die Webanwendung.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" onClick={handleExportData}>
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Exportiert ein Backup aller Daten aus dem Browser-Cache.</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" asChild>
+                <label htmlFor="import-file" ref={importRef} className="cursor-pointer inline-flex items-center justify-center">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Import
+                  <input type="file" id="import-file" accept=".json" className="hidden" onChange={handleImportData} />
+                </label>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Importiert ein ZE-Helper .json Backup in die Webanwendung.</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
+        <Dialog>
+          <DialogTrigger asChild>
             <Button variant="outline" className="w-full" ref={webdeskImportTriggerRef}>
               Webdesk Import (XLSX)
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Webdesk-Dateien importieren</AlertDialogTitle>
-              <AlertDialogDescription>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Webdesk-Dateien importieren</DialogTitle>
+              <DialogDescription>
                 Ziehen Sie eine oder mehrere XLSX-Dateien hierher oder klicken Sie, um Dateien auszuwählen.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
+              </DialogDescription>
+            </DialogHeader>
             <div
               {...getRootProps()}
               className={`mt-4 p-8 border-2 border-dashed rounded-lg text-center cursor-pointer ${
@@ -115,11 +112,13 @@ export const DataManagement = React.forwardRef<DataManagementHandles, DataManage
                 <p className="mt-2">Dateien hierher ziehen oder klicken, um sie auszuwählen</p>
               )}
             </div>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Schließen</AlertDialogCancel>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Schließen</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <CardManager />
         <AlertDialog>
           <AlertDialogTrigger asChild>

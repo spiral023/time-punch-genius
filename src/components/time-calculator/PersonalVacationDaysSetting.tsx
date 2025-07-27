@@ -14,7 +14,6 @@ export const PersonalVacationDaysSetting = () => {
   const handleSave = () => {
     setPersonalVacationDays(days);
     setIsOpen(false);
-    window.location.reload();
   };
 
   return (
@@ -25,27 +24,29 @@ export const PersonalVacationDaysSetting = () => {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
-        <div className="grid gap-4">
-          <div className="space-y-2">
-            <h4 className="font-medium leading-none">Urlaubstage</h4>
-            <p className="text-sm text-muted-foreground">
-              Persönliche Urlaubstage pro Jahr.
-            </p>
-          </div>
-          <div className="grid gap-2">
-            <div className="grid grid-cols-3 items-center gap-4">
-              <Label htmlFor="vacation-days">Tage</Label>
-              <Input
-                id="vacation-days"
-                type="number"
-                defaultValue={personalVacationDays}
-                onChange={(e) => setDays(parseInt(e.target.value, 10))}
-                className="col-span-2 h-8"
-              />
+        <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+          <div className="grid gap-4">
+            <div className="space-y-2">
+              <h4 className="font-medium leading-none">Urlaubstage</h4>
+              <p className="text-sm text-muted-foreground">
+                Persönliche Urlaubstage pro Jahr.
+              </p>
             </div>
+            <div className="grid gap-2">
+              <div className="grid grid-cols-3 items-center gap-4">
+                <Label htmlFor="vacation-days">Tage</Label>
+                <Input
+                  id="vacation-days"
+                  type="number"
+                  value={days}
+                  onChange={(e) => setDays(parseInt(e.target.value, 10))}
+                  className="col-span-2 h-8"
+                />
+              </div>
+            </div>
+            <Button type="submit">Speichern</Button>
           </div>
-          <Button onClick={handleSave}>Speichern</Button>
-        </div>
+        </form>
       </PopoverContent>
     </Popover>
   );

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, ReactNode } from 'react';
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -7,12 +6,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { NotificationsContext, ScheduledNotification, NotificationPermission } from '@/hooks/useNotifications';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const queryClient = new QueryClient();
 
 const NotificationsProvider = ({ children }: { children: ReactNode }) => {
-  const { toast } = useToast();
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [scheduledNotifications, setScheduledNotifications] = useState<ScheduledNotification[]>([]);
 
@@ -61,20 +59,12 @@ const NotificationsProvider = ({ children }: { children: ReactNode }) => {
 
   const requestPermission = async (): Promise<boolean> => {
     if (!('Notification' in window)) {
-      toast({
-        title: 'Fehler',
-        description: 'Dieser Browser unterstützt keine Desktop-Benachrichtigungen.',
-        variant: 'destructive',
-      });
+      toast.error('Dieser Browser unterstützt keine Desktop-Benachrichtigungen.');
       return false;
     }
     if (permission === 'granted') return true;
     if (permission === 'denied') {
-      toast({
-        title: 'Berechtigung verweigert',
-        description: 'Bitte aktiviere Benachrichtigungen in den Browsereinstellungen.',
-        variant: 'destructive',
-      });
+      toast.error('Bitte aktiviere Benachrichtigungen in den Browsereinstellungen.');
       return false;
     }
     const result = await Notification.requestPermission();
@@ -100,7 +90,7 @@ const NotificationsProvider = ({ children }: { children: ReactNode }) => {
     targetDate.setMinutes(targetDate.getMinutes() - offsetMinutes);
 
     if (targetDate <= now) {
-      toast({ title: 'Fehler', description: 'Die geplante Zeit liegt in der Vergangenheit.', variant: 'destructive' });
+      toast.error('Die geplante Zeit liegt in der Vergangenheit.');
       return;
     }
 
@@ -134,7 +124,7 @@ const NotificationsProvider = ({ children }: { children: ReactNode }) => {
     });
 
     const notificationTime = `${targetDate.getHours().toString().padStart(2, '0')}:${targetDate.getMinutes().toString().padStart(2, '0')}`;
-    toast({ title: 'Benachrichtigung geplant', description: `Du wirst um ${notificationTime} Uhr benachrichtigt.` });
+    toast.success('Benachrichtigung geplant', { description: `Du wirst um ${notificationTime} Uhr benachrichtigt.` });
   };
 
   const removeNotification = (id: number) => {
@@ -146,7 +136,7 @@ const NotificationsProvider = ({ children }: { children: ReactNode }) => {
         updateNotificationsInStorage(updated);
         return updated;
       });
-      toast({ title: 'Benachrichtigung gelöscht', description: 'Die Benachrichtigung wurde entfernt.' });
+      toast.info('Benachrichtigung gelöscht');
     }
   };
 
@@ -168,7 +158,6 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <NotificationsProvider>
-        <Toaster />
         <Sonner />
         <BrowserRouter>
           <Routes>

@@ -2,13 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Info } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from './ui/dialog';
+import { InfoDialog } from './InfoDialog';
 
 const InfoCard: React.FC = () => {
   return (
@@ -32,52 +26,36 @@ const InfoCard: React.FC = () => {
             IT-KV 2025
           </a>
         </Button>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>Impressum</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Impressum</DialogTitle>
-            </DialogHeader>
-            <div>
-              <p>
-                <strong>Verantwortlich für den Inhalt:</strong>
-              </p>
-              <p>
-                Philipp Asanger
-                <br />
-                Karl-Renner-Str. 3
-                <br />
-                4040 Linz
-              </p>
-              <p>
-                <strong>Kontakt:</strong>
-              </p>
-              <p>
-                E-Mail: philipp.asanger@gmail.com
-              </p>
-            </div>
-          </DialogContent>
-        </Dialog>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>Datenschutz</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Datenschutz</DialogTitle>
-            </DialogHeader>
-            <div>
-              <p>
-                <strong>Datenschutzerklärung</strong>
-              </p>
-              <p>
-                Ich lege großen Wert auf den Schutz deiner Daten. Die Nutzung der Webseite ist ohne Angabe personenbezogener Daten möglich. Daten werden nur lokal verarbeitet und verlassen zu keinem Zeitpunkt den Browser.
-              </p>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <InfoDialog triggerText="Impressum" title="Impressum">
+          <div>
+            <p>
+              <strong>Verantwortlich für den Inhalt:</strong>
+            </p>
+            <p>
+              Philipp Asanger
+              <br />
+              Karl-Renner-Str. 3
+              <br />
+              4040 Linz
+            </p>
+            <p>
+              <strong>Kontakt:</strong>
+            </p>
+            <p>
+              E-Mail: philipp.asanger@gmail.com
+            </p>
+          </div>
+        </InfoDialog>
+        <InfoDialog triggerText="Datenschutz" title="Datenschutz">
+          <div>
+            <p>
+              <strong>Datenschutzerklärung</strong>
+            </p>
+            <p>
+              Ich lege großen Wert auf den Schutz deiner Daten. Die Nutzung der Webseite ist ohne Angabe personenbezogener Daten möglich. Daten werden nur lokal verarbeitet und verlassen zu keinem Zeitpunkt den Browser.
+            </p>
+          </div>
+        </InfoDialog>
       </CardContent>
     </Card>
   );
