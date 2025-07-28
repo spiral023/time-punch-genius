@@ -8,6 +8,8 @@ import Index from "../pages/Index";
 import NotFound from "../pages/NotFound";
 import { NotificationsContext, ScheduledNotification, NotificationPermission } from '@/hooks/useNotifications';
 import { toast } from 'sonner';
+import AnimatedBackground from '@/components/AnimatedBackground';
+import { AppSettingsProvider } from '@/contexts/AppSettingsContext';
 
 const queryClient = new QueryClient();
 
@@ -158,18 +160,21 @@ const NotificationsProvider = ({ children }: { children: ReactNode }) => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-      <TooltipProvider>
-        <NotificationsProvider>
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </NotificationsProvider>
-      </TooltipProvider>
+      <AppSettingsProvider>
+        <TooltipProvider>
+          <NotificationsProvider>
+            <AnimatedBackground />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </NotificationsProvider>
+        </TooltipProvider>
+      </AppSettingsProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

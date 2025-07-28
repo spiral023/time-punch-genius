@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { gradients } from '@/lib/gradients';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -29,30 +29,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatHoursMinutes } from '@/lib/timeUtils';
 
 const Dashboard = () => {
-  useEffect(() => {
-    const savedGradientId = localStorage.getItem('zehelper_current_gradient');
-    if (savedGradientId) {
-      const savedGradient = gradients.find(g => g.id === parseInt(savedGradientId, 10));
-      if (savedGradient) {
-        document.body.style.background = savedGradient.gradient;
-      }
-    }
-  }, []);
+  const { cardVisibility, gradientId, setGradientId } = useAppSettings();
 
   const changeBackground = () => {
-    const currentGradientId = localStorage.getItem('zehelper_current_gradient');
-    let currentIndex = -1;
-    if (currentGradientId) {
-      currentIndex = gradients.findIndex(g => g.id === parseInt(currentGradientId, 10));
-    }
-
-    const nextIndex = currentIndex > 0 ? currentIndex - 1 : gradients.length - 1;
+    const currentIndex = gradients.findIndex(g => g.id === gradientId);
+    const nextIndex = (currentIndex + 1) % gradients.length;
     const nextGradient = gradients[nextIndex];
-
-    document.body.style.background = nextGradient.gradient;
-    localStorage.setItem('zehelper_current_gradient', nextGradient.id.toString());
+    setGradientId(nextGradient.id);
   };
-  const { cardVisibility } = useAppSettings();
+
   const {
     selectedDate,
     setSelectedDate,
