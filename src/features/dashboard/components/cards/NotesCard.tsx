@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { FileText } from 'lucide-react';
-import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
+import { useTimeCalculatorContext } from '@/features/time-calculator/contexts/TimeCalculatorContext';
 
 export const NotesCard: React.FC = () => {
   const { notes, setNotes } = useTimeCalculatorContext();

@@ -3,12 +3,12 @@ import { Progress } from '@/components/ui/progress';
 import { format, formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { formatHoursMinutes } from '@/lib/timeUtils';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { Bell, BellOff, Trash2 } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { Slider } from './ui/slider';
-import { Label } from './ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
 
 interface TargetTimeProgressProps {
   label: string;

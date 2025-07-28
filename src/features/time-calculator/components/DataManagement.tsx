@@ -6,15 +6,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Settings, Download, Upload, FileUp } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { CardManager } from '@/components/CardManager';
-import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
+import { CardManager } from '@/features/dashboard/components/CardManager';
+import { useTimeCalculatorContext } from '../contexts/TimeCalculatorContext';
 
 export interface DataManagementHandles {
   triggerImport: () => void;
   triggerWebdeskImport: () => void;
 }
 
-export const DataManagement = React.forwardRef<DataManagementHandles, {}>((props, ref) => {
+export const DataManagement = React.forwardRef<DataManagementHandles, object>((props, ref) => {
   const {
     handleExportData,
     handleImportData,

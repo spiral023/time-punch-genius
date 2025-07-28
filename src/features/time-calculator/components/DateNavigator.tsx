@@ -6,7 +6,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import { format, addDays, subDays } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
+import { useTimeCalculatorContext } from '../contexts/TimeCalculatorContext';
 
 export const DateNavigator: React.FC = () => {
   const { selectedDate, setSelectedDate, holidays } = useTimeCalculatorContext();

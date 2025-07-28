@@ -5,7 +5,7 @@ import { TrendingUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { formatHoursMinutes } from '@/lib/timeUtils';
-import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
+import { useTimeCalculatorContext } from '@/features/time-calculator/contexts/TimeCalculatorContext';
 
 export const StatisticsCard: React.FC = () => {
   const { statistics } = useTimeCalculatorContext();

@@ -8,7 +8,7 @@ import { format, isToday } from 'date-fns'
 import { de } from 'date-fns/locale'
 import { BarChart2 } from "lucide-react"
 import { formatHoursMinutes } from "@/lib/timeUtils"
-import { useTimeCalculatorContext } from "@/contexts/TimeCalculatorContext"
+import { useTimeCalculatorContext } from "@/features/time-calculator/contexts/TimeCalculatorContext"
 
 const chartConfig = {
   hours: {

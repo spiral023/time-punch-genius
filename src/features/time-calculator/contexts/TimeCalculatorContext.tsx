@@ -2,20 +2,20 @@ import React, { createContext, useContext, ReactNode, useState, useMemo, useEffe
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfYear, endOfYear, startOfMonth, endOfMonth, getYear } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { calculateTimeDetails, formatMinutesToTime, calculateAverageDay, calculateOutsideRegularHours, formatHoursMinutes } from '@/lib/timeUtils';
-import { useTimeCalculator } from '@/hooks/useTimeCalculator';
+import { useTimeCalculator } from '../hooks/useTimeCalculator';
 import { isHoliday } from '@/lib/holidays';
 import { useAppSettings } from '@/hooks/useAppSettings';
-import { useDataManagement } from '@/hooks/useDataManagement';
-import { useHomeOfficeStats } from '@/hooks/useHomeOfficeStats';
+import { useDataManagement } from '../hooks/useDataManagement';
+import { useHomeOfficeStats } from '../hooks/useHomeOfficeStats';
 import { usePersistentState } from '@/hooks/usePersistentState';
-import { useDailyEntry } from '@/hooks/useDailyEntry';
-import { useSummary } from '@/hooks/useSummary';
-import { useStatistics } from '@/hooks/useStatistics';
-import { useYearData } from '@/hooks/useYearData';
-import { DataManagementHandles } from '@/components/time-calculator/DataManagement';
+import { useDailyEntry } from '../hooks/useDailyEntry';
+import { useSummary } from '../hooks/useSummary';
+import { useStatistics } from '../hooks/useStatistics';
+import { useYearData } from '../hooks/useYearData';
+import { DataManagementHandles } from '../components/DataManagement';
 import { Holiday, TimeEntry, YearData, ValidationError } from '@/types';
-import { useHolidays } from '@/hooks/useHolidays';
-import { useTimeEntries } from '@/hooks/useTimeEntries';
+import { useHolidays } from '../hooks/useHolidays';
+import { useTimeEntries } from '../hooks/useTimeEntries';
 
 const WEEKLY_HOURS_KEY = 'zehelper_weekly_hours';
 

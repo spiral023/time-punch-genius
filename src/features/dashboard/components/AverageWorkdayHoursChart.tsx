@@ -6,7 +6,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, ReferenceLine } from 
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart2 } from "lucide-react"
-import { useTimeCalculatorContext } from "@/contexts/TimeCalculatorContext"
+import { useTimeCalculatorContext } from "@/features/time-calculator/contexts/TimeCalculatorContext"
 
 const chartConfig = {
   hours: {

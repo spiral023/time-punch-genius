@@ -1,5 +1,5 @@
-import Dashboard from '@/components/Dashboard';
-import { TimeCalculatorProvider } from '@/contexts/TimeCalculatorContext';
+import Dashboard from '@/features/dashboard/components/Dashboard';
+import { TimeCalculatorProvider } from '@/features/time-calculator/contexts/TimeCalculatorContext';
 
 const Index = () => {
   return (

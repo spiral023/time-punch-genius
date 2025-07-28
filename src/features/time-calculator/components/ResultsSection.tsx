@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Clock, Target } from 'lucide-react';
 import { formatHoursMinutes, addMinutesToTime } from '@/lib/timeUtils';
-import { TargetTimeProgress } from '../TargetTimeProgress';
-import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
+import { TargetTimeProgress } from '@/features/dashboard/components/TargetTimeProgress';
+import { useTimeCalculatorContext } from '../contexts/TimeCalculatorContext';
 
 const TARGET_6_HOURS_MINUTES = 360;
 const TARGET_7_7_HOURS_MINUTES = 462;

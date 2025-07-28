@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getHolidays } from '@/lib/holidays';
 import { Holiday } from '@/types';
-import { useAppSettings } from './useAppSettings';
+import { useAppSettings } from '@/hooks/useAppSettings';
 
 export const useFreeDays = (year: number) => {
   const { personalVacationDays } = useAppSettings();

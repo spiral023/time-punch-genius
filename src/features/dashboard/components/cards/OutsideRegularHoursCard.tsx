@@ -4,7 +4,7 @@ import { Clock } from 'lucide-react';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { Separator } from '@/components/ui/separator';
-import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
+import { useTimeCalculatorContext } from '@/features/time-calculator/contexts/TimeCalculatorContext';
 import { formatHoursMinutes } from '@/lib/timeUtils';
 
 export const OutsideRegularHoursCard: React.FC = () => {

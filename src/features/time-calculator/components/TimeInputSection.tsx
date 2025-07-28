@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { SpecialDayType } from '@/types';
 import { formatHoursMinutes } from '@/lib/timeUtils';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
+import { useTimeCalculatorContext } from '../contexts/TimeCalculatorContext';
 
 const SpecialDayDisplay = ({ type }: { type: SpecialDayType }) => {
   const icons: { [key in SpecialDayType]: React.ReactNode } = {

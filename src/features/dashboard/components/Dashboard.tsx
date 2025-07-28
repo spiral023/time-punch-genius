@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Clock, Coffee } from 'lucide-react';
 import { format, isToday } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
+import { useTimeCalculatorContext } from '@/features/time-calculator/contexts/TimeCalculatorContext';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import { HomeOfficeCard } from './cards/HomeOfficeCard';
 import { AverageDayCard } from './cards/AverageDayCard';
@@ -15,17 +15,17 @@ import { StatisticsCard } from './cards/StatisticsCard';
 import { AverageWorkdayHoursChart } from './AverageWorkdayHoursChart';
 import { WeeklyHoursChart } from './WeeklyHoursChart';
 import { WelcomePopup } from './WelcomePopup';
-import { DateNavigator } from './time-calculator/DateNavigator';
-import { TimeInputSection } from './time-calculator/TimeInputSection';
-import { ResultsSection } from './time-calculator/ResultsSection';
-import { SummarySection } from './time-calculator/SummarySection';
-import { DataManagement } from './time-calculator/DataManagement';
+import { DateNavigator } from '@/features/time-calculator/components/DateNavigator';
+import { TimeInputSection } from '@/features/time-calculator/components/TimeInputSection';
+import { ResultsSection } from '@/features/time-calculator/components/ResultsSection';
+import { SummarySection } from '@/features/time-calculator/components/SummarySection';
+import { DataManagement } from '@/features/time-calculator/components/DataManagement';
 import { NotesCard } from './cards/NotesCard';
 import { TipsCard } from './cards/TipsCard';
 import VacationPlanningCard from './cards/VacationPlanningCard';
 import InfoCard from './cards/InfoCard';
 import { NotificationManager } from './NotificationManager';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatHoursMinutes } from '@/lib/timeUtils';
 
 const Dashboard = () => {
@@ -135,9 +135,6 @@ const Dashboard = () => {
             {cardVisibility['weeklyHours'] !== false && <WeeklyHoursChart />}
 
             {cardVisibility['summary'] !== false && <SummarySection />}
-            <motion.div className="mt-6">
-              <DataManagement ref={dataManagementRef} />
-            </motion.div>
             {cardVisibility['homeOffice'] !== false && <motion.div className="mt-6">
               <HomeOfficeCard />
             </motion.div>}
@@ -187,6 +184,9 @@ const Dashboard = () => {
             {cardVisibility['info'] !== false && <motion.div className="mt-6">
               <InfoCard />
             </motion.div>}
+            <motion.div className="mt-6">
+              <DataManagement ref={dataManagementRef} />
+            </motion.div>
           </div>
 
           <div className="space-y-6">

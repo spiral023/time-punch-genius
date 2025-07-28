@@ -1,10 +1,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { useFreeDays } from '@/hooks/useFreeDays';
-import { PersonalVacationDaysSetting } from '../time-calculator/PersonalVacationDaysSetting';
+import { useFreeDays } from '@/features/time-calculator/hooks/useFreeDays';
+import { PersonalVacationDaysSetting } from '@/features/time-calculator/components/PersonalVacationDaysSetting';
 import { CalendarCheck } from 'lucide-react';
-import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
+import { useTimeCalculatorContext } from '@/features/time-calculator/contexts/TimeCalculatorContext';
 
 export const FreeDaysCard: React.FC = () => {
   const { selectedDate } = useTimeCalculatorContext();

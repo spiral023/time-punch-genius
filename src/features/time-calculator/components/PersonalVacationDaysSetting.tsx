@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Settings } from 'lucide-react';
 import { useAppSettings } from '@/hooks/useAppSettings';
-import { Label } from '../ui/label';
+import { Label } from '@/components/ui/label';
 
 export const PersonalVacationDaysSetting = () => {
   const { personalVacationDays, setPersonalVacationDays } = useAppSettings();

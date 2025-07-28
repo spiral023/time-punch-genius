@@ -8,7 +8,7 @@ import { BarChart3, Settings } from 'lucide-react';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { formatHoursMinutes } from '@/lib/timeUtils';
-import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
+import { useTimeCalculatorContext } from '../contexts/TimeCalculatorContext';
 
 export const SummarySection: React.FC = () => {
   const {

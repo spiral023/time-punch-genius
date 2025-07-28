@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Home } from 'lucide-react';
 import { StatisticLine } from '../StatisticLine';
-import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
+import { useTimeCalculatorContext } from '@/features/time-calculator/contexts/TimeCalculatorContext';
 import { formatHoursMinutes } from '@/lib/timeUtils';
 import { getYear } from 'date-fns';
 
