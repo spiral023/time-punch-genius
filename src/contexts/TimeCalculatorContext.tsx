@@ -85,7 +85,13 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
     return () => clearInterval(interval);
   }, []);
 
-  const { timeEntries, errors, totalMinutes, totalBreak, breakDeduction, grossTotalMinutes, specialDayType } = useTimeCalculator(input, selectedDate, dailyTargetMinutes);
+  const calculationTime = useMemo(() => {
+    const newDate = new Date(selectedDate);
+    newDate.setHours(currentTime.getHours(), currentTime.getMinutes(), currentTime.getSeconds());
+    return newDate;
+  }, [selectedDate, currentTime]);
+
+  const { timeEntries, errors, totalMinutes, totalBreak, breakDeduction, grossTotalMinutes, specialDayType } = useTimeCalculator(input, calculationTime, dailyTargetMinutes);
 
   const weeklyBalance = useMemo(() => {
     const targetMinutes = Math.round(weeklyTargetHours * 60);

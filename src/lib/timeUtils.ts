@@ -165,38 +165,83 @@ const parseTimeEntries = (input: string, currentTime?: Date) => {
   const lines = input.split('\n').filter(line => line.trim());
   const entries: { start: string; end: string; duration: number, reason?: string, originalLine: string }[] = [];
   const validationErrors: { line: number; message: string }[] = [];
+  const timeValidation = /^([01]?\d|2[0-3]):[0-5]\d$/;
 
   lines.forEach((line, index) => {
     const trimmed = line.trim();
     if (!trimmed) return;
 
-    const specialDayPattern = /^(urlaub|krankenstand)$/i;
-    if (specialDayPattern.test(trimmed)) {
-      if (lines.length === 1) return;
-    }
+    // Pattern 1: Closed interval (e.g., "08:00 - 17:00")
+    const timePattern = /^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/;
+    const match = trimmed.match(timePattern);
 
-    if (!trimmed.includes('-') && !trimmed.includes(':')) {
-      if (!specialDayPattern.test(trimmed)) {
-        validationErrors.push({
-          line: index + 1,
-          message: 'Ungültiges Format. Verwende HH:MM - HH:MM oder HH:MM'
-        });
+    if (match) {
+      const [, startTime, endTime] = match;
+      const reason = trimmed.substring(match[0].length).trim();
+
+      if (!timeValidation.test(startTime) || !timeValidation.test(endTime)) {
+        validationErrors.push({ line: index + 1, message: 'Ungültige Zeitangabe' });
         return;
       }
+
+      const startMinutes = parseTimeToMinutes(startTime);
+      const endMinutes = parseTimeToMinutes(endTime);
+
+      if (endMinutes < startMinutes) {
+        validationErrors.push({ line: index + 1, message: 'Endzeit muss nach Startzeit liegen' });
+        return;
+      }
+
+      const duration = endMinutes - startMinutes;
+      
+      const hasOverlap = entries.some(entry => {
+        const entryStart = parseTimeToMinutes(entry.start);
+        const entryEnd = parseTimeToMinutes(entry.end);
+        return (startMinutes < entryEnd && endMinutes > entryStart);
+      });
+  
+      if (hasOverlap) {
+        validationErrors.push({ line: index + 1, message: 'Zeitraum überlappt mit vorherigem Eintrag' });
+        return;
+      }
+
+      entries.push({ start: startTime, end: endTime, duration, reason: reason ? reason : undefined, originalLine: line });
+      return;
     }
 
+    // Pattern 2: Open entry with dash (e.g., "09:00 - ")
+    const openEntryPattern = /^(\d{1,2}:\d{2})\s*-\s*$/;
+    const openEntryMatch = trimmed.match(openEntryPattern);
+
+    if (openEntryMatch && currentTime) {
+      const [, startTime] = openEntryMatch;
+      const reason = trimmed.substring(openEntryMatch[0].length).trim();
+
+      if (!timeValidation.test(startTime)) {
+        validationErrors.push({ line: index + 1, message: 'Ungültige Zeitangabe' });
+        return;
+      }
+
+      const startMinutes = parseTimeToMinutes(startTime);
+      const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+      
+      if (currentMinutes > startMinutes) {
+        const duration = currentMinutes - startMinutes;
+        const endTime = formatMinutesToTime(currentMinutes);
+        entries.push({ start: startTime, end: endTime, duration, reason: reason ? reason : undefined, originalLine: line });
+      }
+      return;
+    }
+
+    // Pattern 3: Open entry with single time (e.g., "09:00")
     const openTimePattern = /^(\d{1,2}:\d{2})$/;
     const openMatch = trimmed.match(openTimePattern);
-    
+
     if (openMatch && currentTime) {
       const [, startTime] = openMatch;
       
-      const timeValidation = /^([01]?\d|2[0-3]):[0-5]\d$/;
       if (!timeValidation.test(startTime)) {
-        validationErrors.push({
-          line: index + 1,
-          message: 'Ungültige Zeitangabe'
-        });
+        validationErrors.push({ line: index + 1, message: 'Ungültige Zeitangabe' });
         return;
       }
 
@@ -204,10 +249,7 @@ const parseTimeEntries = (input: string, currentTime?: Date) => {
       const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
       
       if (currentMinutes <= startMinutes) {
-        validationErrors.push({
-          line: index + 1,
-          message: 'Startzeit liegt in der Zukunft'
-        });
+        validationErrors.push({ line: index + 1, message: 'Startzeit liegt in der Zukunft' });
         return;
       }
 
@@ -218,88 +260,14 @@ const parseTimeEntries = (input: string, currentTime?: Date) => {
       return;
     }
 
-    const timePattern = /^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/;
-    const match = trimmed.match(timePattern);
-    
-    if (!match) {
-      // Check for open entry format like "HH:MM - "
-      const openEntryPattern = /^(\d{1,2}:\d{2})\s*-\s*$/;
-      const openEntryMatch = trimmed.match(openEntryPattern);
-
-      if (openEntryMatch && currentTime) {
-        const [, startTime] = openEntryMatch;
-        const reason = trimmed.substring(openEntryMatch[0].length).trim();
-        const timeValidation = /^([01]?\d|2[0-3]):[0-5]\d$/;
-        if (!timeValidation.test(startTime)) {
-          validationErrors.push({
-            line: index + 1,
-            message: 'Ungültige Zeitangabe'
-          });
-          return;
-        }
-
-        const startMinutes = parseTimeToMinutes(startTime);
-        const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
-        
-        if (currentMinutes > startMinutes) {
-          const duration = currentMinutes - startMinutes;
-          const endTime = formatMinutesToTime(currentMinutes);
-          entries.push({ start: startTime, end: endTime, duration, reason: reason ? reason : undefined, originalLine: line });
-        }
-        // Don't add to validation errors if it's just an open entry
-        return;
-      }
-
-      // If no other pattern matches, it's an error
-      if (!/^\d{1,2}:\d{2}$/.test(trimmed)) {
-        validationErrors.push({
-          line: index + 1,
-          message: 'Ungültiges Format. Verwende HH:MM - HH:MM oder HH:MM'
-        });
-        return;
-      }
-    }
-
-    const [, startTime, endTime] = match;
-    const reason = trimmed.substring(match[0].length).trim();
-    
-    const timeValidation = /^([01]?\d|2[0-3]):[0-5]\d$/;
-    if (!timeValidation.test(startTime) || !timeValidation.test(endTime)) {
+    // If none of the above patterns match, it might be a special day or an error
+    const specialDayPattern = /^(urlaub|krankenstand|pflegeurlaub|pflegefreistellung|betriebsratsarbeit|schulung|seminar|sonderurlaub|berufsschule|hochzeit|todesfall)$/i;
+    if (!specialDayPattern.test(trimmed)) {
       validationErrors.push({
         line: index + 1,
-        message: 'Ungültige Zeitangabe'
+        message: 'Ungültiges Format. Verwende HH:MM - HH:MM oder HH:MM.'
       });
-      return;
     }
-
-    const startMinutes = parseTimeToMinutes(startTime);
-    const endMinutes = parseTimeToMinutes(endTime);
-
-    if (endMinutes < startMinutes) {
-      validationErrors.push({
-        line: index + 1,
-        message: 'Endzeit muss nach Startzeit liegen'
-      });
-      return;
-    }
-
-    const duration = endMinutes - startMinutes;
-    
-    const hasOverlap = entries.some(entry => {
-      const entryStart = parseTimeToMinutes(entry.start);
-      const entryEnd = parseTimeToMinutes(entry.end);
-      return (startMinutes < entryEnd && endMinutes > entryStart);
-    });
-
-    if (hasOverlap) {
-      validationErrors.push({
-        line: index + 1,
-        message: 'Zeitraum überlappt mit vorherigem Eintrag'
-      });
-      return;
-    }
-
-    entries.push({ start: startTime, end: endTime, duration, reason: reason ? reason : undefined, originalLine: line });
   });
 
   entries.sort((a, b) => parseTimeToMinutes(a.start) - parseTimeToMinutes(b.start));
