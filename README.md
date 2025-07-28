@@ -1,4 +1,4 @@
-# ZE-Helper - Dein smarter Zeitstempel-Assistent
+# ZE-Helper – Die smarte Webanwendung zur Arbeitszeiterfassung
 
 ![ZE-Helper Screenshot](https://sp23.online/images/ze-helper-screenshot.png)
 
@@ -6,58 +6,145 @@
 
 ---
 
-## 🚀 Überblick
-
-ZE-Helper ist eine moderne, intuitive Webanwendung, die entwickelt wurde, um die tägliche Arbeitszeiterfassung zu vereinfachen und zu visualisieren. Anstatt sich mit umständlichen Tabellenkalkulationen oder unübersichtlichen Notizen herumzuschlagen, bietet ZE-Helper eine saubere Oberfläche, um Zeitbuchungen schnell einzugeben und sofort eine Auswertung zu erhalten.
-
-Die Anwendung ist ideal für Angestellte, Freiberufler und jeden, der seine Arbeitszeit präzise und unkompliziert erfassen möchte.
+ZE-Helper ist eine moderne, als Single Page Application (SPA) entwickelte Webanwendung zur Arbeitszeiterfassung. Sie zeigt in Echtzeit die heute geleistete Arbeitszeit an und berechnet automatisch, wann definierte Zielzeiten erreicht werden. Benutzer können sich optional per Browserbenachrichtigung informieren lassen, wenn diese Zielzeiten erreicht sind. Die Anwendung bietet zahlreiche weitere Funktionen, die im Folgenden detailliert beschrieben werden.
 
 ---
 
-## ✨ Funktionen
+## 🔒 Datenschutz & Technologie
 
-*   **Flexible Zeiteingabe:** Gib deine Arbeitszeiten im einfachen `HH:MM - HH:MM` Format ein.
-*   **Live-Tracking:** Gib nur eine Startzeit (`HH:MM`) ein und die App berechnet die Dauer bis zur aktuellen Uhrzeit – perfekt für den laufenden Arbeitstag.
-*   **Automatische Pausenregelung:** Nach 6 Stunden Arbeitszeit wird automatisch die gesetzliche Pause von 30 Minuten abgezogen.
-*   **Zielzeit-Prognose:** Sieh auf einen Blick, wann du deine Tagesziele (6h, 7.7h, 10h) erreichen wirst.
-*   **Visuelle Fortschrittsbalken:** Verfolge deinen Fortschritt in Echtzeit mit ansprechenden Fortschrittsanzeigen.
-*   **Intelligente Validierung:** Die App warnt dich bei ungültigen Formaten, überlappenden Zeiträumen oder unlogischen Eingaben.
-*   **Farbliche Kennzeichnung:** Die Gesamtarbeitszeit wird farblich hervorgehoben, um dir schnell einen Status zu geben (z.B. Grün bei erreichter Sollzeit).
-*   **Lokaler Speicher:** Deine Eingaben werden sicher im Browser gespeichert. Kein Datenverlust beim Neuladen der Seite.
-*   **Modernes Design:** Eine aufgeräumte, ansprechende Oberfläche mit Dark Mode für angenehmes Arbeiten zu jeder Tageszeit.
-*   **Einfaches Löschen:** Mit einem Klick kannst du alle Einträge für einen neuen Tag zurücksetzen.
+*   **Datenschutzfreundlich:** Sämtliche Datenverarbeitung erfolgt ausschließlich lokal im Browser. Es findet keine Übertragung an externe Server statt.
+*   **Speicherung:** Alle Daten werden im Browser-Cache (LocalStorage) gespeichert.
+*   **Hosting:** Bereitgestellt über Cloudflare Pages.
+*   **Technologie-Stack:**
+    *   **Framework:** React
+    *   **Sprache:** TypeScript
+    *   **UI-Komponenten:** Radix UI & shadcn/ui
 
 ---
 
-## ❓ FAQ - Häufig gestellte Fragen
+## 🧩 Benutzeroberfläche & Interaktion
 
-**F: Wie funktioniert die Berechnung der Arbeitszeit?**
-**A:** Die Anwendung summiert die Dauer aller erfassten Zeiträume. Ein Zeitraum wird entweder durch eine Start- und Endzeit (`08:00 - 12:00`) oder durch eine einzelne Startzeit (`13:00`) definiert. Bei einer einzelnen Startzeit wird die Dauer bis zur aktuellen Browser-Uhrzeit berechnet und live aktualisiert.
+Die Benutzeroberfläche basiert auf einem modularen Karten-System („Cards“). Diese Karten werden kontextabhängig ein- oder ausgeblendet – je nachdem, ob sie für den gewählten Tag relevant sind (z. B. bei Krankenstand keine Zeitbuchung möglich → Zielzeiten-Karte wird ausgeblendet).
 
-**F: Wie wird die Pause berechnet?**
-**A:** Sobald die Gesamtsumme deiner Arbeitszeit 6 Stunden (360 Minuten) erreicht oder überschreitet, zieht die Anwendung automatisch 30 Minuten von der Gesamtzeit ab. Dies geschieht nur einmal.
+**Weitere UI-Elemente:**
 
-**F: Was bedeuten die verschiedenen Farben bei der Gesamtanzeige?**
-**A:** Die Farben geben dir einen schnellen visuellen Hinweis auf deinen aktuellen Arbeitsstatus:
-*   **Rot (< 6h):** Du hast die Mindeststundenzahl für den Pausenabzug noch nicht erreicht.
-*   **Lila (6h - 7.7h):** Du hast die 6-Stunden-Marke überschritten.
-*   **Grün (7.7h - 9.5h):** Du hast deine Sollarbeitszeit von 7 Stunden und 42 Minuten erreicht.
-*   **Gelb (9.5h - 10h):** Du näherst dich der gesetzlichen Höchstarbeitszeit.
-*   **Rot (> 10h):** Achtung, du hast die gesetzliche Höchstarbeitszeit von 10 Stunden überschritten!
-
-**F: Werden meine Daten irgendwo gespeichert?**
-**A:** Deine Eingaben werden ausschließlich in deinem eigenen Webbrowser im `localStorage` gespeichert. Sie werden niemals an einen Server gesendet. Deine Daten bleiben privat und unter deiner Kontrolle.
+*   **Datumsnavigation:** Wechsel zwischen Tagen über Date-Picker und Pfeilbuttons.
+*   **Seitentitel:** Zeigt die aktuell geleistete Arbeitszeit an. Ein Klick auf „ZE-Helper“ springt zum aktuellen Tag.
+*   **Tooltips:** Bieten Kontextinformationen zu bestimmten Funktionen.
+*   **Welcome-Screen:** Erscheint beim ersten Start, erklärt die wichtigsten Funktionen und ermöglicht Import von Backups oder Webdesk-Daten. Der Durchlauf wird im Cache gespeichert und erscheint daher nur einmal.
 
 ---
 
-## 🛠️ Technologie-Stack
+## 🗂 Funktionsübersicht nach Karten
 
-*   **Frontend:** [React](https://reactjs.org/) (mit [TypeScript](https://www.typescriptlang.org/))
-*   **Build-Tool:** [Vite](https://vitejs.dev/)
-*   **UI-Komponenten:** [shadcn/ui](https://ui.shadcn.com/)
-*   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-*   **Animationen:** [Framer Motion](https://www.framer.com/motion/)
-*   **Icons:** [Lucide React](https://lucide.dev/)
+### ⏰ Aktuelle Uhrzeit
+
+Anzeige der aktuellen Uhrzeit:
+*   **Grün** innerhalb der Normalarbeitszeit
+*   **Rot** außerhalb der Normalarbeitszeit
+Bei Rückblick auf vergangene Tage wird stattdessen der Wochentag oder Feiertag angezeigt.
+
+### 📊 Durchschnittlicher Tag
+
+Zitatartige Darstellung des durchschnittlichen Arbeitstages, z. B.:
+> „Ich arbeite im Schnitt von 08:39 bis 17:58 (7h 23m) und mache dabei 115 Minuten Pause.“
+
+### 📅 Diese Woche
+
+Balkendiagramm der Arbeitsstunden der aktuellen Woche. Inklusive Sollzeit und Details per Hover.
+
+### 📈 Zusammenfassung
+
+Gesamtsummen für:
+*   aktuelle Woche
+*   Monat
+*   Jahr
+*   Gesamtarbeitszeit
+Anzeige des Wochensaldos (konfigurierbar).
+
+### 🕘 Zeitbuchungen
+
+Manuelle Eingabe oder Import von Zeitbuchungen (Webdesk). Automatischer Sperrmechanismus für Sonderfälle wie Urlaub, Krankenstand etc. (Symbolanzeige statt Eingabefeld). Tagesbuchungen können komplett gelöscht werden.
+
+### ⌛ Erfasste Zeiten
+
+Anzeige aller Buchungsblöcke mit Dauer. Einzelne Buchungen können gelöscht werden.
+
+### 📝 Notizen
+
+Notizen zum gewählten Tag (z. B. für Korrekturen oder Kommentare).
+
+### ☕ Pauseninfo
+
+Details zur Pause:
+*   Summe der konsumierten Pause
+*   automatischer gesetzlicher Pausenabzug (sofern zutreffend)
+
+### 🧮 Arbeitszeit
+
+Anzeige der heutigen Arbeitszeit:
+*   Summe
+*   Anzahl Zeitblöcke
+*   Differenz zur Sollarbeitszeit
+Farbige Darstellung je nach Zielzeit-Status. Klick auf die Karte startet neue Zeitbuchung.
+
+### 🎯 Zielzeiten
+
+Anzeige von Zielzeiten (6h, 7h 45m, 10h, 12h). Fortschrittsbalken und voraussichtlicher Zeitpunkt der Erreichung. Browserbenachrichtigung bei (oder X Minuten vor) Erreichen möglich.
+
+### 🌴 Freie Tage
+
+Konfiguration eigener Urlaubstage. Übersicht über:
+*   verwendete Urlaubstage
+*   verbleibende Urlaubstage
+*   Feiertage
+Farbwechsel je nach verbleibender Anzahl.
+
+### 📆 Durchschnitt pro Wochentag
+
+Balkendiagramm mit durchschnittlicher Arbeitszeit je Wochentag.
+
+### 📊 Statistik
+
+Verschiedene Metriken zur Nutzung:
+*   Anzahl Tage mit Buchungen (inkl. Jahres-Prozent)
+*   Frühester Start / spätestes Ende (inkl. Datum)
+*   Längste Pause, Tag über 9h, längster Tag/Woche/Streak
+*   Durchschnittliche Buchungsanzahl pro Tag
+*   Urlaubstage insgesamt
+
+### 🕗 Außerhalb Normalarbeitszeit
+
+Zeit außerhalb der Arbeitszeit pro Woche, Monat, Jahr und Gesamt. Prozentuale Darstellung + Anzahl betroffener Tage.
+
+### 💾 Datenverwaltung
+
+*   Export & Import aller Daten (JSON-Format) aus dem LocalStorage.
+*   Webdesk XLSX Import: Mehrere Monatsjournale gleichzeitig möglich.
+*   Funktion zum Löschen aller Daten.
+*   Kartenverwaltung: Ein-/Ausblenden einzelner Karten.
+
+### 🏠 Home-Office-Statistik
+
+Übersicht zur Homeoffice-Nutzung:
+*   Nutzung an Werktagen / Wochenenden
+*   Reine Büro-/Hybridtage
+*   Stunden innerhalb / außerhalb Normalarbeitszeit
+*   Tagesbasierte und stundenbasierte Homeoffice-Anteile in %
+
+### 💡 Tipp des Tages
+
+Zufälliger Nutzungstipp bei jedem Laden der Seite aus einer Tipp-Liste.
+
+### ℹ️ Info
+
+*   Impressum & Datenschutz
+*   Feedback-Link (E-Mail)
+*   Verlinkung zum IT-Kollektivvertrag 2025
+
+### 📆 Urlaubsplanung
+
+Verlinkung zu fenstertage.com zur effizienten Urlaubsplanung mit Zwickeltagen.
 
 ---
 

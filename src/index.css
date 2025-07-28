@@ -93,6 +93,11 @@ All colors MUST be HSL.
   body {
     @apply text-foreground;
     background: linear-gradient(to top left,#434343,#000000);
+    transition: background-color 0.3s ease;
+  }
+
+  body.dialog-open {
+    background-color: rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -106,5 +111,11 @@ All colors MUST be HSL.
   .interactive-card:hover {
     box-shadow: var(--shadow-glow);
     transform: translateY(-5px);
+  }
+
+  .dialog-overlay {
+    @apply bg-black/80;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
   }
 }

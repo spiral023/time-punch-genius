@@ -12,6 +12,14 @@ export const tips: Tip[] = [
     title: 'Wochenstunden anpassen',
     description: 'In der Zusammenfassung kannst du deine vertraglichen Wochenstunden anpassem.',
   },
+    {
+    title: 'Bring Farbe rein!',
+    description: 'Easteregg! Ändere die Hintergrundfarbe, indem du auf die aktuelle Uhrzeit klickst. Die Einstellung wird gespeichert.',
+  },
+    {
+    title: 'Schneller einfügen',
+    description: 'Lifehack: Du musst nicht erst ins Eingabefeld klicken, wenn du die Zeitbuchungen von Webdesk einfügst. Drücke einfach Strg+V.',
+  },
   {
     title: 'Daten exportieren und importieren',
     description: 'Unter "Datenverwaltung" kannst du alle deine erfassten Zeiten als JSON-Datei sichern oder aus einem Backup importieren importieren.',
