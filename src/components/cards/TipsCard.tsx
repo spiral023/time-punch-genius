@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lightbulb, RefreshCw } from 'lucide-react';
 import { tips, Tip } from '@/lib/tips';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 
 const getRandomTip = (currentTip?: Tip): Tip => {
   let newTip: Tip;

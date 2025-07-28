@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useFreeDays } from '@/hooks/useFreeDays';
-import { PersonalVacationDaysSetting } from './time-calculator/PersonalVacationDaysSetting';
+import { PersonalVacationDaysSetting } from '../time-calculator/PersonalVacationDaysSetting';
 import { CalendarCheck } from 'lucide-react';
 
 interface FreeDaysCardProps {

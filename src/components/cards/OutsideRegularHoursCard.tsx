@@ -4,7 +4,7 @@ import { Clock } from 'lucide-react';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { de } from 'date-fns/locale';
 
-import { Separator } from './ui/separator';
+import { Separator } from '@/components/ui/separator';
 
 interface OutsideRegularHoursCardProps {
   selectedDate: Date;

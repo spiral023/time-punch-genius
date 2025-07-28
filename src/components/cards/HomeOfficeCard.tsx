@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Home } from 'lucide-react';
-import { StatisticLine } from './StatisticLine';
+import { StatisticLine } from '../StatisticLine';
 
 interface HomeOfficeCardProps {
   workdays: number;
