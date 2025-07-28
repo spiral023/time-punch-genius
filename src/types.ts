@@ -27,3 +27,15 @@ export interface AppSettings {
   personalVacationDays: number;
   cardVisibility: { [key: string]: boolean };
 }
+
+export type SpecialDayType =
+  | 'vacation'
+  | 'sick'
+  | 'holiday'
+  | 'care_leave'
+  | 'works_council'
+  | 'training'
+  | 'special_leave'
+  | 'vocational_school'
+  | 'wedding'
+  | 'bereavement';

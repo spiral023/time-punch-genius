@@ -82,7 +82,7 @@ export const WeeklyHoursChart: React.FC<WeeklyHoursChartProps> = ({ data, curren
                 formatter={(value) => [`${value} Stunden`, null]}
               />}
             />
-            <Bar dataKey="hours" radius={4}>
+            <Bar dataKey="hours" radius={4} isAnimationActive={false}>
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />
               ))}

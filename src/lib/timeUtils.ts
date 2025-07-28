@@ -1,3 +1,5 @@
+import { SpecialDayType } from "@/types";
+
 export const parseTimeToMinutes = (time: string): number => {
   const [hours, minutes] = time.split(':').map(Number);
   return hours * 60 + minutes;
@@ -61,7 +63,21 @@ export const calculateTimeDetails = (
     };
   }
 
-  if (trimmedInput === 'urlaub' || trimmedInput === 'krankenstand') {
+  const specialDayMappings: { [key: string]: string } = {
+    'urlaub': 'vacation',
+    'krankenstand': 'sick',
+    'pflegeurlaub': 'care_leave',
+    'pflegefreistellung': 'care_leave',
+    'betriebsratsarbeit': 'works_council',
+    'schulung': 'training',
+    'seminar': 'training',
+    'sonderurlaub': 'special_leave',
+    'berufsschule': 'vocational_school',
+    'hochzeit': 'wedding',
+    'todesfall': 'bereavement',
+  };
+
+  if (specialDayMappings[trimmedInput]) {
     return {
       timeEntries: [],
       errors: [],
@@ -69,7 +85,7 @@ export const calculateTimeDetails = (
       totalBreak: 0,
       breakDeduction: 0,
       grossTotalMinutes: dailyTargetMinutes,
-      specialDayType: trimmedInput === 'urlaub' ? 'vacation' : 'sick',
+      specialDayType: specialDayMappings[trimmedInput] as SpecialDayType,
     };
   }
 

@@ -3,12 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Calculator, Trash2, ListChecks, AlertCircle } from 'lucide-react';
+import { Calculator, Trash2, ListChecks, AlertCircle, Plane, HeartPulse, Star, Briefcase, School, Gift, Users, BookOpen, Heart, Flower2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { TimeEntry } from '@/types';
+import { TimeEntry, SpecialDayType } from '@/types';
 import { formatHoursMinutes } from '@/lib/timeUtils';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Briefcase, HeartPulse, Star } from 'lucide-react';
 
 interface TimeInputSectionProps {
   input: string;
@@ -17,8 +16,44 @@ interface TimeInputSectionProps {
   timeEntries: TimeEntry[];
   selectedDate: Date;
   clearInput: () => void;
-  specialDayType: 'vacation' | 'sick' | 'holiday' | null;
+  specialDayType: SpecialDayType | null;
 }
+
+const SpecialDayDisplay = ({ type }: { type: SpecialDayType }) => {
+  const icons: { [key in SpecialDayType]: React.ReactNode } = {
+    vacation: <Plane className="h-12 w-12 text-blue-500" />,
+    sick: <HeartPulse className="h-12 w-12 text-red-500" />,
+    holiday: <Star className="h-12 w-12 text-yellow-500" />,
+    care_leave: <Users className="h-12 w-12 text-green-500" />,
+    works_council: <Briefcase className="h-12 w-12 text-purple-500" />,
+    training: <BookOpen className="h-12 w-12 text-indigo-500" />,
+    special_leave: <Gift className="h-12 w-12 text-pink-500" />,
+    vocational_school: <School className="h-12 w-12 text-orange-500" />,
+    wedding: <Heart className="h-12 w-12 text-rose-500" />,
+    bereavement: <Flower2 className="h-12 w-12 text-gray-500" />,
+  };
+
+  const descriptions: { [key in SpecialDayType]: string } = {
+    vacation: 'Urlaub',
+    sick: 'Krankenstand',
+    holiday: 'Feiertag',
+    care_leave: 'Pflegeurlaub',
+    works_council: 'Betriebsratsarbeit',
+    training: 'Schulung/Seminar',
+    special_leave: 'Sonderurlaub',
+    vocational_school: 'Berufsschule',
+    wedding: 'Hochzeit',
+    bereavement: 'Todesfall',
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center h-[164px] bg-muted/50 rounded-md">
+      {icons[type]}
+      <p className="mt-2 text-lg font-semibold">{descriptions[type]}</p>
+      <p className="text-sm text-muted-foreground">Keine Zeitbuchung erforderlich.</p>
+    </div>
+  );
+};
 
 export const TimeInputSection: React.FC<TimeInputSectionProps> = ({
   input,
@@ -72,12 +107,16 @@ export const TimeInputSection: React.FC<TimeInputSectionProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <div key={format(selectedDate, 'yyyy-MM-dd')}>
-            <Textarea
-              placeholder="Noch keine Einträge für diesen Tag. Buchungen im Format HH:mm-HH:mm, 'Urlaub' oder 'Krankenstand' eingeben."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              className="min-h-[164px] font-mono text-sm resize-none"
-            />
+            {specialDayType ? (
+              <SpecialDayDisplay type={specialDayType} />
+            ) : (
+              <Textarea
+                placeholder="Noch keine Einträge für diesen Tag. Buchungen im Format HH:mm-HH:mm, 'Urlaub' oder 'Krankenstand' eingeben."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                className="min-h-[164px] font-mono text-sm resize-none"
+              />
+            )}
           </div>
           {errors.length > 0 && !specialDayType && (
             <div className="space-y-2">
@@ -112,10 +151,10 @@ export const TimeInputSection: React.FC<TimeInputSectionProps> = ({
                   >
                     <div>
                       <span className="font-mono text-sm">
-                        {entry.start} - {entry.end}
+                        {entry.start} {entry.end && `- ${entry.end}`}
                       </span>
                       {entry.reason && (
-                        <p className="text-xs text-muted-foreground">{entry.reason.replace(/\(\d+\)/, '').trim()}</p>
+                        <p className="text-xs text-muted-foreground">{entry.reason}</p>
                       )}
                     </div>
                     <div className="flex items-center gap-2">

@@ -25,6 +25,7 @@ interface StatisticsCardProps {
   longestStreakStart: string | null;
   longestStreakEnd: string | null;
   averageBlocksPerDay: number;
+  vacationDays: number;
 }
 
 export const StatisticsCard: React.FC<StatisticsCardProps> = ({
@@ -46,6 +47,7 @@ export const StatisticsCard: React.FC<StatisticsCardProps> = ({
   longestStreakStart,
   longestStreakEnd,
   averageBlocksPerDay,
+  vacationDays,
 }) => {
   const bookedDaysPercentage = daysInYear > 0 ? ((daysWithBookings / daysInYear) * 100).toFixed(1) : 0;
   const over9HoursPercentage = daysWithBookings > 0 ? ((daysOver9Hours / daysWithBookings) * 100).toFixed(1) : 0;
@@ -225,6 +227,21 @@ export const StatisticsCard: React.FC<StatisticsCardProps> = ({
               className="font-bold text-lg"
             >
               {averageBlocksPerDay > 0 ? `${averageBlocksPerDay.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Blöcke` : '-'}
+            </motion.span>
+          </div>
+        </div>
+        <div>
+          <div className="flex justify-between items-baseline">
+            <span className="text-sm font-medium">Urlaubstage</span>
+            <motion.span
+              key={`vacation-days-${vacationDays}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="font-bold text-lg"
+            >
+              {vacationDays > 0 ? `${vacationDays} Tage` : '-'}
             </motion.span>
           </div>
         </div>

@@ -532,7 +532,7 @@ const TimeCalculator = () => {
             {cardVisibility['tips'] !== false && <TipsCard />}
             {cardVisibility['freeDays'] !== false && <FreeDaysCard year={selectedDate.getFullYear()} />}
             {cardVisibility['averageWorkdayHours'] !== false && <AverageWorkdayHoursChart data={statistics.averageDailyMinutes} />}
-            {cardVisibility['statistics'] !== false && <StatisticsCard {...statistics} averageBlocksPerDay={statistics.averageBlocksPerDay} />}
+            {cardVisibility['statistics'] !== false && <StatisticsCard {...statistics} averageBlocksPerDay={statistics.averageBlocksPerDay} vacationDays={statistics.vacationDays} />}
           </div>
         </div>
         <NotificationManager />

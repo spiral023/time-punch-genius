@@ -80,7 +80,7 @@ export const AverageWorkdayHoursChart: React.FC<AverageWorkdayHoursChartProps> =
                 formatter={(value, name, props) => [`${props.payload.hours} Stunden`, null]}
               />}
             />
-            <Bar dataKey="hours" radius={4}>
+            <Bar dataKey="hours" radius={4} isAnimationActive={false}>
               {orderedChartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />
               ))}

@@ -22,6 +22,7 @@ export interface ProcessedDay {
   timeEntries: { start: string; end: string; type: 'office' | 'homeoffice' | 'absence'; reason: string }[];
   homeOfficeHoursInNormalTime: number;
   homeOfficeHoursOutsideNormalTime: number;
+  fullDayAbsenceReason?: string;
 }
 
 // Define the structure for the final processed data
@@ -37,6 +38,7 @@ export interface Statistics {
   totalWorkDays: number;
   totalHomeOfficeHours: number;
   totalOfficeHours: number;
+  vacationDays: number;
 }
 
 // Normal working hours
@@ -108,6 +110,9 @@ const processGroupedData = (groupedData: { [key: string]: WebdeskRow[] }): Proce
         return { start: entry.von, end: entry.bis, type: type as 'office' | 'homeoffice' | 'absence', reason };
       });
 
+    const fullDayAbsenceEntry = dayEntries.find(entry => (!entry.von || !entry.bis) && entry['Fehlgründe (Code)']);
+    const fullDayAbsenceReason = fullDayAbsenceEntry ? (fullDayAbsenceEntry['Fehlgründe (Code)'] || '').replace(/\s*\(\d+\)$/, '').trim() : undefined;
+
     let homeOfficeHoursInNormalTime = 0;
     let homeOfficeHoursOutsideNormalTime = 0;
 
@@ -140,6 +145,7 @@ const processGroupedData = (groupedData: { [key: string]: WebdeskRow[] }): Proce
       timeEntries,
       homeOfficeHoursInNormalTime,
       homeOfficeHoursOutsideNormalTime,
+      fullDayAbsenceReason,
     };
   }
 
@@ -160,9 +166,20 @@ const calculateStatistics = (processedData: ProcessedData, holidays: Holiday[]):
   let totalWorkDays = 0;
   let totalHomeOfficeHours = 0;
   let totalOfficeHours = 0;
+  let vacationDays = 0;
 
   for (const dateStr in processedData) {
     const day = processedData[dateStr];
+
+    // Check for full-day vacation and other full-day absences
+    if (day.fullDayAbsenceReason) {
+      if (day.fullDayAbsenceReason.toLowerCase().includes('urlaub')) {
+        vacationDays++;
+      }
+      // Potentially handle other absence reasons here, e.g., sick leave
+      continue; // Skip further processing for full-day absences
+    }
+
     if (day.actualHours === 0) continue;
 
     const dateParts = dateStr.split('.').map(Number);
@@ -207,5 +224,6 @@ const calculateStatistics = (processedData: ProcessedData, holidays: Holiday[]):
     totalWorkDays,
     totalHomeOfficeHours,
     totalOfficeHours,
+    vacationDays,
   };
 };

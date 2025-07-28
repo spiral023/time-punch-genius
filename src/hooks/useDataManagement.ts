@@ -19,6 +19,7 @@ export const useDataManagement = () => {
         totalWorkDays: 0,
         totalHomeOfficeHours: 0,
         totalOfficeHours: 0,
+        vacationDays: 0,
       };
 
       for (const file of files) {
@@ -33,14 +34,40 @@ export const useDataManagement = () => {
         allStatistics.totalWorkDays += statistics.totalWorkDays;
         allStatistics.totalHomeOfficeHours += statistics.totalHomeOfficeHours;
         allStatistics.totalOfficeHours += statistics.totalOfficeHours;
+        allStatistics.vacationDays += statistics.vacationDays;
       }
 
       Object.keys(allProcessedData).forEach(dateStr => {
         const dayData = allProcessedData[dateStr];
         const date = new Date(dateStr.split('.').reverse().join('-'));
         const key = formatDateKey(date);
-        const timeEntriesString = dayData.timeEntries.map(e => `${e.start} - ${e.end} ${e.reason.trim()}`).join('\n');
-        localStorage.setItem(key, timeEntriesString);
+        
+        const reason = dayData.fullDayAbsenceReason?.toLowerCase() || '';
+        if (reason.includes('urlaub')) {
+          localStorage.setItem(key, 'Urlaub');
+        } else if (reason.includes('krank')) {
+          localStorage.setItem(key, 'Krankenstand');
+        } else if (reason.includes('pflege')) {
+          localStorage.setItem(key, 'Pflegeurlaub');
+        } else if (reason.includes('betriebsrat')) {
+          localStorage.setItem(key, 'Betriebsratsarbeit');
+        } else if (reason.includes('schulung') || reason.includes('seminar')) {
+          localStorage.setItem(key, 'Schulung');
+        } else if (reason.includes('sonderurlaub')) {
+          localStorage.setItem(key, 'Sonderurlaub');
+        } else if (reason.includes('berufsschule')) {
+          localStorage.setItem(key, 'Berufsschule');
+        } else if (reason.includes('hochzeit')) {
+          localStorage.setItem(key, 'Hochzeit');
+        } else if (reason.includes('todesfall')) {
+          localStorage.setItem(key, 'Todesfall');
+        }
+        else {
+          const timeEntriesString = dayData.timeEntries.map(e => `${e.start} - ${e.end} ${e.reason.trim()}`).join('\n');
+          if (timeEntriesString) {
+            localStorage.setItem(key, timeEntriesString);
+          }
+        }
       });
 
       localStorage.setItem('zehelper_statistics', JSON.stringify(allStatistics));

@@ -21,6 +21,7 @@ export const useStatistics = (yearData: { [date: string]: string }, dailyTargetM
     let longestStreakStart: string | null = null;
     let longestStreakEnd: string | null = null;
     let totalBlocks = 0;
+    let vacationDays = 0;
     const weeklyMinutes: { [week: string]: { totalMinutes: number, date: Date } } = {};
     const dailyMinutes: { [day: number]: { totalMinutes: number, count: number } } = {
       0: { totalMinutes: 0, count: 0 }, // Sunday
@@ -38,6 +39,10 @@ export const useStatistics = (yearData: { [date: string]: string }, dailyTargetM
 
       const { timeEntries, totalMinutes, specialDayType } = calculateTimeDetails(input, undefined, dailyTargetMinutes);
       if (timeEntries.length === 0 && !specialDayType) continue;
+
+      if (specialDayType === 'vacation') {
+        vacationDays++;
+      }
 
       totalBlocks += timeEntries.length;
 
@@ -195,6 +200,7 @@ export const useStatistics = (yearData: { [date: string]: string }, dailyTargetM
       longestStreakEnd,
       currentWeekTotalMinutes,
       previousWeekTotalMinutes,
+      vacationDays,
     };
   }, [yearData]);
 };
