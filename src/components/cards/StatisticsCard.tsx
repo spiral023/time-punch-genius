@@ -5,50 +5,31 @@ import { TrendingUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { formatHoursMinutes } from '@/lib/timeUtils';
+import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
 
-interface StatisticsCardProps {
-  daysWithBookings: number;
-  daysInYear: number;
-  earliestStart: string | null;
-  latestEnd: string | null;
-  longestBreak: number | null;
-  earliestStartDate: string | null;
-  latestEndDate: string | null;
-  longestBreakDate: string | null;
-  daysOver9Hours: number;
-  longestWeek: number | null;
-  longestWeekStart: string | null;
-  longestWeekEnd: string | null;
-  longestDay: number | null;
-  longestDayDate: string | null;
-  longestStreak: number;
-  longestStreakStart: string | null;
-  longestStreakEnd: string | null;
-  averageBlocksPerDay: number;
-  vacationDays: number;
-}
-
-export const StatisticsCard: React.FC<StatisticsCardProps> = ({
-  daysWithBookings,
-  daysInYear,
-  earliestStart,
-  latestEnd,
-  longestBreak,
-  earliestStartDate,
-  latestEndDate,
-  longestBreakDate,
-  daysOver9Hours,
-  longestWeek,
-  longestWeekStart,
-  longestWeekEnd,
-  longestDay,
-  longestDayDate,
-  longestStreak,
-  longestStreakStart,
-  longestStreakEnd,
-  averageBlocksPerDay,
-  vacationDays,
-}) => {
+export const StatisticsCard: React.FC = () => {
+  const { statistics } = useTimeCalculatorContext();
+  const {
+    daysWithBookings,
+    daysInYear,
+    earliestStart,
+    latestEnd,
+    longestBreak,
+    earliestStartDate,
+    latestEndDate,
+    longestBreakDate,
+    daysOver9Hours,
+    longestWeek,
+    longestWeekStart,
+    longestWeekEnd,
+    longestDay,
+    longestDayDate,
+    longestStreak,
+    longestStreakStart,
+    longestStreakEnd,
+    averageBlocksPerDay,
+    vacationDays,
+  } = statistics;
   const bookedDaysPercentage = daysInYear > 0 ? ((daysWithBookings / daysInYear) * 100).toFixed(1) : 0;
   const over9HoursPercentage = daysWithBookings > 0 ? ((daysOver9Hours / daysWithBookings) * 100).toFixed(1) : 0;
 

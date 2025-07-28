@@ -4,29 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Clock, Target } from 'lucide-react';
 import { formatHoursMinutes, addMinutesToTime } from '@/lib/timeUtils';
-import { TimeEntry } from '@/types';
 import { TargetTimeProgress } from '../TargetTimeProgress';
-
-interface ResultsSectionProps {
-  totalMinutes: number;
-  timeEntries: TimeEntry[];
-  handlePunch: () => void;
-  specialDayType: 'vacation' | 'sick' | 'holiday' | null;
-  selectedDate: Date;
-}
+import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
 
 const TARGET_6_HOURS_MINUTES = 360;
 const TARGET_7_7_HOURS_MINUTES = 462;
 const TARGET_10_HOURS_MINUTES = 600;
 const TARGET_12_HOURS_MINUTES = 720;
 
-export const ResultsSection: React.FC<ResultsSectionProps> = ({
-  totalMinutes,
-  timeEntries,
-  handlePunch,
-  specialDayType,
-  selectedDate,
-}) => {
+export const ResultsSection: React.FC = () => {
+  const {
+    totalMinutes,
+    timeEntries,
+    handlePunch,
+    specialDayType,
+    selectedDate,
+  } = useTimeCalculatorContext();
   const isWeekend = selectedDate.getDay() === 0 || selectedDate.getDay() === 6;
 
   const getTextColorClass = (minutes: number): string => {

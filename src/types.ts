@@ -39,3 +39,7 @@ export type SpecialDayType =
   | 'vocational_school'
   | 'wedding'
   | 'bereavement';
+
+export interface YearData {
+  [date: string]: string;
+}

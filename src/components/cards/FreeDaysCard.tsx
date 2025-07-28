@@ -4,18 +4,16 @@ import { Progress } from '@/components/ui/progress';
 import { useFreeDays } from '@/hooks/useFreeDays';
 import { PersonalVacationDaysSetting } from '../time-calculator/PersonalVacationDaysSetting';
 import { CalendarCheck } from 'lucide-react';
+import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
 
-interface FreeDaysCardProps {
-  year: number;
-}
-
-export const FreeDaysCard: React.FC<FreeDaysCardProps> = ({ year }) => {
+export const FreeDaysCard: React.FC = () => {
+  const { selectedDate } = useTimeCalculatorContext();
   const {
     personalVacationDays,
     usedVacationDays,
     publicHolidays,
     pastPublicHolidays,
-  } = useFreeDays(year);
+  } = useFreeDays(selectedDate.getFullYear());
 
   const vacationPercentage = personalVacationDays > 0 ? (usedVacationDays / personalVacationDays) * 100 : 0;
   const holidayPercentage = publicHolidays > 0 ? (pastPublicHolidays / publicHolidays) * 100 : 0;

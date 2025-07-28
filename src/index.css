@@ -11,7 +11,7 @@ All colors MUST be HSL.
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 217.2 32.6% 17.5%;
+    --card: 217.2 32.6% 17.5% / 0.75; /* Reduced opacity for glassmorphism */
     --card-foreground: 210 40% 98%;
 
     --popover: 217.2 32.6% 17.5%;
@@ -52,7 +52,7 @@ All colors MUST be HSL.
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 217.2 32.6% 17.5%;
+    --card: 217.2 32.6% 17.5% / 0.75; /* Reduced opacity for glassmorphism */
     --card-foreground: 210 40% 98%;
 
     --popover: 217.2 32.6% 17.5%;
@@ -91,9 +91,34 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background: linear-gradient(-45deg, #0f172a, #1e293b, #0f172a, #2c5282);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+  }
+
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
   }
 }
 
 @layer components {
+  .interactive-card {
+    @apply transition-all duration-300 ease-in-out;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .interactive-card:hover {
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-5px);
+  }
 }

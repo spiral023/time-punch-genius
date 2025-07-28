@@ -2,13 +2,10 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { FileText } from 'lucide-react';
+import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
 
-interface NotesCardProps {
-  notes: string;
-  setNotes: (notes: string) => void;
-}
-
-export const NotesCard: React.FC<NotesCardProps> = ({ notes, setNotes }) => {
+export const NotesCard: React.FC = () => {
+  const { notes, setNotes } = useTimeCalculatorContext();
   return (
     <Card>
       <CardHeader>

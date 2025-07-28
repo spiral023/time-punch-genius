@@ -8,13 +8,7 @@ import { format, isToday } from 'date-fns'
 import { de } from 'date-fns/locale'
 import { BarChart2 } from "lucide-react"
 import { formatHoursMinutes } from "@/lib/timeUtils"
-
-interface WeeklyHoursChartProps {
-  data: { date: Date; totalMinutes: number }[]
-  currentWeekTotalMinutes: number
-  previousWeekTotalMinutes: number
-  selectedDate: Date
-}
+import { useTimeCalculatorContext } from "@/contexts/TimeCalculatorContext"
 
 const chartConfig = {
   hours: {
@@ -41,8 +35,11 @@ const getBarColorByMinutes = (minutes: number): string => {
   }
 };
 
-export const WeeklyHoursChart: React.FC<WeeklyHoursChartProps> = ({ data, currentWeekTotalMinutes, previousWeekTotalMinutes, selectedDate }) => {
-  const chartData = data.map(item => ({
+export const WeeklyHoursChart: React.FC = () => {
+  const { weeklyChartData, statistics, selectedDate } = useTimeCalculatorContext();
+  const { currentWeekTotalMinutes, previousWeekTotalMinutes } = statistics;
+
+  const chartData = weeklyChartData.map(item => ({
     date: format(item.date, 'eee', { locale: de }),
     hours: parseFloat((item.totalMinutes / 60).toFixed(2)),
     fill: getBarColorByMinutes(item.totalMinutes),
@@ -74,9 +71,9 @@ export const WeeklyHoursChart: React.FC<WeeklyHoursChartProps> = ({ data, curren
             />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent 
+              content={<ChartTooltipContent
                 labelFormatter={(value) => {
-                  const fullDate = data.find(d => format(d.date, 'eee', { locale: de }) === value)?.date
+                  const fullDate = weeklyChartData.find(d => format(d.date, 'eee', { locale: de }) === value)?.date
                   return fullDate ? format(fullDate, 'eeee, dd.MM', { locale: de }) : value
                 }}
                 formatter={(value) => [`${value} Stunden`, null]}

@@ -5,19 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Calculator, Trash2, ListChecks, AlertCircle, Plane, HeartPulse, Star, Briefcase, School, Gift, Users, BookOpen, Heart, Flower2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { TimeEntry, SpecialDayType } from '@/types';
+import { SpecialDayType } from '@/types';
 import { formatHoursMinutes } from '@/lib/timeUtils';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-
-interface TimeInputSectionProps {
-  input: string;
-  setInput: (input: string) => void;
-  errors: { line: number; message: string }[];
-  timeEntries: TimeEntry[];
-  selectedDate: Date;
-  clearInput: () => void;
-  specialDayType: SpecialDayType | null;
-}
+import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
 
 const SpecialDayDisplay = ({ type }: { type: SpecialDayType }) => {
   const icons: { [key in SpecialDayType]: React.ReactNode } = {
@@ -55,15 +46,16 @@ const SpecialDayDisplay = ({ type }: { type: SpecialDayType }) => {
   );
 };
 
-export const TimeInputSection: React.FC<TimeInputSectionProps> = ({
-  input,
-  setInput,
-  errors,
-  timeEntries,
-  selectedDate,
-  clearInput,
-  specialDayType,
-}) => {
+export const TimeInputSection: React.FC = () => {
+  const {
+    input,
+    setInput,
+    errors,
+    timeEntries,
+    selectedDate,
+    clearInput,
+    specialDayType,
+  } = useTimeCalculatorContext();
   const handleDeleteEntry = (originalLine: string) => {
     const lines = input.split('\n');
     const newLines = lines.filter(line => line !== originalLine);

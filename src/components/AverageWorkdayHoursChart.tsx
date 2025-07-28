@@ -5,10 +5,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, ReferenceLine } from 
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart2 } from "lucide-react"
-
-interface AverageWorkdayHoursChartProps {
-  data: { day: string; averageMinutes: number }[]
-}
+import { useTimeCalculatorContext } from "@/contexts/TimeCalculatorContext"
 
 const chartConfig = {
   hours: {
@@ -37,8 +34,9 @@ const getBarColorByMinutes = (minutes: number): string => {
   }
 };
 
-export const AverageWorkdayHoursChart: React.FC<AverageWorkdayHoursChartProps> = ({ data }) => {
-  const chartData = data.map(item => ({
+export const AverageWorkdayHoursChart: React.FC = () => {
+  const { statistics } = useTimeCalculatorContext();
+  const chartData = statistics.averageDailyMinutes.map(item => ({
     day: item.day,
     hours: parseFloat((item.averageMinutes / 60).toFixed(2)),
     fill: getBarColorByMinutes(item.averageMinutes),

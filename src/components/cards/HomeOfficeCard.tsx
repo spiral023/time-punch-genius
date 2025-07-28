@@ -2,28 +2,24 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Home } from 'lucide-react';
 import { StatisticLine } from '../StatisticLine';
+import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
+import { formatHoursMinutes } from '@/lib/timeUtils';
 
-interface HomeOfficeCardProps {
-  workdays: number;
-  weekendsAndHolidays: number;
-  hoursInNormalTime: string;
-  hoursOutsideNormalTime: string;
-  pureOfficeDays: number;
-  hybridDays: number;
-  hoHoursPercentage: number;
-  hoDaysPercentage: number;
-}
+export const HomeOfficeCard: React.FC = () => {
+  const { homeOfficeStats } = useTimeCalculatorContext();
+  const {
+    homeOfficeDaysWorkdays: workdays,
+    homeOfficeDaysWeekendsAndHolidays: weekendsAndHolidays,
+    totalHomeOfficeHoursInNormalTime,
+    totalHomeOfficeHoursOutsideNormalTime,
+    pureOfficeDays,
+    hybridDays,
+    hoHoursPercentage,
+    hoDaysPercentage,
+  } = homeOfficeStats;
 
-export const HomeOfficeCard: React.FC<HomeOfficeCardProps> = ({
-  workdays,
-  weekendsAndHolidays,
-  hoursInNormalTime,
-  hoursOutsideNormalTime,
-  pureOfficeDays,
-  hybridDays,
-  hoHoursPercentage,
-  hoDaysPercentage,
-}) => {
+  const hoursInNormalTime = formatHoursMinutes(totalHomeOfficeHoursInNormalTime);
+  const hoursOutsideNormalTime = formatHoursMinutes(totalHomeOfficeHoursOutsideNormalTime);
   return (
     <Card>
       <CardHeader>

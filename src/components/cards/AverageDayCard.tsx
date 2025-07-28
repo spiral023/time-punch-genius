@@ -1,15 +1,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp } from 'lucide-react';
+import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
 
-interface AverageDayCardProps {
-  avgStart: string;
-  avgEnd: string;
-  avgBreak: number;
-  avgHours: string;
-}
-
-export const AverageDayCard: React.FC<AverageDayCardProps> = ({ avgStart, avgEnd, avgBreak, avgHours }) => {
+export const AverageDayCard: React.FC = () => {
+  const { averageDayData } = useTimeCalculatorContext();
+  const { avgStart, avgEnd, avgBreak, avgHours } = averageDayData;
   return (
     <Card>
       <CardHeader>

@@ -1,7 +1,12 @@
-import TimeCalculator from '@/components/TimeCalculator';
+import Dashboard from '@/components/Dashboard';
+import { TimeCalculatorProvider } from '@/contexts/TimeCalculatorContext';
 
 const Index = () => {
-  return <TimeCalculator />;
+  return (
+    <TimeCalculatorProvider>
+      <Dashboard />
+    </TimeCalculatorProvider>
+  );
 };
 
 export default Index;

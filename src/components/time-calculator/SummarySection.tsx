@@ -8,26 +8,18 @@ import { BarChart3, Settings } from 'lucide-react';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { formatHoursMinutes } from '@/lib/timeUtils';
+import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
 
-interface SummarySectionProps {
-  weeklySummary: number;
-  monthlySummary: number;
-  yearlySummary: number;
-  weeklyBalance: number;
-  weeklyTargetHours: number;
-  setWeeklyTargetHours: (hours: number) => void;
-  selectedDate: Date;
-}
-
-export const SummarySection: React.FC<SummarySectionProps> = ({
-  weeklySummary,
-  monthlySummary,
-  yearlySummary,
-  weeklyBalance,
-  weeklyTargetHours,
-  setWeeklyTargetHours,
-  selectedDate,
-}) => {
+export const SummarySection: React.FC = () => {
+  const {
+    weeklySummary,
+    monthlySummary,
+    yearlySummary,
+    weeklyBalance,
+    weeklyTargetHours,
+    setWeeklyTargetHours,
+    selectedDate,
+  } = useTimeCalculatorContext();
   return (
     <Card>
       <CardHeader>

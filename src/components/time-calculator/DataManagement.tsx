@@ -7,25 +7,20 @@ import { Settings, Download, Upload, FileUp } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CardManager } from '@/components/CardManager';
-
-interface DataManagementProps {
-  handleExportData: () => void;
-  handleImportData: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  handleClearAllData: () => void;
-  handleWebdeskImport: (files: File[]) => void;
-}
+import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
 
 export interface DataManagementHandles {
   triggerImport: () => void;
   triggerWebdeskImport: () => void;
 }
 
-export const DataManagement = React.forwardRef<DataManagementHandles, DataManagementProps>(({
-  handleExportData,
-  handleImportData,
-  handleClearAllData,
-  handleWebdeskImport,
-}, ref) => {
+export const DataManagement = React.forwardRef<DataManagementHandles, {}>((props, ref) => {
+  const {
+    handleExportData,
+    handleImportData,
+    handleClearAllData,
+    handleWebdeskImport,
+  } = useTimeCalculatorContext();
   const importRef = useRef<HTMLLabelElement>(null);
   const webdeskImportTriggerRef = useRef<HTMLButtonElement>(null);
 

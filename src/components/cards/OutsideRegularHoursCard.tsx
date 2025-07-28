@@ -3,38 +3,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock } from 'lucide-react';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { de } from 'date-fns/locale';
-
 import { Separator } from '@/components/ui/separator';
+import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
+import { formatHoursMinutes } from '@/lib/timeUtils';
 
-interface OutsideRegularHoursCardProps {
-  selectedDate: Date;
-  outsideHoursWeek: string;
-  outsideHoursMonth: string;
-  outsideHoursYear: string;
-  daysWithOutsideHours: number;
-  totalDaysWithEntries: number;
-  totalWeekMinutes: number;
-  totalMonthMinutes: number;
-  totalYearMinutes: number;
-  rawOutsideHoursWeek: number;
-  rawOutsideHoursMonth: number;
-  rawOutsideHoursYear: number;
-}
+export const OutsideRegularHoursCard: React.FC = () => {
+  const {
+    selectedDate,
+    outsideRegularHours,
+    weeklySummary: totalWeekMinutes,
+    monthlySummary: totalMonthMinutes,
+    yearlySummary: totalYearMinutes,
+  } = useTimeCalculatorContext();
 
-export const OutsideRegularHoursCard: React.FC<OutsideRegularHoursCardProps> = ({
-  selectedDate,
-  outsideHoursWeek,
-  outsideHoursMonth,
-  outsideHoursYear,
-  daysWithOutsideHours,
-  totalDaysWithEntries,
-  totalWeekMinutes,
-  totalMonthMinutes,
-  totalYearMinutes,
-  rawOutsideHoursWeek,
-  rawOutsideHoursMonth,
-  rawOutsideHoursYear,
-}) => {
+  const {
+    week: rawOutsideHoursWeek,
+    month: rawOutsideHoursMonth,
+    year: rawOutsideHoursYear,
+    daysWithOutsideHours,
+    totalDaysWithEntries,
+  } = outsideRegularHours;
+
+  const outsideHoursWeek = formatHoursMinutes(rawOutsideHoursWeek);
+  const outsideHoursMonth = formatHoursMinutes(rawOutsideHoursMonth);
+  const outsideHoursYear = formatHoursMinutes(rawOutsideHoursYear);
   const daysPercentage = totalDaysWithEntries > 0
     ? ((daysWithOutsideHours / totalDaysWithEntries) * 100).toFixed(1)
     : 0;

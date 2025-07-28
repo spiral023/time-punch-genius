@@ -1,29 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { getHolidays, isHoliday } from '@/lib/holidays';
-import { Holiday } from '@/types';
+import React from 'react';
+import { isHoliday } from '@/lib/holidays';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import { format, addDays, subDays } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
 
-interface DateNavigatorProps {
-  selectedDate: Date;
-  setSelectedDate: (date: Date) => void;
-}
-
-export const DateNavigator: React.FC<DateNavigatorProps> = ({ selectedDate, setSelectedDate }) => {
-  const [holidays, setHolidays] = useState<Holiday[]>([]);
-
-  useEffect(() => {
-    const fetchHolidays = async () => {
-      const year = selectedDate.getFullYear();
-      const fetchedHolidays = await getHolidays(year, 'AT');
-      setHolidays(fetchedHolidays);
-    };
-    fetchHolidays();
-  }, [selectedDate]);
+export const DateNavigator: React.FC = () => {
+  const { selectedDate, setSelectedDate, holidays } = useTimeCalculatorContext();
 
   const changeDay = (direction: 'prev' | 'next') => {
     const newDate = direction === 'prev' ? subDays(selectedDate, 1) : addDays(selectedDate, 1);
