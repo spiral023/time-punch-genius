@@ -14,14 +14,14 @@ const VacationPlanningCard = () => {
       <CardContent>
         <Dialog>
           <DialogTrigger asChild>
-            <img src="https://sp23.online/images/fenstertage_screenshot.png" alt="Urlaubsplanung" className="rounded-md cursor-pointer" />
+            <img src="https://sp23.online/images/fenstertage_ad2_small.png" alt="Urlaubsplanung" className="rounded-md cursor-pointer" />
           </DialogTrigger>
           <p className="text-sm text-muted-foreground pt-2">
             Nutze Fenstertage effizient und plane deinen Urlaub auf <a href="https://fenstertage.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">fenstertage.com</a>
           </p>
-          <DialogContent className="p-0 border-0 max-w-4xl">
+          <DialogContent className="p-0 border-0 sm:max-w-md">
             <a href="https://fenstertage.com" target="_blank" rel="noopener noreferrer">
-              <img src="https://sp23.online/images/fenstertage_screenshot.png" alt="Urlaubsplanung" />
+              <img src="https://sp23.online/images/fenstertage_ad2_small.png" alt="Urlaubsplanung" className="rounded-lg" />
             </a>
           </DialogContent>
         </Dialog>

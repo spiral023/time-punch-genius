@@ -123,11 +123,6 @@ describe('timeUtils', () => {
       expect(result.totalMinutes).toBe(480);
     });
 
-    it('sollte an einem Feiertag ohne Eingabe 0 Minuten zurückgeben', () => {
-      const result = calculateTimeDetails('', currentTime, 480, true);
-      expect(result.specialDayType).toBe('holiday');
-      expect(result.totalMinutes).toBe(0);
-    });
   });
 
   describe('calculateAverageDay', () => {

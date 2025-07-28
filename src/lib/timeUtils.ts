@@ -51,18 +51,6 @@ export const calculateTimeDetails = (
 ) => {
   const trimmedInput = input.trim().toLowerCase();
 
-  if (isHoliday && trimmedInput === '') {
-    return {
-      timeEntries: [],
-      errors: [],
-      totalMinutes: 0,
-      totalBreak: 0,
-      breakDeduction: 0,
-      grossTotalMinutes: 0,
-      specialDayType: 'holiday' as SpecialDayType,
-    };
-  }
-
   const specialDayMappings: { [key: string]: string } = {
     'urlaub': 'vacation',
     'krankenstand': 'sick',
