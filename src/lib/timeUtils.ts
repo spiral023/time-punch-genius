@@ -51,17 +51,6 @@ export const calculateTimeDetails = (
 ) => {
   const trimmedInput = input.trim().toLowerCase();
 
-  if (isHoliday && !input.trim()) {
-    return {
-      timeEntries: [],
-      errors: [],
-      totalMinutes: 0,
-      totalBreak: 0,
-      breakDeduction: 0,
-      grossTotalMinutes: 0,
-      specialDayType: 'holiday',
-    };
-  }
 
   const specialDayMappings: { [key: string]: string } = {
     'urlaub': 'vacation',
@@ -189,6 +178,10 @@ const parseTimeEntries = (input: string, currentTime?: Date) => {
 
     if (!trimmed.includes('-') && !trimmed.includes(':')) {
       if (!specialDayPattern.test(trimmed)) {
+        validationErrors.push({
+          line: index + 1,
+          message: 'Ungültiges Format. Verwende HH:MM - HH:MM oder HH:MM'
+        });
         return;
       }
     }
@@ -258,11 +251,14 @@ const parseTimeEntries = (input: string, currentTime?: Date) => {
         return;
       }
 
-      validationErrors.push({
-        line: index + 1,
-        message: 'Ungültiges Format. Verwende HH:MM - HH:MM oder HH:MM'
-      });
-      return;
+      // If no other pattern matches, it's an error
+      if (!/^\d{1,2}:\d{2}$/.test(trimmed)) {
+        validationErrors.push({
+          line: index + 1,
+          message: 'Ungültiges Format. Verwende HH:MM - HH:MM oder HH:MM'
+        });
+        return;
+      }
     }
 
     const [, startTime, endTime] = match;
@@ -334,14 +330,20 @@ export const calculateOutsideRegularHours = (
 
     // Time worked before 6:00
     if (startMinutes < regularStartMinutes) {
-      outsideMinutes += Math.min(endMinutes, regularStartMinutes) - startMinutes;
+      const durationBefore = Math.min(endMinutes, regularStartMinutes) - startMinutes;
+      if (durationBefore > 0) {
+        outsideMinutes += durationBefore;
+      }
     }
 
     // Time worked after 19:00
     if (endMinutes > regularEndMinutes) {
-      outsideMinutes += endMinutes - Math.max(startMinutes, regularEndMinutes);
+      const durationAfter = endMinutes - Math.max(startMinutes, regularEndMinutes);
+      if (durationAfter > 0) {
+        outsideMinutes += durationAfter;
+      }
     }
   }
-
+  
   return outsideMinutes;
 };
