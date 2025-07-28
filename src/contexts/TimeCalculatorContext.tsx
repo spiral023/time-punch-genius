@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode, useState, useMemo, useEffect, useRef } from 'react';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfYear, endOfYear, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfYear, endOfYear, startOfMonth, endOfMonth, getYear } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { calculateTimeDetails, formatMinutesToTime, calculateAverageDay, calculateOutsideRegularHours, formatHoursMinutes } from '@/lib/timeUtils';
 import { useTimeCalculator } from '@/hooks/useTimeCalculator';
@@ -9,12 +9,13 @@ import { useDataManagement } from '@/hooks/useDataManagement';
 import { useHomeOfficeStats } from '@/hooks/useHomeOfficeStats';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { useDailyEntry } from '@/hooks/useDailyEntry';
-import { useAppSetup } from '@/hooks/useAppSetup';
 import { useSummary } from '@/hooks/useSummary';
 import { useStatistics } from '@/hooks/useStatistics';
 import { useYearData } from '@/hooks/useYearData';
 import { DataManagementHandles } from '@/components/time-calculator/DataManagement';
 import { Holiday, TimeEntry, YearData, ValidationError } from '@/types';
+import { useHolidays } from '@/hooks/useHolidays';
+import { useTimeEntries } from '@/hooks/useTimeEntries';
 
 const WEEKLY_HOURS_KEY = 'zehelper_weekly_hours';
 
@@ -68,7 +69,8 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
   const [weeklyTargetHours, setWeeklyTargetHours] = usePersistentState<number>(WEEKLY_HOURS_KEY, 38.5);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [lastFullMinute, setLastFullMinute] = useState(new Date());
-  const { holidays } = useAppSetup(selectedDate);
+  const { data: holidays = [] } = useHolidays(getYear(selectedDate));
+  const { data: timeEntries = [], updateEntries } = useTimeEntries(selectedDate);
   const { toast } = useToast();
   const dataManagementRef = useRef<DataManagementHandles>(null);
   const { yearData, updateYearData } = useYearData(selectedDate);
@@ -133,7 +135,7 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
     return newDate;
   }, [selectedDate, lastFullMinute]);
 
-  const { timeEntries, errors, totalMinutes, totalBreak, breakDeduction, grossTotalMinutes, specialDayType } = useTimeCalculator(input, calculationTime, dailyTargetMinutes);
+  const { errors, totalMinutes, totalBreak, breakDeduction, grossTotalMinutes, specialDayType } = useTimeCalculator(input, calculationTime, dailyTargetMinutes);
 
   const weeklyBalance = useMemo(() => {
     const targetMinutes = Math.round(weeklyTargetHours * 60);
@@ -242,17 +244,22 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
     const now = format(currentTime, 'HH:mm');
     const lines = input.trim().split('\n');
     const lastLine = lines[lines.length - 1];
+    let newEntries: TimeEntry[];
 
     if (lastLine.match(/^\d{2}:\d{2}\s*-\s*$/)) {
       const updatedInput = input.trim().replace(/-\s*$/, `- ${now}`);
       setInput(updatedInput);
+      const lastEntry = timeEntries[timeEntries.length - 1];
+      newEntries = [...timeEntries.slice(0, -1), { ...lastEntry, end: now }];
       toast({ title: 'Ausgestempelt', description: `Zeitbuchung bis ${now} Uhr vervollständigt.` });
     } else {
       const newEntry = `${now} - `;
       const updatedInput = input ? `${input.trim()}\n${newEntry}` : newEntry;
       setInput(updatedInput);
+      newEntries = [...timeEntries, { start: now, end: '', duration: 0, originalLine: newEntry }];
       toast({ title: 'Eingestempelt', description: `Zeitbuchung um ${now} Uhr gestartet.` });
     }
+    updateEntries({ date: selectedDate, entries: newEntries });
   };
 
   const value: TimeCalculatorContextType = {

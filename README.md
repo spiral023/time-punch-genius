@@ -151,3 +151,87 @@ Verlinkung zu fenstertage.com zur effizienten Urlaubsplanung mit Zwickeltagen.
 ## 👨‍💻 Entwickler
 
 Entwickelt mit ❤️ von **sp23**.
+
+---
+
+## 🧠 Wissensgraph der Anwendungsarchitektur
+
+Dieser Abschnitt bietet einen Überblick über die Architektur der Anwendung, dargestellt als Wissensgraph.
+
+### Komponenten
+
+*   **Dashboard**: Die Hauptkomponente, die das Layout für die Karten und Diagramme bereitstellt.
+    *   Verwendet: `CardManager`, `useTimeCalculator`
+*   **CardManager**: Verwaltet die Anzeige und das Layout der verschiedenen Informationskarten.
+    *   Verwendet: `AverageDayCard`, `FreeDaysCard`, `HomeOfficeCard`, `InfoCard`, `NotesCard`, `OutsideRegularHoursCard`, `StatisticsCard`, `TipsCard`, `VacationPlanningCard`
+*   **AverageWorkdayHoursChart**: Zeigt ein Diagramm der durchschnittlichen Arbeitsstunden an.
+*   **InfoDialog**: Ein modales Dialogfeld zur Anzeige von Informationen.
+*   **NotificationManager**: Verwaltet Browser-Benachrichtigungen.
+*   **StatisticLine**: Zeigt eine einzelne Statistikzeile an.
+*   **TargetTimeProgress**: Zeigt den Fortschritt zum Erreichen der Zielarbeitszeit an.
+*   **WeeklyHoursChart**: Zeigt ein Diagramm der wöchentlichen Arbeitsstunden an.
+*   **WelcomePopup**: Begrüßungs-Popup für neue Benutzer.
+
+#### Karten-Komponenten (`src/components/cards`)
+
+*   **AverageDayCard**: Zeigt die durchschnittliche tägliche Arbeitszeit an.
+    *   Verwendet: `useTimeCalculator`
+*   **FreeDaysCard**: Verwaltet und zeigt arbeitsfreie Tage an.
+    *   Verwendet: `useFreeDays`
+*   **HomeOfficeCard**: Zeigt Statistiken zur Home-Office-Nutzung an.
+    *   Verwendet: `useHomeOfficeStats`
+*   **InfoCard**: Zeigt allgemeine Informationen an.
+*   **NotesCard**: Ermöglicht das Hinzufügen von Notizen für einen Tag.
+*   **OutsideRegularHoursCard**: Zeigt die außerhalb der regulären Arbeitszeit geleisteten Stunden an.
+*   **StatisticsCard**: Zeigt verschiedene Nutzungsstatistiken an.
+    *   Verwendet: `useStatistics`
+*   **TipsCard**: Zeigt zufällige Tipps an.
+*   **VacationPlanningCard**: Hilft bei der Urlaubsplanung.
+
+#### Zeitrechner-Komponenten (`src/components/time-calculator`)
+
+*   **DataManagement**: Behandelt den Import und Export von Daten.
+    *   Verwendet: `useDataManagement`
+*   **DateNavigator**: Ermöglicht die Navigation zwischen verschiedenen Tagen.
+    *   Verwendet: `useTimeCalculator`
+*   **PersonalVacationDaysSetting**: Ermöglicht die Einstellung persönlicher Urlaubstage.
+    *   Verwendet: `useTimeCalculator`
+*   **ResultsSection**: Zeigt die Ergebnisse der Zeitberechnung an.
+    *   Verwendet: `useTimeCalculator`
+*   **SummarySection**: Zeigt eine Zusammenfassung der Zeitdaten an.
+    *   Verwendet: `useSummary`
+*   **TimeInputSection**: Ermöglicht die Eingabe von Arbeitszeiten.
+    *   Verwendet: `useTimeCalculator`
+
+### Hooks (`src/hooks`)
+
+*   **useTimeCalculator**: Zentraler Hook für die meisten Zeitberechnungen.
+    *   Verwendet: `usePersistentState`, `useYearData`, `useDailyEntry`, `timeUtils`
+*   **useAppSettings**: Verwaltet die Anwendungseinstellungen.
+*   **useAppSetup**: Behandelt die Ersteinrichtung der Anwendung.
+*   **useDailyEntry**: Verwaltet die täglichen Zeiteinträge.
+*   **useDataManagement**: Behandelt die Datenverwaltungslogik.
+*   **useFreeDays**: Verwaltet arbeitsfreie Tage und Feiertage.
+    *   Verwendet: `holidays`
+*   **useHomeOfficeStats**: Berechnet Statistiken zur Home-Office-Nutzung.
+*   **useNotifications**: Verwaltet Benachrichtigungen.
+*   **usePersistentState**: Speichert den Zustand dauerhaft im LocalStorage.
+*   **useStatistics**: Berechnet verschiedene Nutzungsstatistiken.
+*   **useSummary**: Erstellt Zusammenfassungen der Zeitdaten.
+*   **useYearData**: Verwaltet die Daten für ein ganzes Jahr.
+*   **use-mobile**: Stellt fest, ob die Anwendung auf einem mobilen Gerät angezeigt wird.
+*   **use-toast**: Zeigt Toast-Benachrichtigungen an.
+
+### Bibliotheken (`src/lib`)
+
+*   **gradients**: Stellt Farbverläufe für die Benutzeroberfläche bereit.
+*   **holidays**: Enthält Logik zur Berechnung von Feiertagen.
+*   **timeUtils**: Enthält Hilfsfunktionen für Zeitberechnungen.
+*   **tips**: Enthält eine Liste von Nutzungstipps.
+*   **utils**: Allgemeine Hilfsfunktionen.
+*   **webdeskUtils**: Hilfsfunktionen für den Webdesk-Import.
+
+### Seiten (`src/pages`)
+
+*   **Index**: Die Hauptseite der Anwendung.
+*   **NotFound**: Die Seite, die angezeigt wird, wenn eine Route nicht gefunden wird.
