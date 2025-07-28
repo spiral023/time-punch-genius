@@ -166,6 +166,29 @@ export const useStatistics = (yearData: { [date: string]: string }, dailyTargetM
     const currentWeekTotalMinutes = weeklyMinutes[currentWeekKey]?.totalMinutes || 0;
     const previousWeekTotalMinutes = weeklyMinutes[previousWeekKey]?.totalMinutes || 0;
 
+    const dayOfWeek = getDay(today);
+    const previousWeekDate = new Date(today);
+    previousWeekDate.setDate(today.getDate() - 7);
+
+    const previousWeekToDateTotalMinutes = Object.keys(yearData)
+      .filter(dateStr => {
+        const date = new Date(dateStr);
+        const weekNumber = getWeek(date, { weekStartsOn: 1 });
+        const year = date.getFullYear();
+        const day = getDay(date);
+        return (
+          year === previousWeekDate.getFullYear() &&
+          weekNumber === getWeek(previousWeekDate, { weekStartsOn: 1 }) &&
+          day <= dayOfWeek
+        );
+      })
+      .reduce((total, dateStr) => {
+        const input = yearData[dateStr];
+        if (!input || input.trim() === '') return total;
+        const { totalMinutes } = calculateTimeDetails(input, undefined, dailyTargetMinutes);
+        return total + totalMinutes;
+      }, 0);
+
     const averageDailyMinutes = Object.keys(dailyMinutes).map(day => {
         const dayIndex = parseInt(day);
         const data = dailyMinutes[dayIndex];
@@ -200,6 +223,7 @@ export const useStatistics = (yearData: { [date: string]: string }, dailyTargetM
       longestStreakEnd,
       currentWeekTotalMinutes,
       previousWeekTotalMinutes,
+      previousWeekToDateTotalMinutes,
       vacationDays,
     };
   }, [yearData]);

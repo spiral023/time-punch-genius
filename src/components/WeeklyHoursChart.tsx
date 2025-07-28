@@ -37,7 +37,7 @@ const getBarColorByMinutes = (minutes: number): string => {
 
 export const WeeklyHoursChart: React.FC = () => {
   const { weeklyChartData, statistics, selectedDate } = useTimeCalculatorContext();
-  const { currentWeekTotalMinutes, previousWeekTotalMinutes } = statistics;
+  const { currentWeekTotalMinutes, previousWeekToDateTotalMinutes } = statistics;
 
   const chartData = weeklyChartData.map(item => ({
     date: format(item.date, 'eee', { locale: de }),
@@ -95,8 +95,8 @@ export const WeeklyHoursChart: React.FC = () => {
         {isToday(selectedDate) && (
           <div className="text-center text-sm text-muted-foreground mt-4">
             <p>
-              <strong className={currentWeekTotalMinutes >= previousWeekTotalMinutes ? "text-green-500" : "text-red-500"}>
-                {currentWeekTotalMinutes >= previousWeekTotalMinutes ? "Du hast" : "Du hast"} {formatHoursMinutes(Math.abs(currentWeekTotalMinutes - previousWeekTotalMinutes))} {currentWeekTotalMinutes >= previousWeekTotalMinutes ? "mehr" : "weniger"} gearbeitet als letzte Woche.
+              <strong className={currentWeekTotalMinutes >= previousWeekToDateTotalMinutes ? "text-green-500" : "text-red-500"}>
+                Du hast {formatHoursMinutes(Math.abs(currentWeekTotalMinutes - previousWeekToDateTotalMinutes))} {currentWeekTotalMinutes >= previousWeekToDateTotalMinutes ? "mehr" : "weniger"} gearbeitet als zum gleichen Zeitpunkt letzte Woche.
               </strong>
             </p>
           </div>

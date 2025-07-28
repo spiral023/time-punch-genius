@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { gradients } from '@/lib/gradients';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Clock, Coffee } from 'lucide-react';
 import { format, isToday } from 'date-fns';
@@ -28,6 +29,29 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { formatHoursMinutes } from '@/lib/timeUtils';
 
 const Dashboard = () => {
+  useEffect(() => {
+    const savedGradientId = localStorage.getItem('zehelper_current_gradient');
+    if (savedGradientId) {
+      const savedGradient = gradients.find(g => g.id === parseInt(savedGradientId, 10));
+      if (savedGradient) {
+        document.body.style.background = savedGradient.gradient;
+      }
+    }
+  }, []);
+
+  const changeBackground = () => {
+    const currentGradientId = localStorage.getItem('zehelper_current_gradient');
+    let currentIndex = -1;
+    if (currentGradientId) {
+      currentIndex = gradients.findIndex(g => g.id === parseInt(currentGradientId, 10));
+    }
+
+    const nextIndex = currentIndex > 0 ? currentIndex - 1 : gradients.length - 1;
+    const nextGradient = gradients[nextIndex];
+
+    document.body.style.background = nextGradient.gradient;
+    localStorage.setItem('zehelper_current_gradient', nextGradient.id.toString());
+  };
   const { cardVisibility } = useAppSettings();
   const {
     selectedDate,
@@ -105,7 +129,7 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="space-y-6">
-            {cardVisibility['currentTime'] !== false && <Card>
+            {cardVisibility['currentTime'] !== false && <Card onClick={changeBackground} className="cursor-pointer">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5" />
