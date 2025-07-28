@@ -14,6 +14,12 @@ export type Holiday = {
 
 const holidayCache: { [key: string]: Holiday[] } = {};
 
+export const clearHolidayCache = () => {
+  for (const key in holidayCache) {
+    delete holidayCache[key];
+  }
+};
+
 export const getHolidays = async (year: number, countryCode: string): Promise<Holiday[]> => {
   const cacheKey = `${year}-${countryCode}`;
   if (holidayCache[cacheKey]) {

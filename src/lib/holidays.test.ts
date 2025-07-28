@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getHolidays, isHoliday, Holiday } from './holidays';
+import { getHolidays, isHoliday, Holiday, clearHolidayCache } from './holidays';
 
 const mockHolidays: Holiday[] = [
   {
@@ -53,23 +53,19 @@ describe('holidays', () => {
 
   describe('getHolidays', () => {
     beforeEach(() => {
-      // Mock fetch before each test in this describe block
-      vi.spyOn(global, 'fetch').mockImplementation(
-        vi.fn().mockResolvedValue({
-          ok: true,
-          json: () => Promise.resolve(mockHolidays),
-        })
-      );
+      clearHolidayCache();
     });
 
     afterEach(() => {
-      // Restore all mocks after each test
       vi.restoreAllMocks();
-      // Clear the cache manually for isolation between tests
-      vi.resetModules();
     });
 
     it('sollte Feiertage von der API abrufen und zurückgeben', async () => {
+      vi.spyOn(global, 'fetch').mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockHolidays),
+      } as Response);
+
       const holidays = await getHolidays(2025, 'AT');
       expect(fetch).toHaveBeenCalledTimes(1);
       expect(fetch).toHaveBeenCalledWith('https://date.nager.at/api/v3/PublicHolidays/2025/AT');
@@ -77,15 +73,15 @@ describe('holidays', () => {
     });
 
     it('sollte bei einem API-Fehler ein leeres Array zurückgeben', async () => {
-      vi.mocked(fetch).mockRejectedValue(new Error('API is down'));
+      vi.spyOn(global, 'fetch').mockRejectedValue(new Error('API is down'));
       const holidays = await getHolidays(2025, 'AT');
       expect(holidays).toEqual([]);
     });
 
     it('sollte bei einer nicht-ok-Antwort ein leeres Array zurückgeben', async () => {
-        vi.mocked(fetch).mockResolvedValue({ ok: false } as Response);
-        const holidays = await getHolidays(2025, 'AT');
-        expect(holidays).toEqual([]);
+      vi.spyOn(global, 'fetch').mockResolvedValue({ ok: false } as Response);
+      const holidays = await getHolidays(2025, 'AT');
+      expect(holidays).toEqual([]);
     });
   });
 });
