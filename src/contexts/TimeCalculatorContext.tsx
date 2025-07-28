@@ -38,6 +38,7 @@ interface TimeCalculatorContextType {
   weeklySummary: number;
   monthlySummary: number;
   yearlySummary: number;
+  totalSummary: number;
   statistics: ReturnType<typeof useStatistics>;
   homeOfficeStats: ReturnType<typeof useHomeOfficeStats>;
   dataManagementRef: React.RefObject<DataManagementHandles>;
@@ -74,12 +75,46 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
   const { input, setInput, notes, setNotes } = useDailyEntry(selectedDate, updateYearData);
   const dailyTargetMinutes = useMemo(() => (weeklyTargetHours / 5) * 60, [weeklyTargetHours]);
   const { handleExportData, handleImportData, handleClearAllData, handleWebdeskImport } = useDataManagement();
-  const { weeklySummary, monthlySummary, yearlySummary } = useSummary(selectedDate, yearData, dailyTargetMinutes);
+  const { weeklySummary, monthlySummary, yearlySummary, totalSummary } = useSummary(selectedDate, yearData, dailyTargetMinutes);
   const statistics = useStatistics(yearData, dailyTargetMinutes);
   const homeOfficeStats = useHomeOfficeStats(yearData, holidays);
 
   const triggerImport = () => dataManagementRef.current?.triggerImport();
   const triggerWebdeskImport = () => dataManagementRef.current?.triggerWebdeskImport();
+
+  useEffect(() => {
+    const handlePaste = (event: ClipboardEvent) => {
+      const text = event.clipboardData?.getData('text');
+      if (text) {
+        const activeElement = document.activeElement;
+        const isInputFocused = activeElement && (
+          activeElement.tagName === 'INPUT' || 
+          activeElement.tagName === 'TEXTAREA' || 
+          (activeElement as HTMLElement).isContentEditable
+        );
+
+        if (isInputFocused) {
+          return;
+        }
+        
+        event.preventDefault();
+        setInput(prevInput => {
+          const newText = text.trim();
+          if (!prevInput) return newText;
+          return `${prevInput}\n${newText}`;
+        });
+        toast({
+          title: "Zeiten eingefügt",
+          description: "Die kopierten Zeitbuchungen wurden übernommen."
+        });
+      }
+    };
+
+    document.addEventListener('paste', handlePaste);
+    return () => {
+      document.removeEventListener('paste', handlePaste);
+    };
+  }, [setInput, toast]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -240,6 +275,7 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
     weeklySummary,
     monthlySummary,
     yearlySummary,
+    totalSummary,
     statistics,
     homeOfficeStats,
     dataManagementRef,

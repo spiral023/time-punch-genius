@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { getYear } from "date-fns"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, ReferenceLine } from "recharts"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -35,7 +36,7 @@ const getBarColorByMinutes = (minutes: number): string => {
 };
 
 export const AverageWorkdayHoursChart: React.FC = () => {
-  const { statistics } = useTimeCalculatorContext();
+  const { statistics, selectedDate } = useTimeCalculatorContext();
   const chartData = statistics.averageDailyMinutes.map(item => ({
     day: item.day,
     hours: parseFloat((item.averageMinutes / 60).toFixed(2)),
@@ -53,7 +54,7 @@ export const AverageWorkdayHoursChart: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart2 className="h-6 w-6" />
-          Durchschnitt pro Wochentag
+          Durchschnitt pro Wochentag {getYear(selectedDate)}
         </CardTitle>
       </CardHeader>
       <CardContent>

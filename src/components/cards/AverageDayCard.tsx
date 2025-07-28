@@ -11,7 +11,7 @@ export const AverageDayCard: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />
-          Durchschnittlicher Tag
+          Mein durchschnittlicher Tag
         </CardTitle>
       </CardHeader>
       <CardContent>

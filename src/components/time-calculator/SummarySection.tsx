@@ -15,6 +15,7 @@ export const SummarySection: React.FC = () => {
     weeklySummary,
     monthlySummary,
     yearlySummary,
+    totalSummary,
     weeklyBalance,
     weeklyTargetHours,
     setWeeklyTargetHours,
@@ -126,14 +127,14 @@ export const SummarySection: React.FC = () => {
           <div className="flex justify-between items-baseline">
             <span className="text-sm font-medium">Gesamt</span>
             <motion.span
-              key={`total-${yearlySummary}`}
+              key={`total-${totalSummary}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               className="font-bold text-lg"
             >
-              {formatHoursMinutes(yearlySummary)}
+              {formatHoursMinutes(totalSummary)}
             </motion.span>
           </div>
           <p className="text-xs text-muted-foreground">

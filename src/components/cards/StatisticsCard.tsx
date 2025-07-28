@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { TrendingUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -40,6 +40,7 @@ export const StatisticsCard: React.FC = () => {
           <TrendingUp className="h-5 w-5" />
           Statistik
         </CardTitle>
+        <CardDescription>Gesamter Zeitraum</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>

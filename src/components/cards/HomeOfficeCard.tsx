@@ -1,12 +1,13 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Home } from 'lucide-react';
 import { StatisticLine } from '../StatisticLine';
 import { useTimeCalculatorContext } from '@/contexts/TimeCalculatorContext';
 import { formatHoursMinutes } from '@/lib/timeUtils';
+import { getYear } from 'date-fns';
 
 export const HomeOfficeCard: React.FC = () => {
-  const { homeOfficeStats } = useTimeCalculatorContext();
+  const { homeOfficeStats, selectedDate } = useTimeCalculatorContext();
   const {
     homeOfficeDaysWorkdays: workdays,
     homeOfficeDaysWeekendsAndHolidays: weekendsAndHolidays,
@@ -25,8 +26,9 @@ export const HomeOfficeCard: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Home className="h-5 w-5" />
-          Home-Office-Statistik
+          Home-Office
         </CardTitle>
+        <CardDescription>Statistik für das Jahr {getYear(selectedDate)}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-2">
         <StatisticLine label="HO Tage an Werktagen" value={workdays} />

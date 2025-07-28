@@ -43,9 +43,25 @@ export const useSummary = (selectedDate: Date, yearData: { [date: string]: strin
     return calculateSummary(start, end, yearData, dailyTargetMinutes);
   }, [selectedDate, yearData, dailyTargetMinutes]);
 
+  const totalSummary = useMemo(() => {
+    let total = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('zehelper_data_')) {
+        const dayInput = localStorage.getItem(key);
+        if (dayInput) {
+          const dayDetails = calculateTimeDetails(dayInput, undefined, dailyTargetMinutes);
+          total += dayDetails.totalMinutes;
+        }
+      }
+    }
+    return total;
+  }, [yearData, dailyTargetMinutes]);
+
   return {
     weeklySummary,
     monthlySummary,
     yearlySummary,
+    totalSummary,
   };
 };
