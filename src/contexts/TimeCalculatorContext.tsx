@@ -66,6 +66,7 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weeklyTargetHours, setWeeklyTargetHours] = usePersistentState<number>(WEEKLY_HOURS_KEY, 38.5);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [lastFullMinute, setLastFullMinute] = useState(new Date());
   const { holidays } = useAppSetup(selectedDate);
   const { toast } = useToast();
   const dataManagementRef = useRef<DataManagementHandles>(null);
@@ -81,15 +82,21 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
   const triggerWebdeskImport = () => dataManagementRef.current?.triggerWebdeskImport();
 
   useEffect(() => {
-    const interval = setInterval(() => setCurrentTime(new Date()), 1000);
+    const interval = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(now);
+      if (now.getSeconds() === 0) {
+        setLastFullMinute(now);
+      }
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
 
   const calculationTime = useMemo(() => {
     const newDate = new Date(selectedDate);
-    newDate.setHours(currentTime.getHours(), currentTime.getMinutes(), currentTime.getSeconds());
+    newDate.setHours(lastFullMinute.getHours(), lastFullMinute.getMinutes(), lastFullMinute.getSeconds());
     return newDate;
-  }, [selectedDate, currentTime]);
+  }, [selectedDate, lastFullMinute]);
 
   const { timeEntries, errors, totalMinutes, totalBreak, breakDeduction, grossTotalMinutes, specialDayType } = useTimeCalculator(input, calculationTime, dailyTargetMinutes);
 
@@ -113,11 +120,11 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
         dayInput = input;
       }
       
-      const details = calculateTimeDetails(dayInput, dayKey === format(new Date(), 'yyyy-MM-dd') ? currentTime : undefined, dailyTargetMinutes, false);
+      const details = calculateTimeDetails(dayInput, dayKey === format(new Date(), 'yyyy-MM-dd') ? calculationTime : undefined, dailyTargetMinutes, false);
       data.push({ date: day, totalMinutes: details.totalMinutes });
     }
     return data;
-  }, [selectedDate, input, currentTime, dailyTargetMinutes]);
+  }, [selectedDate, input, calculationTime, dailyTargetMinutes]);
 
   useEffect(() => {
     if (totalMinutes > 0) {
@@ -136,8 +143,8 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
   };
 
   const averageDayData = useMemo(() => {
-    return calculateAverageDay(Object.values(yearData), currentTime, dailyTargetMinutes);
-  }, [yearData, currentTime, dailyTargetMinutes]);
+    return calculateAverageDay(Object.values(yearData), calculationTime, dailyTargetMinutes);
+  }, [yearData, calculationTime, dailyTargetMinutes]);
 
   const outsideRegularHours = useMemo(() => {
     const calculateTotalOutsideHours = (start: Date, end: Date) => {
