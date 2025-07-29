@@ -15,7 +15,6 @@ import { useYearData } from '../hooks/useYearData';
 import { DataManagementHandles } from '../components/DataManagement';
 import { Holiday, TimeEntry, YearData, ValidationError } from '@/types';
 import { useHolidays } from '../hooks/useHolidays';
-import { useTimeEntries } from '../hooks/useTimeEntries';
 
 const WEEKLY_HOURS_KEY = 'zehelper_weekly_hours';
 
@@ -70,7 +69,6 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
   const [currentTime, setCurrentTime] = useState(new Date());
   const [lastFullMinute, setLastFullMinute] = useState(new Date());
   const { data: holidays = [] } = useHolidays(getYear(selectedDate));
-  const { data: timeEntries = [], updateEntries } = useTimeEntries(selectedDate);
   const { toast } = useToast();
   const dataManagementRef = useRef<DataManagementHandles>(null);
   const { yearData, updateYearData } = useYearData(selectedDate);
@@ -135,7 +133,7 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
     return newDate;
   }, [selectedDate, lastFullMinute]);
 
-  const { errors, totalMinutes, totalBreak, breakDeduction, grossTotalMinutes, specialDayType } = useTimeCalculator(input, calculationTime, dailyTargetMinutes);
+  const { timeEntries, errors, totalMinutes, totalBreak, breakDeduction, grossTotalMinutes, specialDayType } = useTimeCalculator(input, calculationTime, dailyTargetMinutes);
 
   const weeklyBalance = useMemo(() => {
     const targetMinutes = Math.round(weeklyTargetHours * 60);
@@ -242,24 +240,21 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
 
   const handlePunch = () => {
     const now = format(currentTime, 'HH:mm');
-    const lines = input.trim().split('\n');
-    const lastLine = lines[lines.length - 1];
-    let newEntries: TimeEntry[];
+    const lines = input.trim().split('\n').filter(line => line.trim() !== '');
+    const lastLine = lines.length > 0 ? lines[lines.length - 1] : '';
 
-    if (lastLine.match(/^\d{2}:\d{2}\s*-\s*$/)) {
-      const updatedInput = input.trim().replace(/-\s*$/, `- ${now}`);
-      setInput(updatedInput);
-      const lastEntry = timeEntries[timeEntries.length - 1];
-      newEntries = [...timeEntries.slice(0, -1), { ...lastEntry, end: now }];
+    if (lastLine.match(/^\d{1,2}:\d{2}\s*-\s*$/)) {
+      // Punching out: complete the last line
+      lines[lines.length - 1] = lastLine.replace(/-\s*$/, `- ${now}`);
+      setInput(lines.join('\n'));
       toast({ title: 'Ausgestempelt', description: `Zeitbuchung bis ${now} Uhr vervollständigt.` });
     } else {
+      // Punching in: add a new line
       const newEntry = `${now} - `;
       const updatedInput = input ? `${input.trim()}\n${newEntry}` : newEntry;
       setInput(updatedInput);
-      newEntries = [...timeEntries, { start: now, end: '', duration: 0, originalLine: newEntry }];
       toast({ title: 'Eingestempelt', description: `Zeitbuchung um ${now} Uhr gestartet.` });
     }
-    updateEntries({ date: selectedDate, entries: newEntries });
   };
 
   const value: TimeCalculatorContextType = {

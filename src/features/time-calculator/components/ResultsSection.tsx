@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Clock, Target } from 'lucide-react';
-import { formatHoursMinutes, addMinutesToTime } from '@/lib/timeUtils';
+import { formatHoursMinutes, addMinutesToTime, formatMinutesToTime } from '@/lib/timeUtils';
 import { TargetTimeProgress } from '@/features/dashboard/components/TargetTimeProgress';
 import { useTimeCalculatorContext } from '../contexts/TimeCalculatorContext';
 
@@ -19,6 +19,7 @@ export const ResultsSection: React.FC = () => {
     handlePunch,
     specialDayType,
     selectedDate,
+    currentTime,
   } = useTimeCalculatorContext();
   const isWeekend = selectedDate.getDay() === 0 || selectedDate.getDay() === 6;
 
@@ -39,11 +40,21 @@ export const ResultsSection: React.FC = () => {
 
   const calculateTargetTime = (targetMinutes: number): string | null => {
     if (timeEntries.length === 0 || specialDayType) return null;
-    
+
     const remainingMinutes = targetMinutes - totalMinutes;
-    if (remainingMinutes <= 0) return "Ziel bereits erreicht";
-    
+    if (remainingMinutes <= 0) return 'Ziel bereits erreicht';
+
     const lastEntry = timeEntries[timeEntries.length - 1];
+
+    // Check if the original line represents an open entry
+    const isOpenEntry = lastEntry.originalLine.trim().match(/-\s*$/);
+
+    if (isOpenEntry) {
+      // If it's an open entry, calculate target from the real current time
+      const nowMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+      return formatMinutesToTime(nowMinutes + remainingMinutes);
+    }
+
     return addMinutesToTime(lastEntry.end, remainingMinutes);
   };
 

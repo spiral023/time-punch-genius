@@ -225,7 +225,7 @@ const parseTimeEntries = (input: string, currentTime?: Date) => {
       const startMinutes = parseTimeToMinutes(startTime);
       const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
       
-      if (currentMinutes > startMinutes) {
+      if (currentMinutes >= startMinutes) {
         const duration = currentMinutes - startMinutes;
         const endTime = formatMinutesToTime(currentMinutes);
         entries.push({ start: startTime, end: endTime, duration, reason: reason ? reason : undefined, originalLine: line });

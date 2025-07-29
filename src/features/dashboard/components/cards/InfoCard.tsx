@@ -1,10 +1,14 @@
 import React from 'react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Info } from 'lucide-react';
 import { InfoDialog } from '../InfoDialog';
+import { useBrowserNotifications } from '@/hooks/useBrowserNotifications';
 
 const InfoCard: React.FC = () => {
+  const { showBrowserNotification } = useBrowserNotifications();
+
   return (
     <Card>
       <CardHeader>
@@ -46,6 +50,27 @@ const InfoCard: React.FC = () => {
             </p>
           </div>
         </InfoDialog>
+        <Button
+          onClick={() => {
+            showBrowserNotification(
+              'Test-Benachrichtigung',
+              'Dies ist eine Testbenachrichtigung von deinem Browser.',
+            );
+          }}
+        >
+          Test Browser Alert
+        </Button>
+        <Button
+          onClick={() => {
+            setTimeout(() => {
+              toast('Test-Benachrichtigung', {
+                description: 'Dies ist eine Testbenachrichtigung.',
+              });
+            }, 1000);
+          }}
+        >
+          Test Toast Alert
+        </Button>
         <InfoDialog triggerText="Datenschutz" title="Datenschutz">
           <div>
             <p>

@@ -1,26 +1,64 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lightbulb, RefreshCw } from 'lucide-react';
 import { tips, Tip } from '@/lib/tips';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 
-const getRandomTip = (currentTip?: Tip): Tip => {
-  let newTip: Tip;
-  do {
-    newTip = tips[Math.floor(Math.random() * tips.length)];
-  } while (tips.length > 1 && newTip.title === currentTip?.title);
-  return newTip;
+const SEEN_TIPS_STORAGE_KEY = 'zehelper_seentips';
+
+const getSeenTips = (): number[] => {
+  const seenTips = localStorage.getItem(SEEN_TIPS_STORAGE_KEY);
+  return seenTips ? JSON.parse(seenTips) : [];
+};
+
+const addSeenTip = (tipId: number) => {
+  const seenTips = getSeenTips();
+  if (!seenTips.includes(tipId)) {
+    localStorage.setItem(SEEN_TIPS_STORAGE_KEY, JSON.stringify([...seenTips, tipId]));
+  }
+};
+
+const getNextTip = (currentTip?: Tip): Tip => {
+  const seenTips = getSeenTips();
+  const unseenTips = tips.filter((tip) => !seenTips.includes(tip.id));
+
+  if (unseenTips.length > 0) {
+    let newTip: Tip;
+    do {
+      newTip = unseenTips[Math.floor(Math.random() * unseenTips.length)];
+    } while (unseenTips.length > 1 && newTip.id === currentTip?.id);
+    return newTip;
+  } else {
+    // Alle Tipps gesehen, zeige sie in absteigender Reihenfolge
+    const sortedTips = [...tips].sort((a, b) => b.id - a.id);
+    if (!currentTip) {
+      return sortedTips[0];
+    }
+    const currentIndex = sortedTips.findIndex((tip) => tip.id === currentTip.id);
+    const nextIndex = (currentIndex + 1) % sortedTips.length;
+    return sortedTips[nextIndex];
+  }
 };
 
 export const TipsCard: React.FC = () => {
-  const [randomTip, setRandomTip] = useState<Tip>(() => getRandomTip());
+  const [currentTip, setCurrentTip] = useState<Tip | undefined>(undefined);
 
-  const refreshTip = useCallback(() => {
-    setRandomTip((prevTip) => getRandomTip(prevTip));
+  useEffect(() => {
+    const tip = getNextTip();
+    setCurrentTip(tip);
+    addSeenTip(tip.id);
   }, []);
 
-  if (!randomTip) {
+  const refreshTip = useCallback(() => {
+    setCurrentTip((prevTip) => {
+      const newTip = getNextTip(prevTip);
+      addSeenTip(newTip.id);
+      return newTip;
+    });
+  }, []);
+
+  if (!currentTip) {
     return null;
   }
 
@@ -39,16 +77,18 @@ export const TipsCard: React.FC = () => {
       </CardHeader>
       <CardContent className="space-y-2 min-h-[6rem] overflow-y-auto">
         <AnimatePresence mode="wait">
-          <motion.div
-            key={randomTip.title}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            <h3 className="font-semibold">{randomTip.title}</h3>
-            <p className="text-sm text-muted-foreground">{randomTip.description}</p>
-          </motion.div>
+          {currentTip && (
+            <motion.div
+              key={currentTip.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h3 className="font-semibold">{currentTip.title}</h3>
+              <p className="text-sm text-muted-foreground">{currentTip.description}</p>
+            </motion.div>
+          )}
         </AnimatePresence>
       </CardContent>
     </Card>
