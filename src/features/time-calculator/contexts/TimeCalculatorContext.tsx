@@ -241,15 +241,20 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
   const handlePunch = () => {
     const now = format(currentTime, 'HH:mm');
     const lines = input.trim().split('\n').filter(line => line.trim() !== '');
-    const lastLine = lines.length > 0 ? lines[lines.length - 1] : '';
+    const lastLine = lines.length > 0 ? lines[lines.length - 1].trim() : '';
 
+    // Case 1: Punching out an open entry (e.g., "08:00 - ")
     if (lastLine.match(/^\d{1,2}:\d{2}\s*-\s*$/)) {
-      // Punching out: complete the last line
       lines[lines.length - 1] = lastLine.replace(/-\s*$/, `- ${now}`);
       setInput(lines.join('\n'));
       toast({ title: 'Ausgestempelt', description: `Zeitbuchung bis ${now} Uhr vervollständigt.` });
+    // Case 2: Punching in from a specific time (e.g., "18:00")
+    } else if (lastLine.match(/^\d{1,2}:\d{2}$/)) {
+      lines[lines.length - 1] = `${lastLine} - ${now}`;
+      setInput(lines.join('\n'));
+      toast({ title: 'Zeitbuchung erstellt', description: `Buchung von ${lastLine} bis ${now} Uhr erstellt.` });
     } else {
-      // Punching in: add a new line
+      // Case 3: Punching in with current time (new entry)
       const newEntry = `${now} - `;
       const updatedInput = input ? `${input.trim()}\n${newEntry}` : newEntry;
       setInput(updatedInput);
