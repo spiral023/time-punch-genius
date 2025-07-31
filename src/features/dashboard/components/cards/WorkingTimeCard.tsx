@@ -22,7 +22,22 @@ export const WorkingTimeCard: React.FC = () => {
   // Prüfe, ob das ausgewählte Datum heute ist
   const today = new Date();
   const isToday = format(selectedDate, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd');
-  const canPunch = isToday && !specialDayType;
+  
+  // Definiere ganztägige Sondertage, bei denen kein Punchen erlaubt ist
+  const fullDaySpecialTypes = [
+    'vacation',
+    'sick', 
+    'care_leave',
+    'wedding',
+    'bereavement',
+    'special_leave',
+    'works_council',
+    'training',
+    'vocational_school'
+  ];
+  
+  // Erlaube Punchen für heute, außer bei ganztägigen Sondertagen
+  const canPunch = isToday && (!specialDayType || !fullDaySpecialTypes.includes(specialDayType));
 
   const getTextColorClass = (minutes: number): string => {
     if (specialDayType) return 'text-blue-500';
@@ -64,8 +79,10 @@ export const WorkingTimeCard: React.FC = () => {
             <p>
               {!isToday 
                 ? 'Zeitbuchungen nur für heute möglich' 
-                : specialDayType 
-                ? 'Aktion nicht verfügbar' 
+                : specialDayType === 'holiday'
+                ? 'Klicken zum Ein- oder Ausstempeln (Feiertag)'
+                : specialDayType && fullDaySpecialTypes.includes(specialDayType)
+                ? 'Zeitbuchung bei ganztägigen Sondertagen nicht möglich' 
                 : 'Klicken zum Ein- oder Ausstempeln'
               }
             </p>

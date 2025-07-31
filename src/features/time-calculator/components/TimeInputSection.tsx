@@ -56,6 +56,23 @@ export const TimeInputSection: React.FC = () => {
     clearInput,
     specialDayType,
   } = useTimeCalculatorContext();
+  
+  // Definiere ganztägige Sondertage, bei denen keine Eingabe erlaubt ist
+  const fullDaySpecialTypes = [
+    'vacation',
+    'sick', 
+    'care_leave',
+    'wedding',
+    'bereavement',
+    'special_leave',
+    'works_council',
+    'training',
+    'vocational_school'
+  ];
+  
+  // Prüfe ob es ein ganztägiger Sondertag ist (nicht Feiertag)
+  const isFullDaySpecialDay = specialDayType && fullDaySpecialTypes.includes(specialDayType);
+  
   const handleDeleteEntry = (originalLine: string) => {
     const lines = input.split('\n');
     const newLines = lines.filter(line => line !== originalLine);
@@ -100,6 +117,7 @@ export const TimeInputSection: React.FC = () => {
                     size="sm"
                     onClick={clearInput}
                     className="text-destructive hover:text-destructive"
+                    aria-label="Zeitbuchungen für diesen Tag löschen"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -113,18 +131,22 @@ export const TimeInputSection: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div key={format(selectedDate, 'yyyy-MM-dd')}>
-            {specialDayType ? (
-              <SpecialDayDisplay type={specialDayType} />
+            {isFullDaySpecialDay ? (
+              <SpecialDayDisplay type={specialDayType!} />
             ) : (
-              <Textarea
-                placeholder="Noch keine Einträge für diesen Tag. Buchungen im Format HH:mm-HH:mm, 'Urlaub' oder 'Krankenstand' eingeben."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                className="min-h-[164px] font-mono text-sm resize-none"
-              />
+              <div className="relative">
+                <Textarea
+                  placeholder="Noch keine Einträge für diesen Tag. Buchungen im Format HH:mm-HH:mm, 'Urlaub' oder 'Krankenstand' eingeben."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  className="min-h-[164px] font-mono text-sm resize-none"
+                  aria-label="Zeitbuchungen eingeben"
+                  data-testid="time-input-textarea"
+                />
+              </div>
             )}
           </div>
-          {errors.length > 0 && !specialDayType && (
+          {errors.length > 0 && !isFullDaySpecialDay && (
             <div className="space-y-2">
               {errors.map((error, index) => (
                 <Alert variant="destructive" key={index}>
@@ -139,7 +161,7 @@ export const TimeInputSection: React.FC = () => {
         </CardContent>
       </Card>
 
-      {timeEntries.length > 0 && !specialDayType && (
+      {timeEntries.length > 0 && !isFullDaySpecialDay && (
         <div className="mt-6">
           <Card>
             <CardHeader>
@@ -174,6 +196,8 @@ export const TimeInputSection: React.FC = () => {
                             size="sm"
                             onClick={() => handleDeleteEntry(entry.originalLine)}
                             className="text-destructive hover:text-destructive"
+                            aria-label="Diesen Eintrag löschen"
+                            data-testid={`delete-entry-${index}`}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
