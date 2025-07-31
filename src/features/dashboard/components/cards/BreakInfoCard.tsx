@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTimeCalculatorContext } from '@/features/time-calculator/contexts/TimeCalculatorContext';
-import { Coffee, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { Coffee, AlertTriangle, CheckCircle } from 'lucide-react';
 import { formatHoursMinutes } from '@/lib/timeUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { format } from 'date-fns';
@@ -17,6 +17,11 @@ export const BreakInfoCard: React.FC = () => {
     daysWithInsufficientSingleBreak,
     daysWithBreakViolations,
     totalMissedBreakMinutes,
+    normalWorkDays,
+    daysWithoutRequiredBreakPercent,
+    daysWithInsufficientSingleBreakPercent,
+    daysWithBreakViolationsPercent,
+    totalMissedBreakPercent,
   } = statistics;
 
   const getComplianceIcon = () => {
@@ -57,35 +62,34 @@ export const BreakInfoCard: React.FC = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Coffee className="h-5 w-5" />
-          Pauseninfo
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Info className="h-4 w-4 text-muted-foreground" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p className="text-sm">
-                  <strong>Österreichisches Arbeitszeitgesetz:</strong><br />
-                  Bei über 6h Arbeitszeit sind mindestens 30 Minuten Pause erforderlich. 
-                  Bei mehreren Pausen muss eine davon mindestens 10 Minuten betragen.
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </CardTitle>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <CardTitle className="flex items-center gap-2 cursor-help">
+                <Coffee className="h-5 w-5" />
+                Pauseninfo
+              </CardTitle>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p className="text-sm">
+                <strong>Österreichisches Arbeitszeitgesetz:</strong><br />
+                Bei über 6h Arbeitszeit sind mindestens 30 Minuten Pause erforderlich. 
+                Bei mehreren Pausen muss eine davon mindestens 10 Minuten betragen.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
           <div className="flex justify-between">
-            <span className="text-sm">Konsumierte Pausen</span>
+            <span className="text-sm">Konsumierte Pausen heute</span>
             <span className="text-sm font-bold">{formatHoursMinutes(totalBreak)}</span>
           </div>
           
           {grossTotalMinutes >= 360 && breakCompliance && (
             <div className="flex justify-between">
-              <span className="text-sm">Längste Einzelpause</span>
+              <span className="text-sm">Längste Einzelpause heute</span>
               <span className="text-sm font-bold">{formatHoursMinutes(breakCompliance.longestSingleBreak)}</span>
             </div>
           )}
@@ -135,16 +139,23 @@ export const BreakInfoCard: React.FC = () => {
             <div>
               <div className="flex justify-between items-baseline">
                 <span className="text-sm font-medium">Tage ohne Pflichtpause</span>
-                <motion.span
-                  key={`days-without-break-${daysWithoutRequiredBreak}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className={`font-bold text-sm ${daysWithoutRequiredBreak > 0 ? 'text-red-500' : 'text-green-500'}`}
-                >
-                  {daysWithoutRequiredBreak} Tage
-                </motion.span>
+                <div className="text-right">
+                  <motion.span
+                    key={`days-without-break-${daysWithoutRequiredBreak}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={`font-bold text-sm ${daysWithoutRequiredBreak > 0 ? 'text-red-500' : 'text-green-500'}`}
+                  >
+                    {daysWithoutRequiredBreak} Tage
+                  </motion.span>
+                  {normalWorkDays > 0 && (
+                    <span className={`font-bold text-sm ml-2 ${daysWithoutRequiredBreak > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                      ({daysWithoutRequiredBreakPercent.toFixed(1)}%)
+                    </span>
+                  )}
+                </div>
               </div>
               <p className="text-xs text-muted-foreground text-right">
                 Gesamtpause &lt; 30min
@@ -154,16 +165,23 @@ export const BreakInfoCard: React.FC = () => {
             <div>
               <div className="flex justify-between items-baseline">
                 <span className="text-sm font-medium">Tage ohne 10min-Pause</span>
-                <motion.span
-                  key={`days-insufficient-single-break-${daysWithInsufficientSingleBreak}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className={`font-bold text-sm ${daysWithInsufficientSingleBreak > 0 ? 'text-red-500' : 'text-green-500'}`}
-                >
-                  {daysWithInsufficientSingleBreak} Tage
-                </motion.span>
+                <div className="text-right">
+                  <motion.span
+                    key={`days-insufficient-single-break-${daysWithInsufficientSingleBreak}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={`font-bold text-sm ${daysWithInsufficientSingleBreak > 0 ? 'text-red-500' : 'text-green-500'}`}
+                  >
+                    {daysWithInsufficientSingleBreak} Tage
+                  </motion.span>
+                  {normalWorkDays > 0 && (
+                    <span className={`font-bold text-sm ml-2 ${daysWithInsufficientSingleBreak > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                      ({daysWithInsufficientSingleBreakPercent.toFixed(1)}%)
+                    </span>
+                  )}
+                </div>
               </div>
               <p className="text-xs text-muted-foreground text-right">
                 Keine Einzelpause ≥10min
@@ -173,16 +191,23 @@ export const BreakInfoCard: React.FC = () => {
             <div>
               <div className="flex justify-between items-baseline">
                 <span className="text-sm font-medium">Arbeitszeitverletzungen</span>
-                <motion.span
-                  key={`days-break-violations-${daysWithBreakViolations}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className={`font-bold text-sm ${daysWithBreakViolations > 0 ? 'text-red-500' : 'text-green-500'}`}
-                >
-                  {daysWithBreakViolations} Tage
-                </motion.span>
+                <div className="text-right">
+                  <motion.span
+                    key={`days-break-violations-${daysWithBreakViolations}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={`font-bold text-sm ${daysWithBreakViolations > 0 ? 'text-red-500' : 'text-green-500'}`}
+                  >
+                    {daysWithBreakViolations} Tage
+                  </motion.span>
+                  {normalWorkDays > 0 && (
+                    <span className={`font-bold text-sm ml-2 ${daysWithBreakViolations > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                      ({daysWithBreakViolationsPercent.toFixed(1)}%)
+                    </span>
+                  )}
+                </div>
               </div>
               <p className="text-xs text-muted-foreground text-right">
                 Pausenregelung nicht eingehalten
@@ -192,19 +217,29 @@ export const BreakInfoCard: React.FC = () => {
             <div>
               <div className="flex justify-between items-baseline">
                 <span className="text-sm font-medium">Nicht konsumierte Pausenzeit</span>
-                <motion.span
-                  key={`total-missed-break-${totalMissedBreakMinutes}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className={`font-bold text-sm ${
-                    totalMissedBreakMinutes === 0 ? 'text-green-500' : 
-                    totalMissedBreakMinutes <= 120 ? 'text-orange-500' : 'text-red-500'
-                  }`}
-                >
-                  {totalMissedBreakMinutes > 0 ? formatHoursMinutes(totalMissedBreakMinutes) : '-'}
-                </motion.span>
+                <div className="text-right">
+                  <motion.span
+                    key={`total-missed-break-${totalMissedBreakMinutes}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={`font-bold text-sm ${
+                      totalMissedBreakMinutes === 0 ? 'text-green-500' : 
+                      totalMissedBreakMinutes <= 120 ? 'text-orange-500' : 'text-red-500'
+                    }`}
+                  >
+                    {totalMissedBreakMinutes > 0 ? formatHoursMinutes(totalMissedBreakMinutes) : '-'}
+                  </motion.span>
+                  {totalMissedBreakMinutes > 0 && (
+                    <span className={`font-bold text-sm ml-2 ${
+                      totalMissedBreakMinutes === 0 ? 'text-green-500' : 
+                      totalMissedBreakMinutes <= 120 ? 'text-orange-500' : 'text-red-500'
+                    }`}>
+                      ({totalMissedBreakPercent.toFixed(1)}%)
+                    </span>
+                  )}
+                </div>
               </div>
               <p className="text-xs text-muted-foreground text-right">
                 An Werktagen im Jahr

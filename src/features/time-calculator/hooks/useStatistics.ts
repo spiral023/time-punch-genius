@@ -32,6 +32,9 @@ export const useStatistics = (
     let daysWithInsufficientSingleBreak = 0;
     let daysWithBreakViolations = 0;
     let totalMissedBreakMinutes = 0;
+    let normalWorkDays = 0;
+    let totalWorkMinutes = 0;
+    let holidayDays = 0;
     const weeklyMinutes: { [week: string]: { totalMinutes: number, date: Date } } = {};
     const dailyMinutes: { [day: number]: { totalMinutes: number, count: number } } = {
       0: { totalMinutes: 0, count: 0 }, // Sunday
@@ -52,6 +55,14 @@ export const useStatistics = (
 
       if (specialDayType === 'vacation') {
         vacationDays++;
+      } else if (specialDayType === 'holiday') {
+        holidayDays++;
+      }
+
+      // Count normal work days and total work minutes
+      if (!specialDayType && timeEntries.length > 0) {
+        normalWorkDays++;
+        totalWorkMinutes += totalMinutes;
       }
 
       // Prüfe Pausenregelung für Tage mit mehr als 6 Stunden Arbeitszeit
@@ -292,6 +303,12 @@ export const useStatistics = (
 
     const averageBlocksPerDay = daysWithBookings > 0 ? totalBlocks / daysWithBookings : 0;
 
+    // Calculate percentages
+    const daysWithoutRequiredBreakPercent = normalWorkDays > 0 ? (daysWithoutRequiredBreak / normalWorkDays) * 100 : 0;
+    const daysWithInsufficientSingleBreakPercent = normalWorkDays > 0 ? (daysWithInsufficientSingleBreak / normalWorkDays) * 100 : 0;
+    const daysWithBreakViolationsPercent = normalWorkDays > 0 ? (daysWithBreakViolations / normalWorkDays) * 100 : 0;
+    const totalMissedBreakPercent = totalWorkMinutes > 0 ? (totalMissedBreakMinutes / totalWorkMinutes) * 100 : 0;
+
     return {
       averageBlocksPerDay,
       averageDailyMinutes,
@@ -320,6 +337,11 @@ export const useStatistics = (
       daysWithInsufficientSingleBreak,
       daysWithBreakViolations,
       totalMissedBreakMinutes,
+      normalWorkDays,
+      daysWithoutRequiredBreakPercent,
+      daysWithInsufficientSingleBreakPercent,
+      daysWithBreakViolationsPercent,
+      totalMissedBreakPercent,
     };
   }, [yearData, currentInput, currentTime, selectedDate, dailyTargetMinutes]);
 };

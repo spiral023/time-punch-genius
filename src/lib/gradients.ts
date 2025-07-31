@@ -10,4 +10,8 @@ export const gradients = [
   { id: 9,  gradient: 'linear-gradient(to top left,#000428,#004e92)' }, // Tiefblau → Mittelblau
   { id: 10, gradient: 'linear-gradient(to top left,#0f0c29,#302b63,#24243e)' }, // Indigo → Violettblau
   { id: 11, gradient: 'linear-gradient(to top left,#c31432,#240b36)' }, // Rot → Dunkelviolett
+  { id: 12, gradient: 'linear-gradient(to top left,#40E0D0,#FF8C00,#FF0080)' }, // 
+  { id: 13, gradient: 'linear-gradient(to top left,#ff1e56,#f9c942,#1e90ff)' }, // 
+  { id: 14, gradient: 'linear-gradient(to top left,#d7d2cc,#304352)' }, // grau → weiß
+  { id: 15, gradient: 'linear-gradient(to top left,#833ab4,#fd1d1d,#fcb045)' },
 ];

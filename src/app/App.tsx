@@ -159,7 +159,7 @@ const NotificationsProvider = ({ children }: { children: ReactNode }) => {
     });
 
     const notificationTime = `${targetDate.getHours().toString().padStart(2, '0')}:${targetDate.getMinutes().toString().padStart(2, '0')}`;
-    toast.success('Benachrichtigung geplant', { description: `Du wirst um ${notificationTime} Uhr benachrichtigt.` });
+    toast.success('Benachrichtigung aktiviert', { description: `Erinnerung für ${notificationTime} Uhr wurde geplant.` });
   };
 
   const removeNotification = (id: number) => {

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { toast } from 'sonner';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 
 export const NotificationManager: React.FC = () => {
@@ -9,8 +9,11 @@ export const NotificationManager: React.FC = () => {
 
   useEffect(() => {
     scheduledNotifications.forEach(notification => {
-      toast(notification.options.body, {
-        description: `Geplant für: ${new Date(notification.options.timestamp).toLocaleTimeString()}`,
+      const scheduledTime = new Date(notification.options.timestamp).toLocaleTimeString();
+      const label = notification.options.data?.label || 'Zielzeit';
+      
+      toast(`${label}-Erinnerung aktiviert`, {
+        description: `Du wirst um ${scheduledTime} Uhr benachrichtigt`,
         action: {
           label: 'Löschen',
           onClick: () => removeNotification(notification.id),

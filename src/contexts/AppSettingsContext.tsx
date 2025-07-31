@@ -6,7 +6,7 @@ const SETTINGS_KEY = 'zehelper_settings';
 const defaultSettings: AppSettings = {
   personalVacationDays: 25,
   cardVisibility: {},
-  gradientId: 1,
+  gradientId: 3,
   showWelcomeScreen: true, // Zeige Welcome Screen für neue Benutzer
   columnWidthSlider: 50, // Standard für 400px Kartenbreite (300 + 50*2 = 400)
   zoomLevel: 0.8, // Standard Zoom-Level auf 0.8 (80%)
