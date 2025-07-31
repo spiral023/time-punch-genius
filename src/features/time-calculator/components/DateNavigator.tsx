@@ -9,6 +9,10 @@ import { de } from 'date-fns/locale';
 import { getWeekNumber } from '@/lib/timeUtils';
 import { useTimeCalculatorContext } from '../contexts/TimeCalculatorContext';
 
+// Datumsbeschränkungen für den Datepicker
+const MIN_DATE = new Date(2024, 0, 1); // 1.1.2024
+const MAX_DATE = new Date(2027, 11, 31); // 31.12.2027
+
 interface DateNavigatorProps {
   leftSlot?: React.ReactNode;
   rightSlot?: React.ReactNode;
@@ -26,6 +30,10 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({ leftSlot, rightSlo
     ? holidays.find(h => h.date === format(selectedDate, 'yyyy-MM-dd'))?.localName
     : null;
 
+  // Prüfung ob Navigation möglich ist
+  const canGoBack = selectedDate > MIN_DATE;
+  const canGoForward = selectedDate < MAX_DATE;
+
   return (
     <div className="flex justify-center items-center gap-2 mb-6 flex-wrap">
       {leftSlot && (
@@ -34,7 +42,12 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({ leftSlot, rightSlo
         </div>
       )}
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="icon" onClick={() => changeDay('prev')}>
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={() => changeDay('prev')}
+          disabled={!canGoBack}
+        >
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <Popover>
@@ -57,6 +70,8 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({ leftSlot, rightSlo
               mode="single"
               selected={selectedDate}
               onSelect={(date) => date && setSelectedDate(date)}
+              fromDate={MIN_DATE}
+              toDate={MAX_DATE}
               initialFocus
               locale={de}
               modifiers={{ holiday: (date) => isHoliday(date, holidays) }}
@@ -64,7 +79,12 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({ leftSlot, rightSlo
             />
           </PopoverContent>
         </Popover>
-        <Button variant="outline" size="icon" onClick={() => changeDay('next')}>
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={() => changeDay('next')}
+          disabled={!canGoForward}
+        >
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>

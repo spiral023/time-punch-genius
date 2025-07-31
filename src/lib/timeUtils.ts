@@ -132,6 +132,16 @@ export const calculateTimeDetails = (
     'todesfall': 'bereavement',
   };
 
+  // Standard break compliance for special days (no break requirements)
+  const defaultBreakCompliance: BreakCompliance = {
+    hasRequiredTotalBreak: true,
+    hasMinimumSingleBreak: true,
+    totalBreakMinutes: 0,
+    longestSingleBreak: 0,
+    isCompliant: true,
+    violations: []
+  };
+
   // Check for holiday first
   if (isHoliday && trimmedInput === '') {
     return {
@@ -142,6 +152,7 @@ export const calculateTimeDetails = (
       breakDeduction: 0,
       grossTotalMinutes: 0,
       specialDayType: 'holiday' as SpecialDayType,
+      breakCompliance: defaultBreakCompliance,
     };
   }
 
@@ -154,6 +165,7 @@ export const calculateTimeDetails = (
       breakDeduction: 0,
       grossTotalMinutes: dailyTargetMinutes,
       specialDayType: specialDayMappings[trimmedInput] as SpecialDayType,
+      breakCompliance: defaultBreakCompliance,
     };
   }
 

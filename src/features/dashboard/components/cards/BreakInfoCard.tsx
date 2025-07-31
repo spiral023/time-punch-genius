@@ -21,6 +21,7 @@ export const BreakInfoCard: React.FC = () => {
 
   const getComplianceIcon = () => {
     if (grossTotalMinutes < 360) return <CheckCircle className="h-4 w-4 text-green-500" />;
+    if (!breakCompliance) return <CheckCircle className="h-4 w-4 text-green-500" />;
     if (breakCompliance.isCompliant) return <CheckCircle className="h-4 w-4 text-green-500" />;
     return <AlertTriangle className="h-4 w-4 text-red-500" />;
   };
@@ -30,20 +31,24 @@ export const BreakInfoCard: React.FC = () => {
       return <span className="text-green-500">Keine Pausenpflicht bei unter 6h Arbeitszeit.</span>;
     }
 
+    if (!breakCompliance) {
+      return <span className="text-green-500">Keine Pausenpflicht für Sondertage.</span>;
+    }
+
     if (breakCompliance.isCompliant) {
       return <span className="text-green-500">✅ Vollständig gesetzeskonform</span>;
     }
 
-    if (breakCompliance.violations.length === 2) {
+    if (breakCompliance.violations && breakCompliance.violations.length === 2) {
       return <span className="text-red-500">❌ Gesetzesverletzung: {breakCompliance.violations.join(' und ')}</span>;
     }
 
     if (!breakCompliance.hasRequiredTotalBreak) {
-      return <span className="text-yellow-600">⚠️ {breakCompliance.violations[0]} - wird automatisch abgezogen</span>;
+      return <span className="text-yellow-600">⚠️ {breakCompliance.violations?.[0] || 'Pausenproblem'} - wird automatisch abgezogen</span>;
     }
 
     if (!breakCompliance.hasMinimumSingleBreak) {
-      return <span className="text-red-500">❌ {breakCompliance.violations[0]}</span>;
+      return <span className="text-red-500">❌ {breakCompliance.violations?.[0] || 'Pausenproblem'}</span>;
     }
 
     return null;
@@ -78,7 +83,7 @@ export const BreakInfoCard: React.FC = () => {
             <span className="text-sm font-bold">{formatHoursMinutes(totalBreak)}</span>
           </div>
           
-          {grossTotalMinutes >= 360 && (
+          {grossTotalMinutes >= 360 && breakCompliance && (
             <div className="flex justify-between">
               <span className="text-sm">Längste Einzelpause</span>
               <span className="text-sm font-bold">{formatHoursMinutes(breakCompliance.longestSingleBreak)}</span>
@@ -92,7 +97,7 @@ export const BreakInfoCard: React.FC = () => {
             </p>
           </div>
 
-          {grossTotalMinutes >= 360 && !breakCompliance.hasMinimumSingleBreak && breakCompliance.hasRequiredTotalBreak && (
+          {grossTotalMinutes >= 360 && breakCompliance && !breakCompliance.hasMinimumSingleBreak && breakCompliance.hasRequiredTotalBreak && (
             <div className="bg-red-50 border border-red-200 rounded-md p-3 mt-3">
               <p className="text-sm text-red-700">
                 <strong>💡 Tipp:</strong> Verlänger eine deiner Pausen auf mindestens 10 Minuten, 
@@ -209,7 +214,7 @@ export const BreakInfoCard: React.FC = () => {
         </div>
         <div className="flex justify-center mt-4">
           <a href='https://ko-fi.com/R6R21IOETB' target='_blank' rel="noopener noreferrer">
-            <img height='36' style={{ border: 0, height: '36px' }} src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' alt='Buy Me a Coffee at ko-fi.com' />
+            <img height='36' style={{ border: 0, height: '46px' }} src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' alt='Buy Me a Coffee at ko-fi.com' />
           </a>
         </div>
       </CardContent>
