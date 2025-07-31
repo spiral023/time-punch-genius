@@ -106,7 +106,7 @@ describe('WorkingTimeCard', () => {
     
     render(<WorkingTimeCard />);
     
-    const workingTimeDisplay = screen.getByText('0h 0m');
+    const workingTimeDisplay = screen.getByTestId('working-time-display');
     
     // Bei Urlaub/Krankenstand sollte der Cursor "not-allowed" sein
     expect(workingTimeDisplay).toHaveClass('cursor-not-allowed');
@@ -121,7 +121,7 @@ describe('WorkingTimeCard', () => {
     
     render(<WorkingTimeCard />);
     
-    const workingTimeDisplay = screen.getByText('0h 0m');
+      const workingTimeDisplay = screen.getByTestId('working-time-display');
     
     // Bei Feiertagen sollte Punchen möglich sein
     expect(workingTimeDisplay).toHaveClass('cursor-pointer');

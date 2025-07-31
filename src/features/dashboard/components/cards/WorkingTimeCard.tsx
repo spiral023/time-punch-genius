@@ -67,6 +67,7 @@ export const WorkingTimeCard: React.FC = () => {
           <TooltipTrigger asChild>
             <motion.div
               key={totalMinutes}
+              data-testid="working-time-display"
               initial={{ scale: 1.1 }}
               animate={{ scale: 1 }}
               className={`text-4xl font-bold ${getTextColorClass(totalMinutes)} ${canPunch ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}

@@ -136,10 +136,14 @@ export const TimeInputSection: React.FC = () => {
             ) : (
               <div className="relative">
                 <Textarea
-                  placeholder="Noch keine Einträge für diesen Tag. Buchungen im Format HH:mm-HH:mm, 'Urlaub' oder 'Krankenstand' eingeben."
+                  placeholder={
+                    specialDayType === 'holiday'
+                      ? 'Feiertag - Zeitbuchungen im Format HH:mm-HH:mm eingeben (falls gearbeitet wird).'
+                      : "Noch keine Einträge für diesen Tag. Buchungen im Format HH:mm-HH:mm, 'Urlaub' oder 'Krankenstand' eingeben."
+                  }
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  className="min-h-[164px] font-mono text-sm resize-none"
+                  className={`min-h-[164px] font-mono text-sm resize-none`}
                   aria-label="Zeitbuchungen eingeben"
                   data-testid="time-input-textarea"
                 />
