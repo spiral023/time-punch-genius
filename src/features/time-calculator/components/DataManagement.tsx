@@ -8,6 +8,9 @@ import { useDropzone } from 'react-dropzone';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CardManager } from '@/features/dashboard/components/CardManager';
 import { useTimeCalculatorContext } from '../contexts/TimeCalculatorContext';
+import { useAppSettings } from '@/hooks/useAppSettings';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 export interface DataManagementHandles {
   triggerImport: () => void;
@@ -21,6 +24,7 @@ export const DataManagement = React.forwardRef<DataManagementHandles, object>((p
     handleClearAllData,
     handleWebdeskImport,
   } = useTimeCalculatorContext();
+  const { settings, setShowWelcomeScreen } = useAppSettings();
   const importRef = useRef<HTMLLabelElement>(null);
   const webdeskImportTriggerRef = useRef<HTMLButtonElement>(null);
 
@@ -114,6 +118,14 @@ export const DataManagement = React.forwardRef<DataManagementHandles, object>((p
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="welcome-switch">Willkommens-Popup anzeigen</Label>
+          <Switch
+            id="welcome-switch"
+            checked={settings.showWelcomeScreen}
+            onCheckedChange={setShowWelcomeScreen}
+          />
+        </div>
         <CardManager />
         <AlertDialog>
           <AlertDialogTrigger asChild>

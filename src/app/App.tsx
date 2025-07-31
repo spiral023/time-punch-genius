@@ -10,8 +10,40 @@ import { NotificationsContext, ScheduledNotification, NotificationPermission } f
 import { toast } from 'sonner';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import { AppSettingsProvider } from '@/contexts/AppSettingsContext';
+import { useAppSettings } from '@/hooks/useAppSettings';
 
 const queryClient = new QueryClient();
+
+const AppContent = () => {
+  const { zoomLevel } = useAppSettings();
+
+  // Verhindere automatisches Scrollen beim Laden
+  useEffect(() => {
+    // Setze Scroll-Position auf 0,0 beim ersten Laden
+    window.scrollTo(0, 0);
+    
+    // Verhindere Browser-Scroll-Restoration
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+  }, []);
+
+  return (
+    <div className="relative">
+      <AnimatedBackground />
+      <div style={{ zoom: zoomLevel }}>
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </div>
+    </div>
+  );
+};
 
 const NotificationsProvider = ({ children }: { children: ReactNode }) => {
   const [permission, setPermission] = useState<NotificationPermission>('default');
@@ -163,15 +195,7 @@ const App = () => (
       <AppSettingsProvider>
         <TooltipProvider>
           <NotificationsProvider>
-            <AnimatedBackground />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
+            <AppContent />
           </NotificationsProvider>
         </TooltipProvider>
       </AppSettingsProvider>

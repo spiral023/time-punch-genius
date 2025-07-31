@@ -7,6 +7,9 @@ const defaultSettings: AppSettings = {
   personalVacationDays: 25,
   cardVisibility: {},
   gradientId: 1,
+  showWelcomeScreen: true, // Zeige Welcome Screen für neue Benutzer
+  columnWidthSlider: 50, // Standard für 400px Kartenbreite (300 + 50*2 = 400)
+  zoomLevel: 0.8, // Standard Zoom-Level auf 0.8 (80%)
 };
 
 interface AppSettingsContextType {
@@ -15,6 +18,9 @@ interface AppSettingsContextType {
   setCardVisibility: (cardId: string, isVisible: boolean) => void;
   setAllCardsVisibility: (newVisibility: { [key: string]: boolean }) => void;
   setGradientId: (id: number) => void;
+  setShowWelcomeScreen: (show: boolean) => void;
+  setColumnWidthSlider: (value: number) => void;
+  setZoomLevel: (level: number) => void;
 }
 
 export const AppSettingsContext = createContext<AppSettingsContextType | undefined>(undefined);
@@ -70,12 +76,27 @@ export const AppSettingsProvider = ({ children }: { children: ReactNode }) => {
     updateSettings({ gradientId: id });
   }, [updateSettings]);
 
+  const setShowWelcomeScreen = useCallback((show: boolean) => {
+    updateSettings({ showWelcomeScreen: show });
+  }, [updateSettings]);
+
+  const setColumnWidthSlider = useCallback((value: number) => {
+    updateSettings({ columnWidthSlider: value });
+  }, [updateSettings]);
+
+  const setZoomLevel = useCallback((level: number) => {
+    updateSettings({ zoomLevel: level });
+  }, [updateSettings]);
+
   const value = {
     settings,
     setPersonalVacationDays,
     setCardVisibility,
     setAllCardsVisibility,
     setGradientId,
+    setShowWelcomeScreen,
+    setColumnWidthSlider,
+    setZoomLevel,
   };
 
   return (

@@ -74,8 +74,22 @@ export const TimeInputSection: React.FC = () => {
                   Zeitbuchungen
                 </span>
               </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>Füge hier Zeitbuchungen, z.B. aus Webdesk, im Format 08:00 - 16:12 ein oder trage sie manuell ein. Eine Zeitbuchung kann auch offen sein. Eine Buchung pro Zeile.</p>
+              <TooltipContent className="max-w-md">
+                <div className="space-y-2">
+                  <p><strong>Zeitbuchungen eingeben:</strong></p>
+                  <ul className="text-xs space-y-1">
+                    <li>• Format: 08:00 - 16:12 (eine Buchung pro Zeile)</li>
+                    <li>• Offene Buchung: 08:00 - (ohne Endzeit)</li>
+                    <li>• Mit Grund: 09:00 - 10:00 Homeoffice</li>
+                    <li>• Klick auf aktuelle Arbeitszeit für schnelle Buchung</li>
+                  </ul>
+                  <p><strong>Sonderbuchungen:</strong></p>
+                  <ul className="text-xs space-y-1">
+                    <li>• Urlaub, Krankenstand, Pflegeurlaub</li>
+                    <li>• Hochzeit, Todesfall, Sonderurlaub</li>
+                    <li>• Betriebsratsarbeit, Schulung, Berufsschule</li>
+                  </ul>
+                </div>
               </TooltipContent>
             </Tooltip>
             {input && (

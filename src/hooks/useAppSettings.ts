@@ -7,7 +7,7 @@ export const useAppSettings = () => {
     throw new Error('useAppSettings must be used within an AppSettingsProvider');
   }
   
-  const { settings, setGradientId, setCardVisibility, setAllCardsVisibility, setPersonalVacationDays } = context;
+  const { settings, setGradientId, setCardVisibility, setAllCardsVisibility, setPersonalVacationDays, setShowWelcomeScreen, setColumnWidthSlider, setZoomLevel } = context;
 
   return {
     settings,
@@ -18,5 +18,10 @@ export const useAppSettings = () => {
     setAllCardsVisibility,
     personalVacationDays: settings.personalVacationDays,
     setPersonalVacationDays,
+    setShowWelcomeScreen,
+    columnWidthSlider: settings.columnWidthSlider || 30,
+    setColumnWidthSlider,
+    zoomLevel: settings.zoomLevel || 0.8,
+    setZoomLevel,
   };
 };

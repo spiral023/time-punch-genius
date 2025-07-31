@@ -75,8 +75,8 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
   const { input, setInput, notes, setNotes } = useDailyEntry(selectedDate, updateYearData);
   const dailyTargetMinutes = useMemo(() => (weeklyTargetHours / 5) * 60, [weeklyTargetHours]);
   const { handleExportData, handleImportData, handleClearAllData, handleWebdeskImport } = useDataManagement();
-  const { weeklySummary, monthlySummary, yearlySummary, totalSummary } = useSummary(selectedDate, yearData, dailyTargetMinutes);
-  const statistics = useStatistics(yearData, dailyTargetMinutes);
+  const { weeklySummary, monthlySummary, yearlySummary, totalSummary } = useSummary(selectedDate, yearData, dailyTargetMinutes, input, currentTime);
+  const statistics = useStatistics(yearData, dailyTargetMinutes, input, currentTime, selectedDate);
   const homeOfficeStats = useHomeOfficeStats(yearData, holidays);
 
   const triggerImport = () => dataManagementRef.current?.triggerImport();
@@ -117,14 +117,83 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
   }, [setInput, toast]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    let interval: NodeJS.Timeout;
+    let animationFrame: number;
+
+    const updateTime = () => {
       const now = new Date();
       setCurrentTime(now);
+      
+      // Robustere Logik: Aktualisiere lastFullMinute wenn Sekunden 0 sind
+      // ODER wenn mehr als 65 Sekunden seit der letzten Aktualisierung vergangen sind
       if (now.getSeconds() === 0) {
         setLastFullMinute(now);
       }
-    }, 1000);
-    return () => clearInterval(interval);
+    };
+
+    const startTimer = () => {
+      // Verwende requestAnimationFrame für bessere Performance bei aktiven Tabs
+      const tick = () => {
+        updateTime();
+        if (!document.hidden) {
+          animationFrame = requestAnimationFrame(tick);
+        }
+      };
+      
+      // Fallback mit setInterval für inaktive Tabs
+      interval = setInterval(updateTime, 1000);
+      
+      // Starte auch requestAnimationFrame für aktive Tabs
+      if (!document.hidden) {
+        animationFrame = requestAnimationFrame(tick);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Tab wurde wieder aktiv - sofortige Aktualisierung
+        const now = new Date();
+        setCurrentTime(now);
+        setLastFullMinute(prev => {
+          // Aktualisiere lastFullMinute wenn mehr als 65 Sekunden vergangen sind
+          const timeDiff = now.getTime() - prev.getTime();
+          if (timeDiff > 65000) { // Mehr als 65 Sekunden
+            return now;
+          }
+          return prev;
+        });
+        
+        // Starte requestAnimationFrame für aktive Tabs
+        animationFrame = requestAnimationFrame(() => {
+          const tick = () => {
+            updateTime();
+            if (!document.hidden) {
+              animationFrame = requestAnimationFrame(tick);
+            }
+          };
+          tick();
+        });
+      } else {
+        // Tab wurde inaktiv - stoppe requestAnimationFrame
+        if (animationFrame) {
+          cancelAnimationFrame(animationFrame);
+        }
+      }
+    };
+
+    // Event Listener für Page Visibility API
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Starte Timer
+    startTimer();
+
+    return () => {
+      clearInterval(interval);
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const calculationTime = useMemo(() => {
@@ -145,21 +214,30 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
     const end = endOfWeek(selectedDate, { weekStartsOn: 1 });
     const days = eachDayOfInterval({ start, end });
     const data = [];
+    const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
+    const todayKey = format(new Date(), 'yyyy-MM-dd');
 
     for (const day of days) {
       const dayKey = format(day, 'yyyy-MM-dd');
-      const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
       let dayInput = localStorage.getItem(`zehelper_data_${dayKey}`) || '';
 
+      // Verwende Live-Daten für den aktuell ausgewählten Tag
       if (dayKey === selectedDateKey) {
         dayInput = input;
       }
       
-      const details = calculateTimeDetails(dayInput, dayKey === format(new Date(), 'yyyy-MM-dd') ? calculationTime : undefined, dailyTargetMinutes, false);
+      // Verwende currentTime für Live-Berechnungen am heutigen Tag
+      const useCurrentTime = dayKey === selectedDateKey && dayKey === todayKey;
+      const details = calculateTimeDetails(
+        dayInput, 
+        useCurrentTime ? currentTime : undefined, 
+        dailyTargetMinutes, 
+        false
+      );
       data.push({ date: day, totalMinutes: details.totalMinutes });
     }
     return data;
-  }, [selectedDate, input, calculationTime, dailyTargetMinutes]);
+  }, [selectedDate, input, currentTime, dailyTargetMinutes]);
 
   useEffect(() => {
     if (totalMinutes > 0) {
@@ -182,14 +260,30 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
   }, [yearData, calculationTime, dailyTargetMinutes]);
 
   const outsideRegularHours = useMemo(() => {
+    const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
+    const todayKey = format(new Date(), 'yyyy-MM-dd');
+    
     const calculateTotalOutsideHours = (start: Date, end: Date) => {
       const days = eachDayOfInterval({ start, end });
       let total = 0;
       days.forEach(day => {
         const dayKey = format(day, 'yyyy-MM-dd');
-        const dayInput = yearData[dayKey];
+        let dayInput = yearData[dayKey];
+        
+        // Verwende Live-Daten für den aktuell ausgewählten Tag
+        if (dayKey === selectedDateKey) {
+          dayInput = input;
+        }
+        
         if (dayInput) {
-          const details = calculateTimeDetails(dayInput, undefined, dailyTargetMinutes, false);
+          // Verwende currentTime für Live-Berechnungen am heutigen Tag
+          const useCurrentTime = dayKey === selectedDateKey && dayKey === todayKey;
+          const details = calculateTimeDetails(
+            dayInput, 
+            useCurrentTime ? currentTime : undefined, 
+            dailyTargetMinutes, 
+            false
+          );
           total += calculateOutsideRegularHours(details.timeEntries, day, false);
         }
       });
@@ -203,9 +297,22 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
     const yearDays = eachDayOfInterval({ start: yearlyStart, end: yearlyEnd });
     yearDays.forEach(day => {
         const dayKey = format(day, 'yyyy-MM-dd');
-        const dayInput = yearData[dayKey];
+        let dayInput = yearData[dayKey];
+        
+        // Verwende Live-Daten für den aktuell ausgewählten Tag
+        if (dayKey === selectedDateKey) {
+          dayInput = input;
+        }
+        
         if (dayInput) {
-            const details = calculateTimeDetails(dayInput, undefined, dailyTargetMinutes, false);
+            // Verwende currentTime für Live-Berechnungen am heutigen Tag
+            const useCurrentTime = dayKey === selectedDateKey && dayKey === todayKey;
+            const details = calculateTimeDetails(
+              dayInput, 
+              useCurrentTime ? currentTime : undefined, 
+              dailyTargetMinutes, 
+              false
+            );
             const outsideMinutes = calculateOutsideRegularHours(details.timeEntries, day, false);
             if (outsideMinutes > 0) {
                 daysWithOutsideHours++;
@@ -213,7 +320,13 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
         }
     });
 
-    const totalDaysWithEntries = Object.values(yearData).filter(d => d && d.trim() !== '').length;
+    // Berücksichtige auch Live-Input für totalDaysWithEntries
+    const totalDaysWithEntries = Object.keys(yearData).filter(dayKey => {
+      if (dayKey === selectedDateKey) {
+        return input && input.trim() !== '';
+      }
+      return yearData[dayKey] && yearData[dayKey].trim() !== '';
+    }).length;
 
     const weeklyStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
     const weeklyEnd = endOfWeek(selectedDate, { weekStartsOn: 1 });
@@ -227,7 +340,7 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
       daysWithOutsideHours: daysWithOutsideHours,
       totalDaysWithEntries: totalDaysWithEntries,
     };
-  }, [selectedDate, yearData, dailyTargetMinutes, holidays]);
+  }, [selectedDate, yearData, dailyTargetMinutes, holidays, input, currentTime]);
 
   const getCurrentTimeColor = () => {
     if (isHoliday(selectedDate, holidays)) return 'text-yellow-500';
@@ -239,6 +352,19 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
   };
 
   const handlePunch = () => {
+    // Prüfe, ob das ausgewählte Datum heute ist
+    const today = new Date();
+    const isToday = format(selectedDate, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd');
+    
+    if (!isToday) {
+      toast({ 
+        title: 'Zeitbuchung nicht möglich', 
+        description: 'Zeitbuchungen können nur für den heutigen Tag hinzugefügt werden.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     const now = format(currentTime, 'HH:mm');
     const lines = input.trim().split('\n').filter(line => line.trim() !== '');
     const lastLine = lines.length > 0 ? lines[lines.length - 1].trim() : '';

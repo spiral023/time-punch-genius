@@ -39,12 +39,12 @@ export const HomeOfficeCard: React.FC = () => {
         <StatisticLine label="HO Stunden (außerhalb NZ)" value={hoursOutsideNormalTime} />
         <StatisticLine
           label="HO Anteil % Stunden"
-          value={`${hoHoursPercentage.toFixed(2)}%`}
+          value={`${hoHoursPercentage.toFixed(1)}%`}
           tooltip="Zeigt den prozentualen Anteil der reinen Home-Office-Stunden an der gesamten Arbeitszeit (Büro + Home-Office)"
         />
         <StatisticLine
           label="HO Anteil % Tage"
-          value={`${hoDaysPercentage.toFixed(2)}%`}
+          value={`${hoDaysPercentage.toFixed(1)}%`}
           tooltip="Anteil der Tage mit teil oder voll Homeoffice an Gesamtarbeitstagen (ohne Wochenenden und Feiertage)"
         />
       </CardContent>

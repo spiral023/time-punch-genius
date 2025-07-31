@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { TrendingUp } from 'lucide-react';
 import { useTimeCalculatorContext } from '@/features/time-calculator/contexts/TimeCalculatorContext';
 
@@ -11,7 +12,14 @@ export const AverageDayCard: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />
-          Mein durchschnittlicher Tag
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="cursor-help">Mein durchschnittlicher Tag</span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Gemessen nur in der Normalarbeitszeit</p>
+            </TooltipContent>
+          </Tooltip>
         </CardTitle>
       </CardHeader>
       <CardContent>

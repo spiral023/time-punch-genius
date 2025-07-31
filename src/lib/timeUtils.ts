@@ -105,6 +105,8 @@ export const calculateTimeDetails = (
 }
 
 export const calculateAverageDay = (allDaysData: string[], currentTime?: Date, dailyTargetMinutes = 0) => {
+  const regularStartMinutes = 6 * 60; // 06:00
+  const regularEndMinutes = 19 * 60; // 19:00
   const dailyStats: { start: number; end: number; break: number, duration: number }[] = [];
 
   allDaysData.forEach(input => {
@@ -118,22 +120,63 @@ export const calculateAverageDay = (allDaysData: string[], currentTime?: Date, d
     }
     
     if (specialDayType) {
+      // For special days like training, use target minutes but only if within regular hours
+      const clampedDuration = Math.min(totalMinutes, (regularEndMinutes - regularStartMinutes));
       dailyStats.push({
-        start: 0, // No specific start/end time for special days
-        end: 0,
+        start: regularStartMinutes, // Assume regular start time for special days
+        end: regularStartMinutes + clampedDuration,
         break: 0,
-        duration: totalMinutes,
+        duration: clampedDuration,
       });
     } else if (timeEntries.length > 0) {
-      const firstEntry = timeEntries[0];
-      const lastEntry = timeEntries[timeEntries.length - 1];
-      
-      dailyStats.push({
-        start: parseTimeToMinutes(firstEntry.start),
-        end: parseTimeToMinutes(lastEntry.end),
-        break: totalBreak + breakDeduction,
-        duration: totalMinutes,
-      });
+      // Filter and adjust time entries to only include regular working hours
+      const adjustedEntries = timeEntries.map(entry => {
+        const startMinutes = parseTimeToMinutes(entry.start);
+        const endMinutes = parseTimeToMinutes(entry.end);
+        
+        // Clamp start and end times to regular hours
+        const clampedStart = Math.max(startMinutes, regularStartMinutes);
+        const clampedEnd = Math.min(endMinutes, regularEndMinutes);
+        
+        // Only include if there's overlap with regular hours
+        if (clampedStart < clampedEnd) {
+          return {
+            start: clampedStart,
+            end: clampedEnd,
+            duration: clampedEnd - clampedStart
+          };
+        }
+        return null;
+      }).filter(entry => entry !== null);
+
+      if (adjustedEntries.length > 0) {
+        const firstEntry = adjustedEntries[0];
+        const lastEntry = adjustedEntries[adjustedEntries.length - 1];
+        const totalRegularDuration = adjustedEntries.reduce((sum, entry) => sum + entry.duration, 0);
+        
+        // Calculate breaks only within regular hours
+        let regularBreak = 0;
+        for (let i = 0; i < adjustedEntries.length - 1; i++) {
+          const currentEntryEnd = adjustedEntries[i].end;
+          const nextEntryStart = adjustedEntries[i + 1].start;
+          const breakDuration = nextEntryStart - currentEntryEnd;
+          if (breakDuration > 0) {
+            regularBreak += breakDuration;
+          }
+        }
+        
+        // Apply break deduction proportionally for regular hours
+        const regularBreakDeduction = totalRegularDuration >= (6 * 60) && (regularBreak + totalBreak) < 30 
+          ? Math.max(0, 30 - (regularBreak + totalBreak)) 
+          : 0;
+        
+        dailyStats.push({
+          start: firstEntry.start,
+          end: lastEntry.end,
+          break: regularBreak + regularBreakDeduction,
+          duration: totalRegularDuration,
+        });
+      }
     }
   });
 
@@ -248,13 +291,16 @@ const parseTimeEntries = (input: string, currentTime?: Date) => {
       const startMinutes = parseTimeToMinutes(startTime);
       const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
       
-      if (currentMinutes <= startMinutes) {
+      // Toleranz von 2 Minuten für zukünftige Zeiten (z.B. bei manueller Eingabe)
+      if (startMinutes > currentMinutes + 2) {
         validationErrors.push({ line: index + 1, message: 'Startzeit liegt in der Zukunft' });
         return;
       }
 
-      const duration = currentMinutes - startMinutes;
-      const endTime = formatMinutesToTime(currentMinutes);
+      // Verwende die spätere Zeit als Endzeit (entweder aktuelle Zeit oder Startzeit)
+      const endMinutes = Math.max(currentMinutes, startMinutes);
+      const duration = Math.max(0, endMinutes - startMinutes);
+      const endTime = formatMinutesToTime(endMinutes);
       
       entries.push({ start: startTime, end: endTime, duration, originalLine: line });
       return;

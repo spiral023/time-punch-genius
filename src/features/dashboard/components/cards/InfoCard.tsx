@@ -5,9 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Info } from 'lucide-react';
 import { InfoDialog } from '../InfoDialog';
 import { useBrowserNotifications } from '@/hooks/useBrowserNotifications';
+import { useAppSettings } from '@/hooks/useAppSettings';
 
 const InfoCard: React.FC = () => {
   const { showBrowserNotification } = useBrowserNotifications();
+  const { setShowWelcomeScreen } = useAppSettings();
+
+  const handleShowWelcome = () => {
+    // Setze den localStorage-Wert zurück, damit der Welcome Dialog angezeigt wird
+    localStorage.removeItem('zehelper_welcome_seen_v2');
+    setShowWelcomeScreen(true);
+  };
 
   return (
     <Card>
@@ -18,6 +26,9 @@ const InfoCard: React.FC = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4">
+        <Button onClick={handleShowWelcome}>
+          Einleitung wiederholen
+        </Button>
         <Button asChild>
           <a href="mailto:philipp.asanger@gmail.com">Feedback</a>
         </Button>
@@ -47,6 +58,9 @@ const InfoCard: React.FC = () => {
             </p>
             <p>
               E-Mail: philipp.asanger@gmail.com
+            </p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Danke an Thomas & Wolfgang für euren Support!
             </p>
           </div>
         </InfoDialog>

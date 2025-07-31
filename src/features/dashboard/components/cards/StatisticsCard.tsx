@@ -8,7 +8,7 @@ import { formatHoursMinutes } from '@/lib/timeUtils';
 import { useTimeCalculatorContext } from '@/features/time-calculator/contexts/TimeCalculatorContext';
 
 export const StatisticsCard: React.FC = () => {
-  const { statistics } = useTimeCalculatorContext();
+  const { statistics, setSelectedDate } = useTimeCalculatorContext();
   const {
     daysWithBookings,
     daysInYear,
@@ -29,6 +29,7 @@ export const StatisticsCard: React.FC = () => {
     longestStreakEnd,
     averageBlocksPerDay,
     vacationDays,
+    daysWithoutRequiredBreak,
   } = statistics;
   const bookedDaysPercentage = daysInYear > 0 ? ((daysWithBookings / daysInYear) * 100).toFixed(1) : 0;
   const over9HoursPercentage = daysWithBookings > 0 ? ((daysOver9Hours / daysWithBookings) * 100).toFixed(1) : 0;
@@ -106,7 +107,12 @@ export const StatisticsCard: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="font-bold text-lg"
+              className="font-bold text-lg cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => {
+                if (longestBreakDate) {
+                  setSelectedDate(new Date(longestBreakDate));
+                }
+              }}
             >
               {longestBreak ? formatHoursMinutes(longestBreak) : '-'}
             </motion.span>
@@ -142,7 +148,15 @@ export const StatisticsCard: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="font-bold text-lg"
+              className={`font-bold text-lg cursor-pointer hover:opacity-80 transition-opacity ${
+                longestDay && longestDay > 720 ? 'text-red-500' : 
+                longestDay && longestDay > 600 ? 'text-yellow-500' : ''
+              }`}
+              onClick={() => {
+                if (longestDayDate) {
+                  setSelectedDate(new Date(longestDayDate));
+                }
+              }}
             >
               {longestDay ? formatHoursMinutes(longestDay) : '-'}
             </motion.span>
@@ -160,7 +174,7 @@ export const StatisticsCard: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="font-bold text-lg"
+              className={`font-bold text-lg ${longestWeek && longestWeek > 3600 ? 'text-red-500' : ''}`}
             >
               {longestWeek ? formatHoursMinutes(longestWeek) : '-'}
             </motion.span>
@@ -226,6 +240,24 @@ export const StatisticsCard: React.FC = () => {
               {vacationDays > 0 ? `${vacationDays} Tage` : '-'}
             </motion.span>
           </div>
+        </div>
+        <div>
+          <div className="flex justify-between items-baseline">
+            <span className="text-sm font-medium">Tage ohne Pflichtpause</span>
+            <motion.span
+              key={`days-without-break-${daysWithoutRequiredBreak}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className={`font-bold text-lg ${daysWithoutRequiredBreak > 0 ? 'text-red-500' : 'text-green-500'}`}
+            >
+              {daysWithoutRequiredBreak} Tage
+            </motion.span>
+          </div>
+          <p className="text-xs text-muted-foreground text-right">
+            Bei Arbeitszeit &gt; 6h
+          </p>
         </div>
       </CardContent>
     </Card>

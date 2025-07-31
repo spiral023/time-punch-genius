@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Hand, Upload, FileText, Sparkles, ShieldCheck, ChevronRight } from 'lucide-react';
+import { useAppSettings } from '@/hooks/useAppSettings';
 
 const WELCOME_KEY = 'zehelper_welcome_seen_v2';
 
@@ -53,8 +54,10 @@ const WelcomeStep2 = ({ onImportBackup, onImportWebdesk }: { onImportBackup: () 
 
 
 export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onTriggerImport, onTriggerWebdeskImport }) => {
+  const { settings, setShowWelcomeScreen } = useAppSettings();
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(0);
+  const [initialized, setInitialized] = useState(false);
 
   const handleImportBackup = () => {
     handleClose();
@@ -71,14 +74,32 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onTriggerImport, onT
   };
 
   useEffect(() => {
-    const hasSeenWelcome = localStorage.getItem(WELCOME_KEY);
-    if (!hasSeenWelcome) {
-      setIsOpen(true);
+    // Nur beim ersten Laden initialisieren
+    if (!initialized) {
+      const hasSeenWelcome = localStorage.getItem(WELCOME_KEY) === 'true';
+      
+      // Zeige Welcome Screen NUR wenn:
+      // 1. Der Benutzer den Welcome Screen noch nie gesehen hat UND
+      // 2. showWelcomeScreen in den Einstellungen aktiviert ist
+      if (!hasSeenWelcome && settings.showWelcomeScreen) {
+        setIsOpen(true);
+        setStep(0);
+      }
+      setInitialized(true);
+    } else {
+      // Nach der Initialisierung nur auf explizite Änderungen von showWelcomeScreen reagieren
+      // Aber nur wenn der Welcome Screen noch nicht gesehen wurde
+      const hasSeenWelcome = localStorage.getItem(WELCOME_KEY) === 'true';
+      if (settings.showWelcomeScreen && !hasSeenWelcome) {
+        setIsOpen(true);
+        setStep(0);
+      }
     }
-  }, []);
+  }, [settings.showWelcomeScreen, setShowWelcomeScreen, initialized]);
 
   const handleClose = () => {
     localStorage.setItem(WELCOME_KEY, 'true');
+    setShowWelcomeScreen(false);
     setIsOpen(false);
   };
 

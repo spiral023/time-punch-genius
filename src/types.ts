@@ -27,6 +27,9 @@ export interface AppSettings {
   personalVacationDays: number;
   cardVisibility: { [key: string]: boolean };
   gradientId: number;
+  showWelcomeScreen: boolean;
+  columnWidthSlider: number;
+  zoomLevel: number;
 }
 
 export type SpecialDayType =

@@ -64,7 +64,7 @@ export const TargetTimeProgress: React.FC<TargetTimeProgressProps> = ({
                 {isScheduled ? <BellOff className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 p-4">
+            <PopoverContent className="w-80 p-4">
               <div className="space-y-4 text-center">
                 <Label htmlFor="notification-time" className="text-sm font-medium">
                   Benachrichtigung {offsetMinutes > 0 ? `${offsetMinutes} Minuten früher` : 'genau zur Zielzeit'}

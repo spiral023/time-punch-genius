@@ -6,6 +6,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, ReferenceLine } from 
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart2 } from "lucide-react"
+import { formatHoursMinutes } from "@/lib/timeUtils"
 import { useTimeCalculatorContext } from "@/features/time-calculator/contexts/TimeCalculatorContext"
 
 const chartConfig = {
@@ -76,7 +77,10 @@ export const AverageWorkdayHoursChart: React.FC = () => {
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent 
-                formatter={(value, name, props) => [`${props.payload.hours} Stunden`, null]}
+                formatter={(value, name, props) => {
+                  const minutes = Math.round(parseFloat(props.payload.hours) * 60);
+                  return [formatHoursMinutes(minutes), null];
+                }}
               />}
             />
             <Bar dataKey="hours" radius={4} isAnimationActive={false}>

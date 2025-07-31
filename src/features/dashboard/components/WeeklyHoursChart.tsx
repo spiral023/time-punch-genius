@@ -76,7 +76,10 @@ export const WeeklyHoursChart: React.FC = () => {
                   const fullDate = weeklyChartData.find(d => format(d.date, 'eee', { locale: de }) === value)?.date
                   return fullDate ? format(fullDate, 'eeee, dd.MM', { locale: de }) : value
                 }}
-                formatter={(value) => [`${value} Stunden`, null]}
+                formatter={(value, name, props) => {
+                  const minutes = Math.round(parseFloat(value as string) * 60);
+                  return [formatHoursMinutes(minutes), null];
+                }}
               />}
             />
             <Bar dataKey="hours" radius={4} isAnimationActive={false}>
@@ -95,9 +98,15 @@ export const WeeklyHoursChart: React.FC = () => {
         {isToday(selectedDate) && (
           <div className="text-center text-sm text-muted-foreground mt-4">
             <p>
-              <strong className={currentWeekTotalMinutes >= previousWeekToDateTotalMinutes ? "text-green-500" : "text-red-500"}>
-                Du hast {formatHoursMinutes(Math.abs(currentWeekTotalMinutes - previousWeekToDateTotalMinutes))} {currentWeekTotalMinutes >= previousWeekToDateTotalMinutes ? "mehr" : "weniger"} gearbeitet als zum gleichen Zeitpunkt letzte Woche.
-              </strong>
+              {currentWeekTotalMinutes === previousWeekToDateTotalMinutes ? (
+                <strong className="text-foreground">
+                  Du hast aktuell exakt gleich viel gearbeitet wie zum gleichen Zeitpunkt letzte Woche
+                </strong>
+              ) : (
+                <strong className={currentWeekTotalMinutes >= previousWeekToDateTotalMinutes ? "text-green-500" : "text-red-500"}>
+                  Du hast {formatHoursMinutes(Math.abs(currentWeekTotalMinutes - previousWeekToDateTotalMinutes))} {currentWeekTotalMinutes >= previousWeekToDateTotalMinutes ? "mehr" : "weniger"} gearbeitet als zum gleichen Zeitpunkt letzte Woche.
+                </strong>
+              )}
             </p>
           </div>
         )}

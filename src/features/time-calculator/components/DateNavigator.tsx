@@ -8,7 +8,12 @@ import { format, addDays, subDays } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useTimeCalculatorContext } from '../contexts/TimeCalculatorContext';
 
-export const DateNavigator: React.FC = () => {
+interface DateNavigatorProps {
+  leftSlot?: React.ReactNode;
+  rightSlot?: React.ReactNode;
+}
+
+export const DateNavigator: React.FC<DateNavigatorProps> = ({ leftSlot, rightSlot }) => {
   const { selectedDate, setSelectedDate, holidays } = useTimeCalculatorContext();
 
   const changeDay = (direction: 'prev' | 'next') => {
@@ -21,35 +26,52 @@ export const DateNavigator: React.FC = () => {
     : null;
 
   return (
-    <div className="flex justify-center items-center gap-2 mb-6">
-      <Button variant="outline" size="icon" onClick={() => changeDay('prev')}>
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="w-72 justify-center text-center font-normal flex-col h-auto py-2">
-            <div className="flex items-center">
-              <CalendarDays className="mr-2 h-4 w-4" />
-              {format(selectedDate, 'eeee, dd. MMMM yyyy', { locale: de })}
-            </div>
-            {holidayName && <div className="text-xs text-yellow-500 font-semibold">{holidayName}</div>}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={(date) => date && setSelectedDate(date)}
-            initialFocus
-            locale={de}
-            modifiers={{ holiday: (date) => isHoliday(date, holidays) }}
-            modifiersClassNames={{ holiday: 'text-yellow-500 font-bold' }}
-          />
-        </PopoverContent>
-      </Popover>
-      <Button variant="outline" size="icon" onClick={() => changeDay('next')}>
-        <ChevronRight className="h-4 w-4" />
-      </Button>
+    <div className="flex justify-center items-center gap-2 mb-6 flex-wrap">
+      {leftSlot && (
+        <div className="flex items-center">
+          {leftSlot}
+        </div>
+      )}
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="icon" onClick={() => changeDay('prev')}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="w-64 sm:w-72 justify-center text-center font-normal flex-col h-auto py-2">
+              <div className="flex items-center">
+                <CalendarDays className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">
+                  {format(selectedDate, 'eeee, dd. MMMM yyyy', { locale: de })}
+                </span>
+                <span className="sm:hidden">
+                  {format(selectedDate, 'dd.MM.yyyy', { locale: de })}
+                </span>
+              </div>
+              {holidayName && <div className="text-xs text-yellow-500 font-semibold">{holidayName}</div>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => date && setSelectedDate(date)}
+              initialFocus
+              locale={de}
+              modifiers={{ holiday: (date) => isHoliday(date, holidays) }}
+              modifiersClassNames={{ holiday: 'text-yellow-500 font-bold' }}
+            />
+          </PopoverContent>
+        </Popover>
+        <Button variant="outline" size="icon" onClick={() => changeDay('next')}>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+      {rightSlot && (
+        <div className="flex items-center">
+          {rightSlot}
+        </div>
+      )}
     </div>
   );
 };

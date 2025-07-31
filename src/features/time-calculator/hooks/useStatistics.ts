@@ -1,8 +1,14 @@
 import { useMemo } from 'react';
-import { parse, differenceInMinutes, getDayOfYear, format, isValid, getWeek, startOfWeek, endOfWeek, getDay } from 'date-fns';
+import { parse, differenceInMinutes, getDayOfYear, format, isValid, getWeek, startOfWeek, endOfWeek, getDay, isToday } from 'date-fns';
 import { calculateTimeDetails } from '@/lib/timeUtils';
 
-export const useStatistics = (yearData: { [date: string]: string }, dailyTargetMinutes: number) => {
+export const useStatistics = (
+  yearData: { [date: string]: string }, 
+  dailyTargetMinutes: number,
+  currentInput?: string,
+  currentTime?: Date,
+  selectedDate?: Date
+) => {
   return useMemo(() => {
 
     const daysWithBookings = Object.values(yearData).filter(d => d && d.trim() !== '').length;
@@ -22,6 +28,7 @@ export const useStatistics = (yearData: { [date: string]: string }, dailyTargetM
     let longestStreakEnd: string | null = null;
     let totalBlocks = 0;
     let vacationDays = 0;
+    let daysWithoutRequiredBreak = 0;
     const weeklyMinutes: { [week: string]: { totalMinutes: number, date: Date } } = {};
     const dailyMinutes: { [day: number]: { totalMinutes: number, count: number } } = {
       0: { totalMinutes: 0, count: 0 }, // Sunday
@@ -37,11 +44,34 @@ export const useStatistics = (yearData: { [date: string]: string }, dailyTargetM
       const input = yearData[dateStr];
       if (!input || input.trim() === '') continue;
 
-      const { timeEntries, totalMinutes, specialDayType } = calculateTimeDetails(input, undefined, dailyTargetMinutes);
+      const { timeEntries, totalMinutes, grossTotalMinutes, specialDayType } = calculateTimeDetails(input, undefined, dailyTargetMinutes);
       if (timeEntries.length === 0 && !specialDayType) continue;
 
       if (specialDayType === 'vacation') {
         vacationDays++;
+      }
+
+      // Prüfe Pausenregelung für Tage mit mehr als 6 Stunden Arbeitszeit
+      if (!specialDayType && grossTotalMinutes >= 360) { // 6 Stunden = 360 Minuten
+        let totalBreakMinutes = 0;
+        
+        // Berechne Pausen zwischen Zeitblöcken
+        for (let i = 0; i < timeEntries.length - 1; i++) {
+          const currentEnd = timeEntries[i].end.split(':').map(Number);
+          const nextStart = timeEntries[i + 1].start.split(':').map(Number);
+          const currentEndMinutes = currentEnd[0] * 60 + currentEnd[1];
+          const nextStartMinutes = nextStart[0] * 60 + nextStart[1];
+          const breakDuration = nextStartMinutes - currentEndMinutes;
+          
+          if (breakDuration > 0) {
+            totalBreakMinutes += breakDuration;
+          }
+        }
+        
+        // Österreichische Regel: Bei mehr als 6h Arbeitszeit sind 30 Min Pause erforderlich
+        if (totalBreakMinutes < 30) {
+          daysWithoutRequiredBreak++;
+        }
       }
 
       totalBlocks += timeEntries.length;
@@ -163,29 +193,66 @@ export const useStatistics = (yearData: { [date: string]: string }, dailyTargetM
     const currentWeekKey = `${currentYear}-${currentWeekNumber}`;
     const previousWeekKey = `${currentYear}-${currentWeekNumber - 1}`;
 
-    const currentWeekTotalMinutes = weeklyMinutes[currentWeekKey]?.totalMinutes || 0;
+    // Berechne currentWeekTotalMinutes mit Live-Daten
+    let currentWeekTotalMinutes = weeklyMinutes[currentWeekKey]?.totalMinutes || 0;
+    
+    // Wenn wir Live-Daten haben und heute ausgewählt ist, aktualisiere die aktuelle Woche
+    if (currentInput !== undefined && selectedDate && isToday(selectedDate)) {
+      const todayKey = format(today, 'yyyy-MM-dd');
+      const storedTodayInput = yearData[todayKey];
+      
+      // Entferne die gespeicherten Daten von heute aus der Wochensumme
+      if (storedTodayInput && storedTodayInput.trim() !== '') {
+        const { totalMinutes: storedMinutes } = calculateTimeDetails(storedTodayInput, undefined, dailyTargetMinutes);
+        currentWeekTotalMinutes -= storedMinutes;
+      }
+      
+      // Füge die Live-Daten von heute hinzu
+      if (currentInput.trim() !== '') {
+        const { totalMinutes: liveMinutes } = calculateTimeDetails(
+          currentInput, 
+          currentTime, 
+          dailyTargetMinutes
+        );
+        currentWeekTotalMinutes += liveMinutes;
+      }
+    }
+
     const previousWeekTotalMinutes = weeklyMinutes[previousWeekKey]?.totalMinutes || 0;
 
-    const dayOfWeek = getDay(today);
-    const previousWeekDate = new Date(today);
-    previousWeekDate.setDate(today.getDate() - 7);
+    // Berechne den exakten Zeitpunkt vor 7 Tagen
+    const currentDateTime = selectedDate || today;
+    const previousWeekSameTime = new Date(currentDateTime);
+    previousWeekSameTime.setDate(currentDateTime.getDate() - 7);
+    
+    // Wochenstart der Vorwoche
+    const previousWeekStart = startOfWeek(previousWeekSameTime, { weekStartsOn: 1 });
 
     const previousWeekToDateTotalMinutes = Object.keys(yearData)
       .filter(dateStr => {
         const date = new Date(dateStr);
-        const weekNumber = getWeek(date, { weekStartsOn: 1 });
-        const year = date.getFullYear();
-        const day = getDay(date);
-        return (
-          year === previousWeekDate.getFullYear() &&
-          weekNumber === getWeek(previousWeekDate, { weekStartsOn: 1 }) &&
-          day <= dayOfWeek
-        );
+        // Alle Tage von Wochenstart bis zum gleichen Zeitpunkt vor 7 Tagen
+        return date >= previousWeekStart && date <= previousWeekSameTime;
       })
       .reduce((total, dateStr) => {
         const input = yearData[dateStr];
         if (!input || input.trim() === '') return total;
-        const { totalMinutes } = calculateTimeDetails(input, undefined, dailyTargetMinutes);
+        
+        const entryDate = new Date(dateStr);
+        let totalMinutes = 0;
+        
+        // Wenn es der gleiche Tag vor 7 Tagen ist und wir Live-Daten haben
+        if (entryDate.getTime() === previousWeekSameTime.getTime() && 
+            selectedDate && isToday(selectedDate) && currentTime) {
+          // Berechne nur bis zur gleichen Tageszeit vor 7 Tagen
+          const { totalMinutes: dayMinutes } = calculateTimeDetails(input, currentTime, dailyTargetMinutes);
+          totalMinutes = dayMinutes;
+        } else {
+          // Für alle anderen Tage: komplette Tageszeit
+          const { totalMinutes: dayMinutes } = calculateTimeDetails(input, undefined, dailyTargetMinutes);
+          totalMinutes = dayMinutes;
+        }
+        
         return total + totalMinutes;
       }, 0);
 
@@ -225,6 +292,7 @@ export const useStatistics = (yearData: { [date: string]: string }, dailyTargetM
       previousWeekTotalMinutes,
       previousWeekToDateTotalMinutes,
       vacationDays,
+      daysWithoutRequiredBreak,
     };
-  }, [yearData]);
+  }, [yearData, currentInput, currentTime, selectedDate, dailyTargetMinutes]);
 };
