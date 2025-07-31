@@ -1,5 +1,21 @@
 import { SpecialDayType } from "@/types";
 
+export const getWeekNumber = (date: Date): number => {
+  // Create a copy of the date to avoid modifying the original
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  
+  // Set to nearest Thursday: current date + 4 - current day number
+  // Make Sunday's day number 7
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  
+  // Get first day of year
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  
+  // Calculate full weeks to nearest Thursday
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+};
+
 export const parseTimeToMinutes = (time: string): number => {
   const [hours, minutes] = time.split(':').map(Number);
   return hours * 60 + minutes;

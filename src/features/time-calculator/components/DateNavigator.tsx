@@ -6,6 +6,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import { format, addDays, subDays } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { getWeekNumber } from '@/lib/timeUtils';
 import { useTimeCalculatorContext } from '../contexts/TimeCalculatorContext';
 
 interface DateNavigatorProps {
@@ -42,10 +43,10 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({ leftSlot, rightSlo
               <div className="flex items-center">
                 <CalendarDays className="mr-2 h-4 w-4" />
                 <span className="hidden sm:inline">
-                  {format(selectedDate, 'eeee, dd. MMMM yyyy', { locale: de })}
+                  {format(selectedDate, 'eeee, dd. MMMM yyyy', { locale: de })} (KW{getWeekNumber(selectedDate)})
                 </span>
                 <span className="sm:hidden">
-                  {format(selectedDate, 'dd.MM.yyyy', { locale: de })}
+                  {format(selectedDate, 'dd.MM.yyyy', { locale: de })} (KW{getWeekNumber(selectedDate)})
                 </span>
               </div>
               {holidayName && <div className="text-xs text-yellow-500 font-semibold">{holidayName}</div>}
