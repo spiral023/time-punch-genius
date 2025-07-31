@@ -40,6 +40,7 @@ const Dashboard = () => {
   const [layout, setLayout] = useDashboardLayout();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleResetLayout = () => {
     setLayout(defaultLayout);
@@ -83,6 +84,24 @@ const Dashboard = () => {
     return undefined;
   };
 
+  // Validate layout to prevent duplicates and ensure data integrity
+  const validateLayout = (newLayout: typeof layout): typeof layout => {
+    const allCards = new Set<string>();
+    const validatedColumns = newLayout.columns.map(column => {
+      const uniqueColumn = column.filter(cardId => {
+        if (allCards.has(cardId)) {
+          console.warn(`Duplicate card detected: ${cardId}, removing duplicate`);
+          return false;
+        }
+        allCards.add(cardId);
+        return true;
+      });
+      return uniqueColumn;
+    });
+    
+    return { ...newLayout, columns: validatedColumns };
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     const activeId = event.active.id as string;
     console.log('Drag started:', activeId);
@@ -111,10 +130,27 @@ const Dashboard = () => {
       const activeColumnIndex = Number(activeContainer);
       const overColumnIndex = Number(overContainer);
       
+      // Validate column indices
+      if (activeColumnIndex < 0 || activeColumnIndex >= prev.columns.length ||
+          overColumnIndex < 0 || overColumnIndex >= prev.columns.length) {
+        return prev;
+      }
+      
       const activeItems = [...prev.columns[activeColumnIndex]];
       const overItems = [...prev.columns[overColumnIndex]];
       
       const activeIndex = activeItems.indexOf(activeId);
+      
+      // Validate that the item exists in the active column
+      if (activeIndex === -1) {
+        return prev;
+      }
+      
+      // Check if item already exists in target column (prevent duplicates)
+      if (overItems.includes(activeId)) {
+        return prev;
+      }
+      
       const overIndex = overItems.includes(overId) ? overItems.indexOf(overId) : overItems.length;
 
       // Remove from active column
@@ -127,8 +163,10 @@ const Dashboard = () => {
       newColumns[activeColumnIndex] = activeItems;
       newColumns[overColumnIndex] = overItems;
       
-      console.log('Layout updated:', newColumns);
-      return { ...prev, columns: newColumns };
+      const newLayout = { ...prev, columns: newColumns };
+      const validatedLayout = validateLayout(newLayout);
+      console.log('Layout updated:', validatedLayout.columns);
+      return validatedLayout;
     });
   };
 
@@ -136,8 +174,9 @@ const Dashboard = () => {
     const { active, over } = event;
     console.log('Drag ended:', { active: active.id, over: over?.id });
     
+    setActiveId(null);
+    
     if (!over) {
-      setActiveId(null);
       return;
     }
 
@@ -147,7 +186,6 @@ const Dashboard = () => {
     const overContainer = findContainer(overId) || overId; // overId might be a column
 
     if (!activeContainer || !overContainer) {
-      setActiveId(null);
       return;
     }
 
@@ -155,22 +193,38 @@ const Dashboard = () => {
       // Sorting within the same column
       setLayout((prev) => {
         const columnIndex = Number(activeContainer);
+        
+        // Validate column index
+        if (columnIndex < 0 || columnIndex >= prev.columns.length) {
+          return prev;
+        }
+        
         const items = [...prev.columns[columnIndex]];
         const oldIndex = items.indexOf(activeId);
         const newIndex = items.indexOf(overId);
         
-        if (oldIndex !== -1 && newIndex !== -1) {
+        // Validate indices and ensure they're different
+        if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
           const newItems = arrayMove(items, oldIndex, newIndex);
           const newColumns = [...prev.columns];
           newColumns[columnIndex] = newItems;
-          return { ...prev, columns: newColumns };
+          
+          // Validate that no duplicates were created
+          const uniqueItems = [...new Set(newItems)];
+          if (uniqueItems.length !== newItems.length) {
+            console.warn('Duplicate items detected, reverting layout change');
+            return prev;
+          }
+          
+          const newLayout = { ...prev, columns: newColumns };
+          const validatedLayout = validateLayout(newLayout);
+          return validatedLayout;
         }
         
         return prev;
       });
     }
-
-    setActiveId(null);
+    // Cross-column moves are already handled in handleDragOver
   };
 
   const isCardVisible = (cardId: string) => {

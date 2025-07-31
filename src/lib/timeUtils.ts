@@ -1,4 +1,4 @@
-import { SpecialDayType } from "@/types";
+import { SpecialDayType, BreakCompliance, TimeEntry } from "@/types";
 
 export const getWeekNumber = (date: Date): number => {
   // Create a copy of the date to avoid modifying the original
@@ -57,6 +57,57 @@ export const addMinutesToTime = (baseTime: string, minutesToAdd: number): string
   const baseMinutes = parseTimeToMinutes(baseTime);
   const newMinutes = baseMinutes + minutesToAdd;
   return formatMinutesToTime(newMinutes);
+};
+
+export const validateBreakCompliance = (
+  timeEntries: TimeEntry[],
+  grossTotalMinutes: number
+): BreakCompliance => {
+  // If working less than 6 hours, no break requirements apply
+  if (grossTotalMinutes < 360) {
+    return {
+      hasRequiredTotalBreak: true,
+      hasMinimumSingleBreak: true,
+      totalBreakMinutes: 0,
+      longestSingleBreak: 0,
+      isCompliant: true,
+      violations: []
+    };
+  }
+
+  // Calculate breaks between time entries
+  const breaks: number[] = [];
+  for (let i = 0; i < timeEntries.length - 1; i++) {
+    const currentEntryEnd = parseTimeToMinutes(timeEntries[i].end);
+    const nextEntryStart = parseTimeToMinutes(timeEntries[i + 1].start);
+    const breakDuration = nextEntryStart - currentEntryEnd;
+    if (breakDuration > 0) {
+      breaks.push(breakDuration);
+    }
+  }
+
+  const totalBreakMinutes = breaks.reduce((sum, breakDuration) => sum + breakDuration, 0);
+  const longestSingleBreak = breaks.length > 0 ? Math.max(...breaks) : 0;
+
+  const hasRequiredTotalBreak = totalBreakMinutes >= 30;
+  const hasMinimumSingleBreak = longestSingleBreak >= 10;
+
+  const violations: string[] = [];
+  if (!hasRequiredTotalBreak) {
+    violations.push("Gesamtpausenzeit unter 30 Minuten");
+  }
+  if (!hasMinimumSingleBreak) {
+    violations.push("Keine Pause ≥10 Minuten vorhanden");
+  }
+
+  return {
+    hasRequiredTotalBreak,
+    hasMinimumSingleBreak,
+    totalBreakMinutes,
+    longestSingleBreak,
+    isCompliant: hasRequiredTotalBreak && hasMinimumSingleBreak,
+    violations
+  };
 };
 
 export const calculateTimeDetails = (
@@ -129,8 +180,20 @@ export const calculateTimeDetails = (
     breakDeduction = requiredBreakDuration - totalBreak;
     total -= breakDeduction;
   }
+
+  // Calculate break compliance
+  const breakCompliance = validateBreakCompliance(entries, grossTotalMinutes);
   
-  return { timeEntries: entries, errors: validationErrors, totalMinutes: total, totalBreak, breakDeduction, grossTotalMinutes, specialDayType: null };
+  return { 
+    timeEntries: entries, 
+    errors: validationErrors, 
+    totalMinutes: total, 
+    totalBreak, 
+    breakDeduction, 
+    grossTotalMinutes, 
+    specialDayType: null,
+    breakCompliance
+  };
 }
 
 export const calculateAverageDay = (allDaysData: string[], currentTime?: Date, dailyTargetMinutes = 0) => {

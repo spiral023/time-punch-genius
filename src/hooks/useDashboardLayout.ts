@@ -35,6 +35,24 @@ const migrateLayout = (oldLayout: DashboardLayout): DashboardLayout => {
 };
 
 export const useDashboardLayout = (): [DashboardLayout, Dispatch<SetStateAction<DashboardLayout>>] => {
+  // Validate layout to prevent duplicates and ensure data integrity
+  const validateLayout = (layout: DashboardLayout): DashboardLayout => {
+    const allCards = new Set<string>();
+    const validatedColumns = layout.columns.map(column => {
+      const uniqueColumn = column.filter(cardId => {
+        if (allCards.has(cardId)) {
+          console.warn(`Duplicate card detected during layout validation: ${cardId}, removing duplicate`);
+          return false;
+        }
+        allCards.add(cardId);
+        return true;
+      });
+      return uniqueColumn;
+    });
+    
+    return { ...layout, columns: validatedColumns };
+  };
+
   const [layout, setLayout] = useState<DashboardLayout>(() => {
     try {
       const storedLayout = localStorage.getItem(STORAGE_KEY);
@@ -42,16 +60,17 @@ export const useDashboardLayout = (): [DashboardLayout, Dispatch<SetStateAction<
         const parsed = JSON.parse(storedLayout) as DashboardLayout;
         // Version check for future migrations
         if (parsed.version === defaultLayout.version) {
-          return parsed;
+          return validateLayout(parsed);
         } else if (parsed.version < defaultLayout.version) {
           // Migrate old layout
-          return migrateLayout(parsed);
+          const migrated = migrateLayout(parsed);
+          return validateLayout(migrated);
         }
       }
     } catch (error) {
       console.error("Failed to load or parse dashboard layout from localStorage", error);
     }
-    return defaultLayout;
+    return validateLayout(defaultLayout);
   });
 
   useEffect(() => {
@@ -62,5 +81,13 @@ export const useDashboardLayout = (): [DashboardLayout, Dispatch<SetStateAction<
     }
   }, [layout]);
 
-  return [layout, setLayout];
+  // Wrapper for setLayout that validates before setting
+  const setValidatedLayout: Dispatch<SetStateAction<DashboardLayout>> = (value) => {
+    setLayout(prevLayout => {
+      const newLayout = typeof value === 'function' ? value(prevLayout) : value;
+      return validateLayout(newLayout);
+    });
+  };
+
+  return [layout, setValidatedLayout];
 };

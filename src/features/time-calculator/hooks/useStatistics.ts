@@ -29,6 +29,9 @@ export const useStatistics = (
     let totalBlocks = 0;
     let vacationDays = 0;
     let daysWithoutRequiredBreak = 0;
+    let daysWithInsufficientSingleBreak = 0;
+    let daysWithBreakViolations = 0;
+    let totalMissedBreakMinutes = 0;
     const weeklyMinutes: { [week: string]: { totalMinutes: number, date: Date } } = {};
     const dailyMinutes: { [day: number]: { totalMinutes: number, count: number } } = {
       0: { totalMinutes: 0, count: 0 }, // Sunday
@@ -52,8 +55,12 @@ export const useStatistics = (
       }
 
       // Prüfe Pausenregelung für Tage mit mehr als 6 Stunden Arbeitszeit
-      if (!specialDayType && grossTotalMinutes >= 360) { // 6 Stunden = 360 Minuten
+      if (!specialDayType && grossTotalMinutes > 360) { // Mehr als 6 Stunden = >360 Minuten
+        const entryDate = new Date(dateStr);
+        const dayOfWeek = entryDate.getDay();
+        
         let totalBreakMinutes = 0;
+        let longestSingleBreak = 0;
         
         // Berechne Pausen zwischen Zeitblöcken
         for (let i = 0; i < timeEntries.length - 1; i++) {
@@ -65,12 +72,29 @@ export const useStatistics = (
           
           if (breakDuration > 0) {
             totalBreakMinutes += breakDuration;
+            longestSingleBreak = Math.max(longestSingleBreak, breakDuration);
           }
         }
         
         // Österreichische Regel: Bei mehr als 6h Arbeitszeit sind 30 Min Pause erforderlich
-        if (totalBreakMinutes < 30) {
+        const hasRequiredTotalBreak = totalBreakMinutes >= 30;
+        const hasMinimumSingleBreak = longestSingleBreak >= 10;
+        
+        if (!hasRequiredTotalBreak) {
           daysWithoutRequiredBreak++;
+        }
+        if (!hasMinimumSingleBreak) {
+          daysWithInsufficientSingleBreak++;
+        }
+        if (!hasRequiredTotalBreak || !hasMinimumSingleBreak) {
+          daysWithBreakViolations++;
+        }
+        
+        // Berechne nicht konsumierte Pausenzeit nur für Werktage (Mo-Fr = 1-5)
+        if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+          const requiredBreak = 30;
+          const missedBreak = Math.max(0, requiredBreak - totalBreakMinutes);
+          totalMissedBreakMinutes += missedBreak;
         }
       }
 
@@ -293,6 +317,9 @@ export const useStatistics = (
       previousWeekToDateTotalMinutes,
       vacationDays,
       daysWithoutRequiredBreak,
+      daysWithInsufficientSingleBreak,
+      daysWithBreakViolations,
+      totalMissedBreakMinutes,
     };
   }, [yearData, currentInput, currentTime, selectedDate, dailyTargetMinutes]);
 };

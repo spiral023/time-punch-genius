@@ -13,7 +13,7 @@ import { useSummary } from '../hooks/useSummary';
 import { useStatistics } from '../hooks/useStatistics';
 import { useYearData } from '../hooks/useYearData';
 import { DataManagementHandles } from '../components/DataManagement';
-import { Holiday, TimeEntry, YearData, ValidationError } from '@/types';
+import { Holiday, TimeEntry, YearData, ValidationError, BreakCompliance } from '@/types';
 import { useHolidays } from '../hooks/useHolidays';
 
 const WEEKLY_HOURS_KEY = 'zehelper_weekly_hours';
@@ -50,6 +50,7 @@ interface TimeCalculatorContextType {
   totalBreak: number;
   breakDeduction: number;
   grossTotalMinutes: number;
+  breakCompliance: BreakCompliance;
   specialDayType: "vacation" | "sick" | "holiday" | null;
   weeklyBalance: number;
   weeklyChartData: { date: Date; totalMinutes: number }[];
@@ -202,7 +203,7 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
     return newDate;
   }, [selectedDate, lastFullMinute]);
 
-  const { timeEntries, errors, totalMinutes, totalBreak, breakDeduction, grossTotalMinutes, specialDayType } = useTimeCalculator(input, calculationTime, dailyTargetMinutes);
+  const { timeEntries, errors, totalMinutes, totalBreak, breakDeduction, grossTotalMinutes, specialDayType, breakCompliance } = useTimeCalculator(input, calculationTime, dailyTargetMinutes);
 
   const weeklyBalance = useMemo(() => {
     const targetMinutes = Math.round(weeklyTargetHours * 60);
@@ -420,6 +421,7 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
     totalBreak,
     breakDeduction,
     grossTotalMinutes,
+    breakCompliance,
     specialDayType,
     weeklyBalance,
     weeklyChartData,

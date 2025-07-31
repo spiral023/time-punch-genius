@@ -60,7 +60,7 @@ const InfoCard: React.FC = () => {
               E-Mail: philipp.asanger@gmail.com
             </p>
             <p className="mt-4 text-sm text-muted-foreground">
-              Danke an Thomas & Wolfgang für euren Support!
+              Danke an Thomas, Wolfgang & Dominik für euren Support!
             </p>
           </div>
         </InfoDialog>

@@ -14,10 +14,8 @@ export const StatisticsCard: React.FC = () => {
     daysInYear,
     earliestStart,
     latestEnd,
-    longestBreak,
     earliestStartDate,
     latestEndDate,
-    longestBreakDate,
     daysOver9Hours,
     longestWeek,
     longestWeekStart,
@@ -29,7 +27,6 @@ export const StatisticsCard: React.FC = () => {
     longestStreakEnd,
     averageBlocksPerDay,
     vacationDays,
-    daysWithoutRequiredBreak,
   } = statistics;
   const bookedDaysPercentage = daysInYear > 0 ? ((daysWithBookings / daysInYear) * 100).toFixed(1) : 0;
   const over9HoursPercentage = daysWithBookings > 0 ? ((daysOver9Hours / daysWithBookings) * 100).toFixed(1) : 0;
@@ -96,29 +93,6 @@ export const StatisticsCard: React.FC = () => {
           </div>
           <p className="text-xs text-muted-foreground text-right">
             {latestEndDate ? format(new Date(latestEndDate), 'dd.MM.yyyy', { locale: de }) : ''}
-          </p>
-        </div>
-        <div>
-          <div className="flex justify-between items-baseline">
-            <span className="text-sm font-medium">Längste Pause</span>
-            <motion.span
-              key={`longest-break-${longestBreak}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="font-bold text-lg cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={() => {
-                if (longestBreakDate) {
-                  setSelectedDate(new Date(longestBreakDate));
-                }
-              }}
-            >
-              {longestBreak ? formatHoursMinutes(longestBreak) : '-'}
-            </motion.span>
-          </div>
-          <p className="text-xs text-muted-foreground text-right">
-            {longestBreakDate ? format(new Date(longestBreakDate), 'dd.MM.yyyy', { locale: de }) : ''}
           </p>
         </div>
         <div>
@@ -240,24 +214,6 @@ export const StatisticsCard: React.FC = () => {
               {vacationDays > 0 ? `${vacationDays} Tage` : '-'}
             </motion.span>
           </div>
-        </div>
-        <div>
-          <div className="flex justify-between items-baseline">
-            <span className="text-sm font-medium">Tage ohne Pflichtpause</span>
-            <motion.span
-              key={`days-without-break-${daysWithoutRequiredBreak}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className={`font-bold text-lg ${daysWithoutRequiredBreak > 0 ? 'text-red-500' : 'text-green-500'}`}
-            >
-              {daysWithoutRequiredBreak} Tage
-            </motion.span>
-          </div>
-          <p className="text-xs text-muted-foreground text-right">
-            Bei Arbeitszeit &gt; 6h
-          </p>
         </div>
       </CardContent>
     </Card>

@@ -32,6 +32,15 @@ export interface AppSettings {
   zoomLevel: number;
 }
 
+export interface BreakCompliance {
+  hasRequiredTotalBreak: boolean;
+  hasMinimumSingleBreak: boolean;
+  totalBreakMinutes: number;
+  longestSingleBreak: number;
+  isCompliant: boolean;
+  violations: string[];
+}
+
 export type SpecialDayType =
   | 'vacation'
   | 'sick'
