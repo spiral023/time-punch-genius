@@ -7,7 +7,6 @@ import { isHoliday } from '@/lib/holidays';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import { useDataManagement } from '../hooks/useDataManagement';
 import { useHomeOfficeStats } from '../hooks/useHomeOfficeStats';
-import { usePersistentState } from '@/hooks/usePersistentState';
 import { useDailyEntry } from '../hooks/useDailyEntry';
 import { useSummary } from '../hooks/useSummary';
 import { useStatistics } from '../hooks/useStatistics';
@@ -16,7 +15,6 @@ import { DataManagementHandles } from '../components/DataManagement';
 import { Holiday, TimeEntry, YearData, ValidationError, BreakCompliance } from '@/types';
 import { useHolidays } from '../hooks/useHolidays';
 
-const WEEKLY_HOURS_KEY = 'zehelper_weekly_hours';
 
 interface TimeCalculatorContextType {
   selectedDate: Date;
@@ -64,9 +62,8 @@ interface TimeCalculatorContextType {
 const TimeCalculatorContext = createContext<TimeCalculatorContextType | undefined>(undefined);
 
 export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) => {
-  const { cardVisibility } = useAppSettings();
+  const { cardVisibility, weeklyTargetHours, setWeeklyTargetHours } = useAppSettings();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [weeklyTargetHours, setWeeklyTargetHours] = usePersistentState<number>(WEEKLY_HOURS_KEY, 38.5);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [lastFullMinute, setLastFullMinute] = useState(new Date());
   const { data: holidays = [] } = useHolidays(getYear(selectedDate));
@@ -78,7 +75,7 @@ export const TimeCalculatorProvider = ({ children }: { children: ReactNode }) =>
   const { handleExportData, handleImportData, handleClearAllData, handleWebdeskImport } = useDataManagement();
   const { weeklySummary, monthlySummary, yearlySummary, totalSummary } = useSummary(selectedDate, yearData, dailyTargetMinutes, input, currentTime);
   const statistics = useStatistics(yearData, dailyTargetMinutes, input, currentTime, selectedDate);
-  const homeOfficeStats = useHomeOfficeStats(yearData, holidays);
+  const homeOfficeStats = useHomeOfficeStats(yearData, holidays, getYear(selectedDate));
 
   const triggerImport = () => dataManagementRef.current?.triggerImport();
   const triggerWebdeskImport = () => dataManagementRef.current?.triggerWebdeskImport();

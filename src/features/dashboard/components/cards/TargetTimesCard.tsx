@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Target, Settings } from 'lucide-react';
 import { addMinutesToTime, formatMinutesToTime } from '@/lib/timeUtils';
 import { TargetTimeProgress } from '@/features/dashboard/components/TargetTimeProgress';
 import { useTimeCalculatorContext } from '@/features/time-calculator/contexts/TimeCalculatorContext';
+import { useAppSettings } from '@/hooks/useAppSettings';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,25 +28,15 @@ const targetTimeItems = [
 ];
 
 export const TargetTimesCard: React.FC = () => {
-  const [visibleTargets, setVisibleTargets] = useState<{ [key: string]: boolean }>({});
+  const { targetTimesVisibility, setTargetTimesVisibility } = useAppSettings();
 
-  useEffect(() => {
-    const storedVisibility = localStorage.getItem('targetTimesVisibility');
-    if (storedVisibility) {
-      setVisibleTargets(JSON.parse(storedVisibility));
-    } else {
-      // Default to all visible
-      const allVisible = targetTimeItems.reduce((acc, item) => {
+  // Initialize visibility if empty
+  const visibleTargets = Object.keys(targetTimesVisibility).length === 0 
+    ? targetTimeItems.reduce((acc, item) => {
         acc[item.id] = true;
         return acc;
-      }, {} as { [key: string]: boolean });
-      setVisibleTargets(allVisible);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('targetTimesVisibility', JSON.stringify(visibleTargets));
-  }, [visibleTargets]);
+      }, {} as { [key: string]: boolean })
+    : targetTimesVisibility;
 
   const {
     totalMinutes,
@@ -79,7 +70,8 @@ export const TargetTimesCard: React.FC = () => {
   }
 
   const handleVisibilityChange = (id: string, checked: boolean) => {
-    setVisibleTargets(prev => ({ ...prev, [id]: checked }));
+    const newVisibility = { ...visibleTargets, [id]: checked };
+    setTargetTimesVisibility(newVisibility);
   };
 
   return (

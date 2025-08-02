@@ -4,7 +4,7 @@ import * as React from "react"
 import { getYear } from "date-fns"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, ReferenceLine } from "recharts"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { BarChart2 } from "lucide-react"
 import { formatHoursMinutes } from "@/lib/timeUtils"
 import { useTimeCalculatorContext } from "@/features/time-calculator/contexts/TimeCalculatorContext"
@@ -38,17 +38,18 @@ const getBarColorByMinutes = (minutes: number): string => {
 
 export const AverageWorkdayHoursChart: React.FC = () => {
   const { statistics, selectedDate } = useTimeCalculatorContext();
-  const chartData = statistics.averageDailyMinutes.map(item => ({
-    day: item.day,
-    hours: parseFloat((item.averageMinutes / 60).toFixed(2)),
-    fill: getBarColorByMinutes(item.averageMinutes),
-  }));
-
-  // Reorder data to start with Monday
-  const orderedChartData = [
-    ...chartData.filter(d => d.day !== 'So'),
-    ...chartData.filter(d => d.day === 'So')
-  ];
+  
+  // Create a proper mapping to reorder days starting with Monday
+  const dayOrder = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+  const orderedChartData = dayOrder.map(dayName => {
+    const dayData = statistics.averageDailyMinutes.find(item => item.day === dayName);
+    return {
+      day: dayName,
+      hours: dayData ? parseFloat((dayData.averageMinutes / 60).toFixed(2)) : 0,
+      fill: getBarColorByMinutes(dayData ? dayData.averageMinutes : 0),
+      averageMinutes: dayData ? dayData.averageMinutes : 0, // Keep original minutes for tooltip
+    };
+  });
 
   const maxHours = Math.max(...orderedChartData.map(item => item.hours), 7.7);
   const yAxisMax = Math.ceil(maxHours);
@@ -58,8 +59,9 @@ export const AverageWorkdayHoursChart: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart2 className="h-6 w-6" />
-          Durchschnitt pro Wochentag {getYear(selectedDate)}
+          Durchschnitt pro Wochentag
         </CardTitle>
+        <CardDescription>Durchschnitt für das Jahr {getYear(selectedDate)}</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
@@ -80,10 +82,27 @@ export const AverageWorkdayHoursChart: React.FC = () => {
             />
             <ChartTooltip
               cursor={false}
+              allowEscapeViewBox={{ x: false, y: false }}
+              position={{ x: undefined, y: undefined }}
               content={<ChartTooltipContent 
+                labelFormatter={(label) => {
+                  // Ensure we show the correct day name from the label
+                  const dayNames = {
+                    'Mo': 'Montag',
+                    'Di': 'Dienstag', 
+                    'Mi': 'Mittwoch',
+                    'Do': 'Donnerstag',
+                    'Fr': 'Freitag',
+                    'Sa': 'Samstag',
+                    'So': 'Sonntag'
+                  };
+                  return dayNames[label as keyof typeof dayNames] || label;
+                }}
                 formatter={(value, name, props) => {
-                  const minutes = Math.round(parseFloat(props.payload.hours) * 60);
-                  return [formatHoursMinutes(minutes), null];
+                  // Use the averageMinutes from the payload to ensure accuracy and round to whole minutes
+                  const rawMinutes = props.payload.averageMinutes || (parseFloat(value as string) * 60);
+                  const roundedMinutes = Math.round(rawMinutes);
+                  return [formatHoursMinutes(roundedMinutes), null];
                 }}
               />}
             />

@@ -1,10 +1,12 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import { useFreeDays } from '@/features/time-calculator/hooks/useFreeDays';
 import { PersonalVacationDaysSetting } from '@/features/time-calculator/components/PersonalVacationDaysSetting';
 import { CalendarCheck } from 'lucide-react';
 import { useTimeCalculatorContext } from '@/features/time-calculator/contexts/TimeCalculatorContext';
+import { getYear } from 'date-fns';
 
 export const FreeDaysCard: React.FC = () => {
   const { selectedDate } = useTimeCalculatorContext();
@@ -15,7 +17,12 @@ export const FreeDaysCard: React.FC = () => {
     pastPublicHolidays,
   } = useFreeDays(selectedDate.getFullYear());
 
-  const vacationPercentage = personalVacationDays > 0 ? (usedVacationDays / personalVacationDays) * 100 : 0;
+  // Calculate vacation usage
+  const standardVacationUsed = Math.min(usedVacationDays, personalVacationDays);
+  const extraVacationUsed = Math.max(0, usedVacationDays - personalVacationDays);
+  const standardVacationPercentage = personalVacationDays > 0 ? (standardVacationUsed / personalVacationDays) * 100 : 0;
+  const hasExtraVacation = extraVacationUsed > 0;
+
   const holidayPercentage = publicHolidays > 0 ? (pastPublicHolidays / publicHolidays) * 100 : 0;
 
   const getProgressColor = (percentage: number) => {
@@ -38,18 +45,38 @@ export const FreeDaysCard: React.FC = () => {
           </CardTitle>
           <PersonalVacationDaysSetting />
         </div>
+        <CardDescription>Übersicht für das Jahr {getYear(selectedDate)}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 pt-2">
         <div className="space-y-2">
-          <Progress
-            value={vacationPercentage}
-            className="h-3"
-            indicatorClassName={getProgressColor(vacationPercentage)}
-          />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{`Urlaubstage: ${usedVacationDays}/${personalVacationDays}`}</span>
-            <span>{`${vacationPercentage.toFixed(0)}%`}</span>
+          <div className="relative">
+            <Progress
+              value={standardVacationPercentage}
+              className="h-3"
+              indicatorClassName={getProgressColor(standardVacationPercentage)}
+            />
+            {hasExtraVacation && (
+              <div className="absolute top-0 right-0 h-3 bg-orange-500 rounded-r-full flex items-center justify-center min-w-[20px] px-1">
+                <span className="text-[8px] text-white font-bold">+{extraVacationUsed}</span>
+              </div>
+            )}
           </div>
+          <div className="flex justify-between items-center text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <span>Urlaubstage: {standardVacationUsed}/{personalVacationDays}</span>
+              {hasExtraVacation && (
+                <Badge variant="secondary" className="text-[10px] px-1 py-0">
+                  +{extraVacationUsed} Zusatz
+                </Badge>
+              )}
+            </div>
+            <span>{standardVacationPercentage.toFixed(0)}%</span>
+          </div>
+          {hasExtraVacation && (
+            <div className="text-[10px] text-orange-600 font-medium">
+              Zusätzliche Urlaubstage (z.B. Übertrag aus Vorjahr)
+            </div>
+          )}
         </div>
         <div className="space-y-2">
           <Progress

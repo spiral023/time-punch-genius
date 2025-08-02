@@ -1,11 +1,12 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { TrendingUp } from 'lucide-react';
 import { useTimeCalculatorContext } from '@/features/time-calculator/contexts/TimeCalculatorContext';
+import { getYear } from 'date-fns';
 
 export const AverageDayCard: React.FC = () => {
-  const { averageDayData } = useTimeCalculatorContext();
+  const { averageDayData, selectedDate } = useTimeCalculatorContext();
   const { avgStart, avgEnd, avgBreak, avgHours } = averageDayData;
   return (
     <Card>
@@ -21,6 +22,7 @@ export const AverageDayCard: React.FC = () => {
             </TooltipContent>
           </Tooltip>
         </CardTitle>
+        <CardDescription>Durchschnitt für das Jahr {getYear(selectedDate)}</CardDescription>
       </CardHeader>
       <CardContent>
         <blockquote className="italic text-muted-foreground">

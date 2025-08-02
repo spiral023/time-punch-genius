@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
 import { parseTimeToMinutes } from './timeUtils';
 import { getHolidays, isHoliday, Holiday } from './holidays';
+import { saveStatisticsForYear, updateStatisticsForYear } from './statisticsUtils';
 
 // Define the structure of a row in the Webdesk export
 interface WebdeskRow {
@@ -50,7 +51,7 @@ const NORMAL_WORK_END = 19 * 60; // 19:00 in minutes
  * @param file The XLSX file to import.
  * @returns Processed data and statistics.
  */
-export const processWebdeskFile = async (file: File): Promise<{ processedData: ProcessedData; statistics: Statistics }> => {
+export const processWebdeskFile = async (file: File): Promise<{ processedData: ProcessedData; statistics: { [year: number]: Statistics } }> => {
   const data = await file.arrayBuffer();
   const workbook = XLSX.read(data);
   const sheetName = workbook.SheetNames[0];
@@ -60,12 +61,24 @@ export const processWebdeskFile = async (file: File): Promise<{ processedData: P
   const groupedByDate = groupByDate(json);
   const processedData = processGroupedData(groupedByDate);
 
-  const years = [...new Set(Object.keys(processedData).map(dateStr => new Date(dateStr.split('.').reverse().join('-')).getFullYear()))];
-  const holidays = (await Promise.all(years.map(year => getHolidays(year, 'AT')))).flat();
+  // Group processed data by year
+  const dataByYear: { [year: number]: ProcessedData } = {};
+  Object.keys(processedData).forEach(dateStr => {
+    const year = new Date(dateStr.split('.').reverse().join('-')).getFullYear();
+    if (!dataByYear[year]) {
+      dataByYear[year] = {};
+    }
+    dataByYear[year][dateStr] = processedData[dateStr];
+  });
 
-  const statistics = calculateStatistics(processedData, holidays);
+  // Calculate statistics for each year
+  const statisticsByYear: { [year: number]: Statistics } = {};
+  for (const year of Object.keys(dataByYear).map(Number)) {
+    const holidays = await getHolidays(year, 'AT');
+    statisticsByYear[year] = calculateStatistics(dataByYear[year], holidays);
+  }
 
-  return { processedData, statistics };
+  return { processedData, statistics: statisticsByYear };
 };
 
 /**

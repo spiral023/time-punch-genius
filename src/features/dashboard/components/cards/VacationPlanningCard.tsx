@@ -30,23 +30,23 @@ const VacationPlanningCard = () => {
           Urlaubsplanung
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex justify-center">
         <Dialog>
           <DialogTrigger asChild>
             <img 
               src="https://sp23.online/images/fenstertage_ad2_small.png" 
               alt="Urlaubsplanung" 
-              className="rounded-md cursor-pointer hover:opacity-80 transition-opacity" 
+              className="rounded-md cursor-pointer hover:opacity-80 transition-opacity mx-auto" 
               onClick={handleImageClick}
             />
           </DialogTrigger>
           <DialogContent className="p-0 border-0 sm:max-w-4xl max-w-[95vw] h-[80vh]">
             {!showWebsite ? (
-              <div className="p-4">
+              <div className="p-4 flex flex-col items-center">
                 <img 
                   src="https://sp23.online/images/fenstertage_ad2_small.png" 
                   alt="Urlaubsplanung" 
-                  className="rounded-lg cursor-pointer hover:opacity-80 transition-opacity" 
+                  className="rounded-lg cursor-pointer hover:opacity-80 transition-opacity mx-auto" 
                   onClick={handleImageClick}
                 />
                 <p className="text-sm text-muted-foreground mt-2 text-center">

@@ -1,7 +1,7 @@
-import { useState, useEffect, Dispatch, SetStateAction } from 'react';
-import { DashboardLayout, defaultLayout, cardRegistry } from '@/features/dashboard/config/layout';
-
-const STORAGE_KEY = 'dashboardLayout';
+import { Dispatch, SetStateAction } from 'react';
+import { DashboardLayout } from '@/types';
+import { cardRegistry, defaultLayout } from '@/features/dashboard/config/layout';
+import { useAppSettings } from './useAppSettings';
 
 const migrateLayout = (layout: DashboardLayout): DashboardLayout => {
   let newLayout = { ...layout };
@@ -44,6 +44,8 @@ const migrateLayout = (layout: DashboardLayout): DashboardLayout => {
 };
 
 export const useDashboardLayout = (): [DashboardLayout, Dispatch<SetStateAction<DashboardLayout>>] => {
+  const { dashboardLayout, setDashboardLayout } = useAppSettings();
+
   // Validate layout to prevent duplicates and ensure data integrity
   const validateLayout = (layout: DashboardLayout): DashboardLayout => {
     const allCards = new Set<string>();
@@ -62,35 +64,36 @@ export const useDashboardLayout = (): [DashboardLayout, Dispatch<SetStateAction<
     return { ...layout, columns: validatedColumns };
   };
 
-  const [layout, setLayout] = useState<DashboardLayout>(() => {
-    try {
-      const storedLayout = localStorage.getItem(STORAGE_KEY);
-      if (storedLayout) {
-        const parsed = JSON.parse(storedLayout) as DashboardLayout;
-        // Always run migration logic to catch newly added cards
-        return validateLayout(migrateLayout(parsed));
-      }
-    } catch (error) {
-      console.error("Failed to load or parse dashboard layout from localStorage", error);
-    }
-    return validateLayout(defaultLayout);
-  });
+  // Migrate layout to add missing cards from the registry
+  const migrateLayoutForNewCards = (layout: DashboardLayout): DashboardLayout => {
+    const allRegisteredCards = Object.keys(cardRegistry);
+    const allLayoutCards = new Set(layout.columns.flat());
+    const missingCards = allRegisteredCards.filter(cardId => !allLayoutCards.has(cardId));
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
-    } catch (error) {
-      console.error("Failed to save dashboard layout to localStorage", error);
+    if (missingCards.length > 0) {
+      const newColumns = [...layout.columns];
+      // Add missing cards to the end of the last column
+      if (newColumns.length > 0) {
+        newColumns[newColumns.length - 1].push(...missingCards);
+      } else {
+        // If there are no columns, create one with the missing cards
+        newColumns.push(missingCards);
+      }
+      return { ...layout, columns: newColumns };
     }
-  }, [layout]);
+
+    return layout;
+  };
+
+  // Apply migrations and validation to the current layout
+  const currentLayout = validateLayout(migrateLayoutForNewCards(dashboardLayout));
 
   // Wrapper for setLayout that validates before setting
   const setValidatedLayout: Dispatch<SetStateAction<DashboardLayout>> = (value) => {
-    setLayout(prevLayout => {
-      const newLayout = typeof value === 'function' ? value(prevLayout) : value;
-      return validateLayout(newLayout);
-    });
+    const newLayout = typeof value === 'function' ? value(currentLayout) : value;
+    const validatedLayout = validateLayout(newLayout);
+    setDashboardLayout(validatedLayout);
   };
 
-  return [layout, setValidatedLayout];
+  return [currentLayout, setValidatedLayout];
 };

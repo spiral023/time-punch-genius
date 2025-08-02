@@ -23,6 +23,11 @@ export type Holiday = {
   types: string[];
 };
 
+export interface DashboardLayout {
+  version: number;
+  columns: string[][];
+}
+
 export interface AppSettings {
   personalVacationDays: number;
   cardVisibility: { [key: string]: boolean };
@@ -30,6 +35,9 @@ export interface AppSettings {
   showWelcomeScreen: boolean;
   columnWidthSlider: number;
   zoomLevel: number;
+  weeklyTargetHours: number;
+  dashboardLayout: DashboardLayout;
+  targetTimesVisibility?: { [key: string]: boolean };
 }
 
 export interface BreakCompliance {
@@ -55,4 +63,19 @@ export type SpecialDayType =
 
 export interface YearData {
   [date: string]: string;
+}
+
+export interface YearlyStatistics {
+  year: number;
+  homeOfficeDaysWorkdays: number;
+  homeOfficeDaysWeekendsAndHolidays: number;
+  pureOfficeDays: number;
+  hybridDays: number;
+  totalWorkDays: number;
+  totalHomeOfficeHours: number;
+  totalOfficeHours: number;
+  vacationDays: number;
+  totalHomeOfficeHoursInNormalTime?: number; // Optional for backward compatibility
+  totalHomeOfficeHoursOutsideNormalTime?: number; // Optional for backward compatibility
+  lastUpdated: string; // ISO timestamp
 }

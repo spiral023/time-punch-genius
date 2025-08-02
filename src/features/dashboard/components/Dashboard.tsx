@@ -310,12 +310,7 @@ const Dashboard = () => {
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
-          <div
-            className="dashboard-grid gap-6"
-            style={{
-              '--card-min-width': `${cardMinWidth}px`
-            } as React.CSSProperties}
-          >
+          <div className="dashboard-grid">
             {layout.columns.map((column, colIndex) => (
               <DroppableColumn key={`col-${colIndex}`} id={String(colIndex)} items={column}>
                 {column.map((cardId) => {

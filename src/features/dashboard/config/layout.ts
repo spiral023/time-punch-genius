@@ -1,3 +1,4 @@
+import { DashboardLayout } from '@/types';
 import { AverageDayCard } from '../components/cards/AverageDayCard';
 import { BreakInfoCard } from '../components/cards/BreakInfoCard';
 import { CurrentTimeCard } from '../components/cards/CurrentTimeCard';
@@ -46,10 +47,6 @@ export const cardRegistry: Record<string, CardMeta> = {
   // dataManagement is handled as a special case in Dashboard.tsx because of the ref
 };
 
-export interface DashboardLayout {
-  version: number;
-  columns: string[][];
-}
 
 export const defaultLayout: DashboardLayout = {
   version: 3,

@@ -31,7 +31,7 @@ const AppContent = () => {
   return (
     <div className="relative">
       <AnimatedBackground />
-      <div style={{ zoom: zoomLevel }}>
+      <div>
         <Sonner />
         <BrowserRouter>
           <Routes>

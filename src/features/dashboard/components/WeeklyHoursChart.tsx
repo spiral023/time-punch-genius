@@ -75,14 +75,17 @@ export const WeeklyHoursChart: React.FC = () => {
             />
             <ChartTooltip
               cursor={false}
+              allowEscapeViewBox={{ x: false, y: false }}
+              position={{ x: undefined, y: undefined }}
               content={<ChartTooltipContent
                 labelFormatter={(value) => {
                   const fullDate = weeklyChartData.find(d => format(d.date, 'eee', { locale: de }) === value)?.date
                   return fullDate ? format(fullDate, 'eeee, dd.MM', { locale: de }) : value
                 }}
                 formatter={(value, name, props) => {
-                  const minutes = Math.round(parseFloat(value as string) * 60);
-                  return [formatHoursMinutes(minutes), null];
+                  const rawMinutes = parseFloat(value as string) * 60;
+                  const roundedMinutes = Math.round(rawMinutes);
+                  return [formatHoursMinutes(roundedMinutes), null];
                 }}
               />}
             />

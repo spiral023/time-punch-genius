@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { parse, differenceInMinutes, getDayOfYear, format, isValid, getWeek, startOfWeek, endOfWeek, getDay, isToday } from 'date-fns';
+import { parse, differenceInMinutes, getDayOfYear, format, isValid, getWeek, startOfWeek, endOfWeek, getDay, isToday, getYear, isWeekend } from 'date-fns';
 import { calculateTimeDetails } from '@/lib/timeUtils';
 
 export const useStatistics = (
@@ -12,7 +12,34 @@ export const useStatistics = (
   return useMemo(() => {
 
     const daysWithBookings = Object.values(yearData).filter(d => d && d.trim() !== '').length;
-    const daysInYear = getDayOfYear(new Date());
+    
+    // Calculate the correct total days for the year being viewed
+    let daysInYear: number;
+    if (selectedDate) {
+      const selectedYear = getYear(selectedDate);
+      const currentYear = getYear(new Date());
+      
+      if (selectedYear === currentYear) {
+        // For current year: use current day of year
+        daysInYear = getDayOfYear(new Date());
+      } else {
+        // For past/future years: calculate total workdays in that year
+        // Count all weekdays (Monday-Friday) in the year, excluding weekends
+        let workdaysCount = 0;
+        const yearStart = new Date(selectedYear, 0, 1); // January 1st
+        const yearEnd = new Date(selectedYear, 11, 31); // December 31st
+        
+        for (let date = new Date(yearStart); date <= yearEnd; date.setDate(date.getDate() + 1)) {
+          if (!isWeekend(date)) {
+            workdaysCount++;
+          }
+        }
+        daysInYear = workdaysCount;
+      }
+    } else {
+      // Fallback to current day of year if no selectedDate
+      daysInYear = getDayOfYear(new Date());
+    }
 
     let earliestStart: string | null = null;
     let earliestStartDate: string | null = null;

@@ -1,15 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useTimeCalculatorContext } from '@/features/time-calculator/contexts/TimeCalculatorContext';
 import { Coffee, AlertTriangle, CheckCircle } from 'lucide-react';
 import { formatHoursMinutes } from '@/lib/timeUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { format } from 'date-fns';
+import { format, getYear } from 'date-fns';
 import { de } from 'date-fns/locale';
 
 export const BreakInfoCard: React.FC = () => {
-  const { totalBreak, breakDeduction, grossTotalMinutes, breakCompliance, statistics, setSelectedDate } = useTimeCalculatorContext();
+  const { totalBreak, breakDeduction, grossTotalMinutes, breakCompliance, statistics, setSelectedDate, selectedDate } = useTimeCalculatorContext();
   const {
     longestBreak,
     longestBreakDate,
@@ -79,6 +79,7 @@ export const BreakInfoCard: React.FC = () => {
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
+        <CardDescription>Statistik für das Jahr {getYear(selectedDate)}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">

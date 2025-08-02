@@ -7,7 +7,19 @@ export const useAppSettings = () => {
     throw new Error('useAppSettings must be used within an AppSettingsProvider');
   }
   
-  const { settings, setGradientId, setCardVisibility, setAllCardsVisibility, setPersonalVacationDays, setShowWelcomeScreen, setColumnWidthSlider, setZoomLevel } = context;
+  const { 
+    settings, 
+    setGradientId, 
+    setCardVisibility, 
+    setAllCardsVisibility, 
+    setPersonalVacationDays, 
+    setShowWelcomeScreen, 
+    setColumnWidthSlider, 
+    setZoomLevel,
+    setWeeklyTargetHours,
+    setDashboardLayout,
+    setTargetTimesVisibility
+  } = context;
 
   return {
     settings,
@@ -21,7 +33,13 @@ export const useAppSettings = () => {
     setShowWelcomeScreen,
     columnWidthSlider: settings.columnWidthSlider || 30,
     setColumnWidthSlider,
-    zoomLevel: settings.zoomLevel || 0.8,
+    zoomLevel: settings.zoomLevel || 1.0,
     setZoomLevel,
+    weeklyTargetHours: settings.weeklyTargetHours || 38.5,
+    setWeeklyTargetHours,
+    dashboardLayout: settings.dashboardLayout,
+    setDashboardLayout,
+    targetTimesVisibility: settings.targetTimesVisibility || {},
+    setTargetTimesVisibility,
   };
 };

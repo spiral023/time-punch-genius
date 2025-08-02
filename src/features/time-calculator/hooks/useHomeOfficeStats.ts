@@ -1,10 +1,10 @@
-// src/hooks/useHomeOfficeStats.ts
 import { useState, useEffect } from 'react';
 import { isHoliday } from '@/lib/holidays';
 import { parseTimeToMinutes } from '@/lib/timeUtils';
 import { Holiday } from '@/types';
+import { getStatisticsForYear } from '@/lib/statisticsUtils';
 
-export const useHomeOfficeStats = (yearData: { [key: string]: string }, holidays: Holiday[]) => {
+export const useHomeOfficeStats = (yearData: { [key: string]: string }, holidays: Holiday[], year?: number) => {
   const [homeOfficeStats, setHomeOfficeStats] = useState({
     homeOfficeDaysWorkdays: 0,
     homeOfficeDaysWeekendsAndHolidays: 0,
@@ -17,6 +17,36 @@ export const useHomeOfficeStats = (yearData: { [key: string]: string }, holidays
   });
 
   useEffect(() => {
+    // Try to get stored statistics for the specified year first
+    if (year) {
+      const storedStats = getStatisticsForYear(year);
+      if (storedStats) {
+        // Check if we have the detailed time breakdowns stored
+        if (storedStats.totalHomeOfficeHoursInNormalTime !== undefined && 
+            storedStats.totalHomeOfficeHoursOutsideNormalTime !== undefined) {
+          // Use stored statistics including detailed breakdowns
+          const totalHours = storedStats.totalHomeOfficeHours + storedStats.totalOfficeHours;
+          const hoHoursPercentage = totalHours > 0 ? (storedStats.totalHomeOfficeHours / totalHours) * 100 : 0;
+          
+          const totalDays = storedStats.homeOfficeDaysWorkdays + storedStats.pureOfficeDays + storedStats.hybridDays;
+          const hoDaysPercentage = totalDays > 0 ? ((storedStats.homeOfficeDaysWorkdays + storedStats.hybridDays) / totalDays) * 100 : 0;
+
+          setHomeOfficeStats({
+            homeOfficeDaysWorkdays: storedStats.homeOfficeDaysWorkdays,
+            homeOfficeDaysWeekendsAndHolidays: storedStats.homeOfficeDaysWeekendsAndHolidays,
+            totalHomeOfficeHoursInNormalTime: storedStats.totalHomeOfficeHoursInNormalTime,
+            totalHomeOfficeHoursOutsideNormalTime: storedStats.totalHomeOfficeHoursOutsideNormalTime,
+            pureOfficeDays: storedStats.pureOfficeDays,
+            hybridDays: storedStats.hybridDays,
+            hoHoursPercentage,
+            hoDaysPercentage,
+          });
+          return;
+        }
+      }
+    }
+
+    // Fall back to live calculation from yearData
     let homeOfficeDaysWorkdays = 0;
     let homeOfficeDaysWeekendsAndHolidays = 0;
     let pureOfficeDays = 0;

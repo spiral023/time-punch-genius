@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useHeatmapData } from '@/features/time-calculator/hooks/useHeatmapData';
+import { useTimeCalculatorContext } from '@/features/time-calculator/contexts/TimeCalculatorContext';
 import { Flame, Maximize } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { formatHoursMinutes } from '@/lib/timeUtils';
+import { getYear } from 'date-fns';
 
 interface HeatmapDataPoint {
   day: number;
@@ -76,6 +78,7 @@ const HeatmapDetailView: React.FC<{ data: HeatmapDataPoint[], error: string | nu
 
 const HeatmapCard: React.FC = () => {
   const { data: heatmapData, error } = useHeatmapData();
+  const { selectedDate } = useTimeCalculatorContext();
 
   const compactData = useMemo(() => {
     if (!heatmapData) return { entries: [], maxValue: 0 };
@@ -106,6 +109,7 @@ const HeatmapCard: React.FC = () => {
             </DialogContent>
           </Dialog>
         </CardTitle>
+        <CardDescription>Heatmap für das Jahr {getYear(selectedDate)}</CardDescription>
       </CardHeader>
       <CardContent>
         {error && <p className="text-red-500">{error}</p>}

@@ -38,7 +38,7 @@ export const DashboardSettings: React.FC<DashboardSettingsProps> = ({
   setIsEditing,
   onResetLayout,
 }) => {
-  const { cardVisibility, setCardVisibility, setAllCardsVisibility, columnWidthSlider, setColumnWidthSlider, gradientId, setGradientId, zoomLevel, setZoomLevel } = useAppSettings();
+  const { cardVisibility, setCardVisibility, setAllCardsVisibility, columnWidthSlider, setColumnWidthSlider, gradientId, setGradientId } = useAppSettings();
   const [open, setOpen] = useState(false);
 
   const handleResetLayout = () => {
@@ -225,31 +225,6 @@ export const DashboardSettings: React.FC<DashboardSettingsProps> = ({
           <TabsContent value="design" className="p-4 space-y-4">
             <div className="space-y-3">
               <h4 className="font-medium text-sm">Design-Einstellungen</h4>
-              
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-normal">Zoom-Level</Label>
-                  <span className="text-xs text-muted-foreground">
-                    {Math.round(zoomLevel * 100)}%
-                  </span>
-                </div>
-                
-                <Slider
-                  value={[zoomLevel * 100]}
-                  onValueChange={(value) => setZoomLevel(value[0] / 100)}
-                  min={50}
-                  max={100}
-                  step={5}
-                  className="w-full"
-                />
-                
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>50%</span>
-                  <span>100%</span>
-                </div>
-              </div>
-              
-              <Separator />
               
               <div className="space-y-3">
                 <Label className="text-sm font-normal">Hintergrund-Gradient</Label>

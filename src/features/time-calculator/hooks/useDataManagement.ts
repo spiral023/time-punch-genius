@@ -1,40 +1,85 @@
+import React from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { processWebdeskFile, ProcessedData, Statistics } from '@/lib/webdeskUtils';
+import { migrateOldStatistics, saveStatisticsForYear, ensureStatisticsForAllYears, regenerateStatisticsForYear } from '@/lib/statisticsUtils';
 
 const formatDateKey = (date: Date): string => `zehelper_data_${date.toISOString().split('T')[0]}`;
 
 export const useDataManagement = () => {
   const { toast } = useToast();
 
+  // Run migration on hook initialization
+  React.useEffect(() => {
+    const runMigrationAndEnsureStats = async () => {
+      const MIGRATION_FLAG = 'zehelper_migration_v2_completed';
+      
+      // Check if migration has already been completed
+      if (localStorage.getItem(MIGRATION_FLAG)) {
+        return; // Migration already completed
+      }
+      
+      console.log('Running migration and statistics generation...');
+      
+      // Run migration
+      migrateOldStatistics();
+      
+      // Regenerate statistics for 2024 to fix potential double-counting issues
+      const currentYear = new Date().getFullYear();
+      if (currentYear >= 2024) {
+        console.log('Regenerating statistics for 2024 to fix potential issues...');
+        await regenerateStatisticsForYear(2024);
+      }
+      
+      // Ensure statistics exist for all other years
+      await ensureStatisticsForAllYears();
+      
+      // Mark migration as completed
+      localStorage.setItem(MIGRATION_FLAG, 'true');
+      console.log('Migration and statistics generation completed');
+    };
+    
+    runMigrationAndEnsureStats();
+  }, []);
+
   const handleWebdeskImport = async (files: File[]) => {
     if (!files || files.length === 0) return;
 
     try {
       let allProcessedData: ProcessedData = {};
-      const allStatistics: Statistics = {
-        homeOfficeDaysWorkdays: 0,
-        homeOfficeDaysWeekendsAndHolidays: 0,
-        pureOfficeDays: 0,
-        hybridDays: 0,
-        totalWorkDays: 0,
-        totalHomeOfficeHours: 0,
-        totalOfficeHours: 0,
-        vacationDays: 0,
-      };
+      const allStatisticsByYear: { [year: number]: Statistics } = {};
 
       for (const file of files) {
         const { processedData, statistics } = await processWebdeskFile(file);
         allProcessedData = { ...allProcessedData, ...processedData };
         
-        // Merge statistics
-        allStatistics.homeOfficeDaysWorkdays += statistics.homeOfficeDaysWorkdays;
-        allStatistics.homeOfficeDaysWeekendsAndHolidays += statistics.homeOfficeDaysWeekendsAndHolidays;
-        allStatistics.pureOfficeDays += statistics.pureOfficeDays;
-        allStatistics.hybridDays += statistics.hybridDays;
-        allStatistics.totalWorkDays += statistics.totalWorkDays;
-        allStatistics.totalHomeOfficeHours += statistics.totalHomeOfficeHours;
-        allStatistics.totalOfficeHours += statistics.totalOfficeHours;
-        allStatistics.vacationDays += statistics.vacationDays;
+        // Merge statistics by year
+        Object.keys(statistics).forEach(yearStr => {
+          const year = parseInt(yearStr, 10);
+          const yearStats = statistics[year];
+          
+          if (!allStatisticsByYear[year]) {
+            allStatisticsByYear[year] = {
+              homeOfficeDaysWorkdays: 0,
+              homeOfficeDaysWeekendsAndHolidays: 0,
+              pureOfficeDays: 0,
+              hybridDays: 0,
+              totalWorkDays: 0,
+              totalHomeOfficeHours: 0,
+              totalOfficeHours: 0,
+              vacationDays: 0,
+            };
+          }
+          
+          // Merge statistics for this year
+          allStatisticsByYear[year].homeOfficeDaysWorkdays += yearStats.homeOfficeDaysWorkdays;
+          allStatisticsByYear[year].homeOfficeDaysWeekendsAndHolidays += yearStats.homeOfficeDaysWeekendsAndHolidays;
+          allStatisticsByYear[year].pureOfficeDays += yearStats.pureOfficeDays;
+          allStatisticsByYear[year].hybridDays += yearStats.hybridDays;
+          allStatisticsByYear[year].totalWorkDays += yearStats.totalWorkDays;
+          allStatisticsByYear[year].totalHomeOfficeHours += yearStats.totalHomeOfficeHours;
+          allStatisticsByYear[year].totalOfficeHours += yearStats.totalOfficeHours;
+          allStatisticsByYear[year].vacationDays += yearStats.vacationDays;
+        });
       }
 
       Object.keys(allProcessedData).forEach(dateStr => {
@@ -70,11 +115,20 @@ export const useDataManagement = () => {
         }
       });
 
-      localStorage.setItem('zehelper_statistics', JSON.stringify(allStatistics));
+      // Save year-specific statistics
+      Object.keys(allStatisticsByYear).forEach(yearStr => {
+        const year = parseInt(yearStr, 10);
+        saveStatisticsForYear(year, allStatisticsByYear[year]);
+      });
+
+      const importedYears = Object.keys(allStatisticsByYear).map(Number).sort();
+      const yearText = importedYears.length === 1 
+        ? `Jahr ${importedYears[0]}` 
+        : `Jahre ${importedYears.join(', ')}`;
 
       toast({
         title: `${files.length} Webdesk-Dateien importiert`,
-        description: 'Ihre Daten wurden erfolgreich verarbeitet. Die Anwendung wird neu geladen.',
+        description: `Daten für ${yearText} wurden erfolgreich verarbeitet. Die Anwendung wird neu geladen.`,
       });
 
       setTimeout(() => {
