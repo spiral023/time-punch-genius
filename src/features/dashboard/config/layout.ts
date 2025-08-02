@@ -72,7 +72,6 @@ export const twoColumnLayout: DashboardLayout = {
       'summary',
       'outsideRegularHours',
       'homeOffice',
-      'statistics'
     ],
     [
       'timeInput',
@@ -82,6 +81,7 @@ export const twoColumnLayout: DashboardLayout = {
       'freeDays',
       'breakInfo',
       'averageWorkdayHours',
+      'statistics',
       'info'
     ],
     [], // Leere Spalte 3
@@ -98,7 +98,9 @@ export const threeColumnLayout: DashboardLayout = {
       'workingTime',
       'averageDay',
       'weeklyHours',
-      'homeOffice'
+      'summary',
+      'homeOffice',
+      'info',
     ],
     [
       'timeInput',
@@ -113,9 +115,7 @@ export const threeColumnLayout: DashboardLayout = {
       'notes',
       'freeDays',
       'breakInfo',
-      'summary',
-      'statistics',
-      'info'
+      'statistics'
     ],
     [] // Leere Spalte 4
   ],

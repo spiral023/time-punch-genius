@@ -62,56 +62,58 @@ export const WorkingTimeCard: React.FC = () => {
           Arbeitszeit
         </CardTitle>
       </CardHeader>
-      <CardContent className="relative">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <motion.div
-              key={totalMinutes}
-              data-testid="working-time-display"
-              initial={{ scale: 1.1 }}
-              animate={{ scale: 1 }}
-              className={`text-4xl font-bold ${getTextColorClass(totalMinutes)} ${canPunch ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
-              onClick={canPunch ? handlePunch : undefined}
-            >
-              {formatHoursMinutes(totalMinutes)}
-            </motion.div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>
-              {!isToday 
-                ? 'Zeitbuchungen nur für heute möglich' 
-                : specialDayType === 'holiday'
-                ? 'Klicken zum Ein- oder Ausstempeln (Feiertag)'
-                : specialDayType && fullDaySpecialTypes.includes(specialDayType)
-                ? 'Zeitbuchung bei ganztägigen Sondertagen nicht möglich' 
-                : 'Klicken zum Ein- oder Ausstempeln'
-              }
-            </p>
-          </TooltipContent>
-        </Tooltip>
-        
-        {/* Warn-Icon ab 9h 30m - groß und rechtsbündig */}
-        {totalMinutes >= 570 && !specialDayType && (
+      <CardContent>
+        <div className="flex items-center gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <motion.div
-                animate={totalMinutes >= 600 ? { opacity: [1, 0.3, 1] } : {}}
-                transition={totalMinutes >= 600 ? { duration: 1, repeat: Infinity } : {}}
-                className={`absolute top-0 right-5 ${getTextColorClass(totalMinutes)}`}
+                key={totalMinutes}
+                data-testid="working-time-display"
+                initial={{ scale: 1.1 }}
+                animate={{ scale: 1 }}
+                className={`text-4xl font-bold ${getTextColorClass(totalMinutes)} ${canPunch ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+                onClick={canPunch ? handlePunch : undefined}
               >
-                <AlertTriangle className="h-24 w-24" />
+                {formatHoursMinutes(totalMinutes)}
               </motion.div>
             </TooltipTrigger>
             <TooltipContent>
               <p>
-                {totalMinutes >= 600 
-                  ? 'Achtung: Arbeitszeit über 10 Stunden!' 
-                  : 'Warnung: Arbeitszeit über 9h 30m'
+                {!isToday 
+                  ? 'Zeitbuchungen nur für heute möglich' 
+                  : specialDayType === 'holiday'
+                  ? 'Klicken zum Ein- oder Ausstempeln (Feiertag)'
+                  : specialDayType && fullDaySpecialTypes.includes(specialDayType)
+                  ? 'Zeitbuchung bei ganztägigen Sondertagen nicht möglich' 
+                  : 'Klicken zum Ein- oder Ausstempeln'
                 }
               </p>
             </TooltipContent>
           </Tooltip>
-        )}
+          
+          {/* Warn-Icon ab 9h 30m - klein und neben der Arbeitszeit */}
+          {totalMinutes >= 570 && !specialDayType && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <motion.div
+                  animate={totalMinutes >= 600 ? { opacity: [1, 0.3, 1] } : {}}
+                  transition={totalMinutes >= 600 ? { duration: 1, repeat: Infinity } : {}}
+                  className={getTextColorClass(totalMinutes)}
+                >
+                  <AlertTriangle className="h-8 w-8" />
+                </motion.div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>
+                  {totalMinutes >= 600 
+                    ? 'Achtung: Arbeitszeit über 10 Stunden!' 
+                    : 'Warnung: Arbeitszeit über 9h 30m'
+                  }
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
         <div className="text-sm text-muted-foreground mt-2">
           Delta:&nbsp;
           <span className={`font-bold ${specialDayType === 'holiday' || isWeekend ? 'text-gray-500' : totalMinutes - TARGET_7_7_HOURS_MINUTES >= 0 ? 'text-green-500' : 'text-red-500'}`}>
