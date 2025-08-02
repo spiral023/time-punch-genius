@@ -51,9 +51,102 @@ export const cardRegistry: Record<string, CardMeta> = {
 export const defaultLayout: DashboardLayout = {
   version: 3,
   columns: [
-    ['currentTime', 'averageDay', 'weeklyHours', 'summary', 'homeOffice'],
-    ['timeInput', 'notes', 'breakInfo', 'info'],
+    ['currentTime', 'averageDay', 'weeklyHours', 'summary', 'homeOffice', 'info'],
+    ['timeInput', 'notes', 'breakInfo'],
     ['workingTime', 'targetTimes', 'vacation', 'outsideRegularHours'],
-    ['tips', 'freeDays', 'heatmap', 'averageWorkdayHours', 'statistics'],
+    ['tips', 'heatmap', 'freeDays', 'averageWorkdayHours', 'statistics'],
+  ],
+};
+
+// 2-Spalten Layout
+export const twoColumnLayout: DashboardLayout = {
+  version: 3,
+  columns: [
+    [
+      'currentTime',
+      'workingTime', 
+      'averageDay',
+      'targetTimes',
+      'weeklyHours',
+      'vacation',
+      'summary',
+      'outsideRegularHours',
+      'homeOffice',
+      'statistics'
+    ],
+    [
+      'timeInput',
+      'tips',
+      'heatmap',
+      'notes',
+      'freeDays',
+      'breakInfo',
+      'averageWorkdayHours',
+      'info'
+    ],
+    [], // Leere Spalte 3
+    []  // Leere Spalte 4
+  ],
+};
+
+// 3-Spalten Layout
+export const threeColumnLayout: DashboardLayout = {
+  version: 3,
+  columns: [
+    [
+      'currentTime',
+      'workingTime',
+      'averageDay',
+      'weeklyHours',
+      'homeOffice'
+    ],
+    [
+      'timeInput',
+      'targetTimes',
+      'vacation',
+      'outsideRegularHours',
+      'averageWorkdayHours'
+    ],
+    [
+      'tips',
+      'heatmap',
+      'notes',
+      'freeDays',
+      'breakInfo',
+      'summary',
+      'statistics',
+      'info'
+    ],
+    [] // Leere Spalte 4
+  ],
+};
+
+// 1-Spalten Layout
+export const oneColumnLayout: DashboardLayout = {
+  version: 3,
+  columns: [
+    [
+      'currentTime',
+      'workingTime',
+      'averageDay',
+      'timeInput',
+      'targetTimes',
+      'heatmap',
+      'weeklyHours',
+      'notes',
+      'vacation',
+      'freeDays',
+      'summary',
+      'breakInfo',
+      'outsideRegularHours',
+      'averageWorkdayHours',
+      'homeOffice',
+      'info',
+      'statistics',
+      'tips'
+    ],
+    [], // Leere Spalte 2
+    [], // Leere Spalte 3
+    []  // Leere Spalte 4
   ],
 };

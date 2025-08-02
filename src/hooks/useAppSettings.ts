@@ -15,6 +15,7 @@ export const useAppSettings = () => {
     setPersonalVacationDays, 
     setShowWelcomeScreen, 
     setColumnWidthSlider, 
+    setCardLayoutMode,
     setZoomLevel,
     setWeeklyTargetHours,
     setDashboardLayout,
@@ -33,6 +34,10 @@ export const useAppSettings = () => {
     setShowWelcomeScreen,
     columnWidthSlider: settings.columnWidthSlider || 30,
     setColumnWidthSlider,
+    cardLayoutMode: settings.cardLayoutMode || 'dynamic',
+    setCardLayoutMode,
+    // Backward compatibility helpers
+    useFixedCardWidth: settings.cardLayoutMode === 'fixed',
     zoomLevel: settings.zoomLevel || 1.0,
     setZoomLevel,
     weeklyTargetHours: settings.weeklyTargetHours || 38.5,

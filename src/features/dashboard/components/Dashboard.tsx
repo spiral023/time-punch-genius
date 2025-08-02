@@ -36,18 +36,18 @@ import { ImportExportMenu } from './ImportExportMenu';
 import { DataManagement } from '@/features/time-calculator/components/DataManagement';
 
 const Dashboard = () => {
-  const { cardVisibility, columnWidthSlider } = useAppSettings();
-  const [layout, setLayout] = useDashboardLayout();
+  const { cardVisibility, columnWidthSlider, cardLayoutMode } = useAppSettings();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [layout, setLayout] = useDashboardLayout(isEditing);
 
   const handleResetLayout = () => {
     setLayout(defaultLayout);
   };
 
-  // Berechne die Kartenbreite basierend auf dem Slider-Wert
-  const cardMinWidth = getCardMinWidth(columnWidthSlider);
+  // Berechne die Kartenbreite basierend auf dem Slider-Wert (nur wenn fixe Breite aktiviert ist)
+  const cardMinWidth = cardLayoutMode === 'fixed' ? getCardMinWidth(columnWidthSlider) : undefined;
 
   const {
     setSelectedDate,
@@ -106,6 +106,7 @@ const Dashboard = () => {
     const activeId = event.active.id as string;
     console.log('Drag started:', activeId);
     setActiveId(activeId);
+    setIsDragging(true);
   };
 
   const handleDragOver = (event: DragOverEvent) => {
@@ -115,12 +116,8 @@ const Dashboard = () => {
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    console.log('Drag over:', { activeId, overId });
-
     const activeContainer = findContainer(activeId);
     const overContainer = findContainer(overId) || overId; // overId might be a column
-
-    console.log('Containers:', { activeContainer, overContainer });
 
     if (!activeContainer || !overContainer || activeContainer === overContainer) {
       return;
@@ -165,7 +162,6 @@ const Dashboard = () => {
       
       const newLayout = { ...prev, columns: newColumns };
       const validatedLayout = validateLayout(newLayout);
-      console.log('Layout updated:', validatedLayout.columns);
       return validatedLayout;
     });
   };
@@ -175,6 +171,7 @@ const Dashboard = () => {
     console.log('Drag ended:', { active: active.id, over: over?.id });
     
     setActiveId(null);
+    setIsDragging(false);
     
     if (!over) {
       return;
@@ -240,6 +237,38 @@ const Dashboard = () => {
     return <CardComponent />;
   };
 
+  // Ermittelt die Anzahl der genutzten Spalten (Spalten mit sichtbaren Karten)
+  const getUsedColumnsCount = () => {
+    if (isEditing) {
+      // Im Bearbeitungsmodus alle Spalten anzeigen
+      return layout.columns.length;
+    }
+    
+    let usedColumns = 0;
+    for (const column of layout.columns) {
+      const hasVisibleCards = column.some(cardId => isCardVisible(cardId));
+      if (hasVisibleCards) {
+        usedColumns++;
+      }
+    }
+    return Math.max(1, usedColumns); // Mindestens 1 Spalte
+  };
+
+  // Filtert nur die Spalten mit Inhalt (außer im Bearbeitungsmodus)
+  const getVisibleColumns = () => {
+    if (isEditing) {
+      // Im Bearbeitungsmodus alle Spalten zurückgeben
+      return layout.columns.map((column, index) => ({ column, index }));
+    }
+    
+    return layout.columns
+      .map((column, index) => ({ column, index }))
+      .filter(({ column }) => column.some(cardId => isCardVisible(cardId)));
+  };
+
+  const usedColumnsCount = getUsedColumnsCount();
+  const visibleColumns = getVisibleColumns();
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <WelcomePopup onTriggerImport={triggerImport} onTriggerWebdeskImport={triggerWebdeskImport} />
@@ -281,6 +310,7 @@ const Dashboard = () => {
                 isEditing={isEditing} 
                 setIsEditing={setIsEditing} 
                 onResetLayout={handleResetLayout}
+                onSetLayout={setLayout}
               />
               {isEditing && (
                 <Tooltip>
@@ -310,9 +340,16 @@ const Dashboard = () => {
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
-          <div className="dashboard-grid">
-            {layout.columns.map((column, colIndex) => (
-              <DroppableColumn key={`col-${colIndex}`} id={String(colIndex)} items={column}>
+          <div 
+            className={`dashboard-grid ${cardLayoutMode === 'fixed' ? 'fixed-width' : ''} ${cardLayoutMode === 'uniform' ? 'uniform-width' : ''}`}
+            style={{
+              ...(cardLayoutMode === 'fixed' ? { '--card-min-width': `${cardMinWidth}px` } : {}),
+              '--used-columns': usedColumnsCount,
+            } as React.CSSProperties}
+            data-columns={usedColumnsCount}
+          >
+            {visibleColumns.map(({ column, index }) => (
+              <DroppableColumn key={`col-${index}`} id={String(index)} items={column} isEditing={isEditing}>
                 {column.map((cardId) => {
                   if (!isCardVisible(cardId)) {
                     return null;

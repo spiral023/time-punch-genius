@@ -148,43 +148,258 @@ All colors MUST be HSL.
   .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(1, 1fr);
-    justify-content: center;
     gap: 1rem;
-    max-width: min(100vw, 95vw);
+    max-width: 100%;
     margin: 0 auto;
     padding: 0 1rem;
+    align-items: start;
+    grid-auto-rows: min-content;
+    justify-content: center;
+  }
+
+  /* Dynamische Spaltenanzahl basierend auf data-columns Attribut */
+  .dashboard-grid[data-columns="1"] {
+    grid-template-columns: repeat(1, 1fr);
+    max-width: min(600px, 95vw);
+  }
+
+  .dashboard-grid[data-columns="2"] {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: min(1200px, 95vw);
+  }
+
+  .dashboard-grid[data-columns="3"] {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: min(1400px, 95vw);
+  }
+
+  .dashboard-grid[data-columns="4"] {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: min(1800px, 95vw);
+  }
+
+  .dashboard-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 0;
+    height: fit-content;
+  }
+
+  /* Fixed width layout */
+  .dashboard-grid.fixed-width {
+    justify-content: center;
+  }
+
+  .dashboard-grid.fixed-width[data-columns="1"] {
+    grid-template-columns: repeat(1, minmax(var(--card-min-width, 400px), var(--card-min-width, 400px)));
+    max-width: min(calc(var(--card-min-width, 400px) + 2rem), 95vw);
+  }
+
+  .dashboard-grid.fixed-width[data-columns="2"] {
+    grid-template-columns: repeat(2, minmax(var(--card-min-width, 400px), var(--card-min-width, 400px)));
+    max-width: min(calc(2 * var(--card-min-width, 400px) + 3rem), 95vw);
+  }
+
+  .dashboard-grid.fixed-width[data-columns="3"] {
+    grid-template-columns: repeat(3, minmax(var(--card-min-width, 400px), var(--card-min-width, 400px)));
+    max-width: min(calc(3 * var(--card-min-width, 400px) + 4rem), 95vw);
+  }
+
+  .dashboard-grid.fixed-width[data-columns="4"] {
+    grid-template-columns: repeat(4, minmax(var(--card-min-width, 400px), var(--card-min-width, 400px)));
+    max-width: min(calc(4 * var(--card-min-width, 400px) + 5rem), 95vw);
+  }
+
+  .dashboard-grid.fixed-width .dashboard-column {
+    min-width: var(--card-min-width, 400px);
+    max-width: var(--card-min-width, 400px);
+  }
+
+  /* Uniform width layout - all cards have the same width based on the largest minimum width */
+  .dashboard-grid.uniform-width {
+    justify-content: center;
+  }
+
+  .dashboard-grid.uniform-width[data-columns="1"] {
+    grid-template-columns: repeat(1, 450px);
+    max-width: min(500px, 95vw);
+  }
+
+  .dashboard-grid.uniform-width[data-columns="2"] {
+    grid-template-columns: repeat(2, 450px);
+    max-width: min(1000px, 95vw);
+  }
+
+  .dashboard-grid.uniform-width[data-columns="3"] {
+    grid-template-columns: repeat(3, 450px);
+    max-width: min(1450px, 95vw);
+  }
+
+  .dashboard-grid.uniform-width[data-columns="4"] {
+    grid-template-columns: repeat(4, 450px);
+    max-width: min(1900px, 95vw);
+  }
+
+  .dashboard-grid.uniform-width .dashboard-column {
+    min-width: 450px;
+    max-width: 450px;
   }
 
   @media (min-width: 768px) {
-    .dashboard-grid {
-      grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+    .dashboard-grid.uniform-width {
       gap: 1.25rem;
-      max-width: min(800px, 90vw);
-      padding: 0;
+      max-width: min(1200px, 95vw);
     }
   }
 
   @media (min-width: 1024px) {
-    .dashboard-grid {
-      grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+    .dashboard-grid.uniform-width {
       gap: 1.5rem;
-      max-width: min(1200px, 92vw);
+      max-width: min(1400px, 95vw);
     }
   }
 
   @media (min-width: 1400px) {
-    .dashboard-grid {
-      grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
+    .dashboard-grid.uniform-width {
       gap: 1.75rem;
-      max-width: min(1600px, 95vw);
+      max-width: min(1800px, 95vw);
     }
   }
 
   @media (min-width: 1800px) {
-    .dashboard-grid {
-      grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
+    .dashboard-grid.uniform-width {
       gap: 2rem;
-      max-width: min(2000px, 96vw);
+      max-width: min(2200px, 95vw);
     }
+  }
+
+  /* Ensure cards within uniform columns fill the available width */
+  .dashboard-grid.uniform-width .dashboard-column > * {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Dynamic width layout (default) - respektiert data-columns Attribut */
+  @media (min-width: 768px) {
+    .dashboard-grid:not(.fixed-width):not(.uniform-width) {
+      gap: 1.25rem;
+      padding: 0 1rem;
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="1"] {
+      max-width: min(600px, 95vw);
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="2"] {
+      max-width: min(1200px, 95vw);
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="3"] {
+      max-width: min(1400px, 95vw);
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="4"] {
+      max-width: min(1800px, 95vw);
+    }
+    
+    .dashboard-column {
+      gap: 1.25rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .dashboard-grid:not(.fixed-width):not(.uniform-width) {
+      gap: 1.5rem;
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="1"] {
+      max-width: min(600px, 95vw);
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="2"] {
+      max-width: min(1200px, 95vw);
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="3"] {
+      max-width: min(1400px, 95vw);
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="4"] {
+      max-width: min(1800px, 95vw);
+    }
+    
+    .dashboard-column {
+      gap: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1400px) {
+    .dashboard-grid:not(.fixed-width):not(.uniform-width) {
+      gap: 1.75rem;
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="1"] {
+      max-width: min(600px, 95vw);
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="2"] {
+      max-width: min(1200px, 95vw);
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="3"] {
+      max-width: min(1400px, 95vw);
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="4"] {
+      max-width: min(1800px, 95vw);
+    }
+    
+    .dashboard-column {
+      gap: 1.75rem;
+    }
+  }
+
+  @media (min-width: 1800px) {
+    .dashboard-grid:not(.fixed-width):not(.uniform-width) {
+      gap: 2rem;
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="1"] {
+      max-width: min(600px, 95vw);
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="2"] {
+      max-width: min(1200px, 95vw);
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="3"] {
+      max-width: min(1400px, 95vw);
+    }
+    
+    .dashboard-grid:not(.fixed-width):not(.uniform-width)[data-columns="4"] {
+      max-width: min(2200px, 95vw);
+    }
+    
+    .dashboard-column {
+      gap: 2rem;
+    }
+  }
+
+  /* Improved drag and drop styles */
+  .dashboard-grid .sortable-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .dashboard-grid .sortable-card.dragging {
+    transform: rotate(5deg);
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .dashboard-grid .droppable-column.drag-over {
+    background-color: hsl(var(--primary) / 0.05);
+    border: 2px dashed hsl(var(--primary) / 0.3);
+    border-radius: 0.5rem;
   }
 }

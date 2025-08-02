@@ -28,16 +28,19 @@ export interface DashboardLayout {
   columns: string[][];
 }
 
+export type CardLayoutMode = 'dynamic' | 'fixed' | 'uniform';
+
 export interface AppSettings {
   personalVacationDays: number;
   cardVisibility: { [key: string]: boolean };
   gradientId: number;
   showWelcomeScreen: boolean;
   columnWidthSlider: number;
+  cardLayoutMode: CardLayoutMode;
   zoomLevel: number;
   weeklyTargetHours: number;
   dashboardLayout: DashboardLayout;
-  targetTimesVisibility?: { [key: string]: boolean };
+  targetTimesVisibility: { [key: string]: boolean };
 }
 
 export interface BreakCompliance {

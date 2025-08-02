@@ -19,6 +19,7 @@ const defaultSettings: AppSettings = {
   gradientId: 3,
   showWelcomeScreen: true, // Zeige Welcome Screen für neue Benutzer
   columnWidthSlider: 50, // Standard für 400px Kartenbreite (300 + 50*2 = 400)
+  cardLayoutMode: 'dynamic', // Standard: dynamische Kartenbreite
   zoomLevel: 1.0, // Standard Zoom-Level auf 1.0 (100%)
   weeklyTargetHours: 38.5, // Standard Wochenstunden
   dashboardLayout: defaultLayout,
@@ -33,6 +34,7 @@ interface AppSettingsContextType {
   setGradientId: (id: number) => void;
   setShowWelcomeScreen: (show: boolean) => void;
   setColumnWidthSlider: (value: number) => void;
+  setCardLayoutMode: (mode: 'dynamic' | 'fixed' | 'uniform') => void;
   setZoomLevel: (level: number) => void;
   setWeeklyTargetHours: (hours: number) => void;
   setDashboardLayout: (layout: DashboardLayout) => void;
@@ -52,6 +54,13 @@ export const AppSettingsProvider = ({ children }: { children: ReactNode }) => {
       // Migration logic for old localStorage keys
       const migrateOldSettings = (currentSettings: Partial<AppSettings>): AppSettings => {
         const migrated = { ...defaultSettings, ...currentSettings };
+        
+        // Migrate useFixedCardWidth to cardLayoutMode
+        if ('useFixedCardWidth' in currentSettings && !migrated.cardLayoutMode) {
+          const legacySettings = currentSettings as Partial<AppSettings> & { useFixedCardWidth?: boolean };
+          migrated.cardLayoutMode = legacySettings.useFixedCardWidth ? 'fixed' : 'dynamic';
+          console.log('Migrated useFixedCardWidth to cardLayoutMode:', migrated.cardLayoutMode);
+        }
         
         // Force zoomLevel to 1.0 for all users (fix tooltip issues)
         if (migrated.zoomLevel !== 1.0) {
@@ -151,6 +160,10 @@ export const AppSettingsProvider = ({ children }: { children: ReactNode }) => {
     updateSettings({ columnWidthSlider: value });
   }, [updateSettings]);
 
+  const setCardLayoutMode = useCallback((mode: 'dynamic' | 'fixed' | 'uniform') => {
+    updateSettings({ cardLayoutMode: mode });
+  }, [updateSettings]);
+
   const setZoomLevel = useCallback((level: number) => {
     updateSettings({ zoomLevel: level });
   }, [updateSettings]);
@@ -175,6 +188,7 @@ export const AppSettingsProvider = ({ children }: { children: ReactNode }) => {
     setGradientId,
     setShowWelcomeScreen,
     setColumnWidthSlider,
+    setCardLayoutMode,
     setZoomLevel,
     setWeeklyTargetHours,
     setDashboardLayout,

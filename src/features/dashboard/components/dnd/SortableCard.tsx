@@ -18,6 +18,7 @@ export const SortableCard: React.FC<SortableCardProps> = ({ id, children, isEdit
     transform,
     transition,
     isDragging,
+    isSorting,
   } = useSortable({ 
     id,
     disabled: !isEditing
@@ -25,9 +26,8 @@ export const SortableCard: React.FC<SortableCardProps> = ({ id, children, isEdit
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: isDragging ? 'none' : transition,
     zIndex: isDragging ? 1000 : 'auto',
-    opacity: isDragging ? 0.8 : 1,
   };
 
   return (
@@ -35,20 +35,30 @@ export const SortableCard: React.FC<SortableCardProps> = ({ id, children, isEdit
       ref={setNodeRef} 
       style={style} 
       {...attributes}
-      className={`relative ${isEditing ? 'cursor-grab active:cursor-grabbing' : ''}`}
+      className={`sortable-card relative ${isEditing ? 'cursor-grab active:cursor-grabbing' : ''} ${
+        isDragging ? 'dragging opacity-90' : ''
+      }`}
     >
-      <div className={`relative transition-all duration-200 ${isDragging ? 'scale-105 shadow-lg' : ''} ${isEditing ? 'hover:shadow-md border-2 border-dashed border-transparent hover:border-primary/30' : ''}`}>
+      <div 
+        className={`relative ${
+          isDragging ? 'shadow-2xl' : ''
+        } ${
+          isEditing ? 'hover:shadow-md border-2 border-dashed border-transparent hover:border-primary/30' : ''
+        }`}
+      >
         {isEditing && (
-          <div
+          <motion.div
             {...listeners}
             className="absolute top-2 right-2 z-10 p-2 bg-background/90 backdrop-blur-sm border border-border rounded-lg cursor-grab hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-primary shadow-sm transition-all duration-200"
             aria-label="Karte verschieben"
             title="Karte verschieben"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
           >
             <GripVertical className="h-4 w-4" />
-          </div>
+          </motion.div>
         )}
-        <div className={isEditing ? 'pointer-events-none' : ''}>
+        <div className={`${isEditing ? 'pointer-events-none' : ''} ${isDragging ? 'opacity-90' : ''}`}>
           {children}
         </div>
       </div>
