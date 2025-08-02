@@ -1,22 +1,16 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
-import { DashboardLayout, defaultLayout } from '@/features/dashboard/config/layout';
+import { DashboardLayout, defaultLayout, cardRegistry } from '@/features/dashboard/config/layout';
 
 const STORAGE_KEY = 'dashboardLayout';
 
-const migrateLayout = (oldLayout: DashboardLayout): DashboardLayout => {
-  if (oldLayout.version === 1) {
-    // Migrate from version 1 to version 2: Replace 'results' with 'workingTime' and 'targetTimes'
-    const newColumns = oldLayout.columns.map(column => 
-      column.map(cardId => {
-        if (cardId === 'results') {
-          // Replace 'results' with 'workingTime' - 'targetTimes' will be added separately
-          return 'workingTime';
-        }
-        return cardId;
-      })
-    );
+const migrateLayout = (layout: DashboardLayout): DashboardLayout => {
+  let newLayout = { ...layout };
 
-    // Find the column that had 'results' and add 'targetTimes' after 'workingTime'
+  // Migration from v1 to v2
+  if (newLayout.version === 1) {
+    const newColumns = newLayout.columns.map(column =>
+      column.map(cardId => cardId === 'results' ? 'workingTime' : cardId)
+    );
     for (let i = 0; i < newColumns.length; i++) {
       const workingTimeIndex = newColumns[i].indexOf('workingTime');
       if (workingTimeIndex !== -1) {
@@ -24,14 +18,29 @@ const migrateLayout = (oldLayout: DashboardLayout): DashboardLayout => {
         break;
       }
     }
-
-    return {
-      version: 2,
-      columns: newColumns,
-    };
+    newLayout = { version: 2, columns: newColumns };
   }
-  
-  return oldLayout;
+
+  // General migration to add missing cards from the registry
+  const allRegisteredCards = Object.keys(cardRegistry);
+  const allLayoutCards = new Set(newLayout.columns.flat());
+  const missingCards = allRegisteredCards.filter(cardId => !allLayoutCards.has(cardId));
+
+  if (missingCards.length > 0) {
+    const newColumns = [...newLayout.columns];
+    // Add missing cards to the end of the last column
+    if (newColumns.length > 0) {
+      newColumns[newColumns.length - 1].push(...missingCards);
+    } else {
+      // If there are no columns, create one with the missing cards
+      newColumns.push(missingCards);
+    }
+    newLayout.columns = newColumns;
+  }
+
+  // Always update to the latest version after migration
+  newLayout.version = defaultLayout.version;
+  return newLayout;
 };
 
 export const useDashboardLayout = (): [DashboardLayout, Dispatch<SetStateAction<DashboardLayout>>] => {
@@ -58,14 +67,8 @@ export const useDashboardLayout = (): [DashboardLayout, Dispatch<SetStateAction<
       const storedLayout = localStorage.getItem(STORAGE_KEY);
       if (storedLayout) {
         const parsed = JSON.parse(storedLayout) as DashboardLayout;
-        // Version check for future migrations
-        if (parsed.version === defaultLayout.version) {
-          return validateLayout(parsed);
-        } else if (parsed.version < defaultLayout.version) {
-          // Migrate old layout
-          const migrated = migrateLayout(parsed);
-          return validateLayout(migrated);
-        }
+        // Always run migration logic to catch newly added cards
+        return validateLayout(migrateLayout(parsed));
       }
     } catch (error) {
       console.error("Failed to load or parse dashboard layout from localStorage", error);

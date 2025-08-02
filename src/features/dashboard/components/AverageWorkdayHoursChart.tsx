@@ -50,6 +50,9 @@ export const AverageWorkdayHoursChart: React.FC = () => {
     ...chartData.filter(d => d.day === 'So')
   ];
 
+  const maxHours = Math.max(...orderedChartData.map(item => item.hours), 7.7);
+  const yAxisMax = Math.ceil(maxHours);
+
   return (
     <Card>
       <CardHeader>
@@ -73,6 +76,7 @@ export const AverageWorkdayHoursChart: React.FC = () => {
               axisLine={false}
               tickMargin={10}
               unit="h"
+              domain={[0, yAxisMax]}
             />
             <ChartTooltip
               cursor={false}

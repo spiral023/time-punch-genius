@@ -29,19 +29,21 @@ const InfoCard: React.FC = () => {
         <Button onClick={handleShowWelcome}>
           Einleitung wiederholen
         </Button>
-        <Button asChild>
-          <a href="mailto:philipp.asanger@gmail.com">Feedback</a>
-        </Button>
-        <Button asChild>
-          <a
-            href="https://www.wko.at/oe/kollektivvertrag/kv-informationstechnologie-2025.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            IT-KV 2025
-          </a>
-        </Button>
-        <InfoDialog triggerText="Impressum" title="Impressum">
+        <div className="flex gap-4">
+          <Button className="flex-1" asChild>
+            <a href="mailto:philipp.asanger@gmail.com">Feedback</a>
+          </Button>
+          <Button className="flex-1" asChild>
+            <a
+              href="https://www.wko.at/oe/kollektivvertrag/kv-informationstechnologie-2025.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              IT-KV 2025
+            </a>
+          </Button>
+        </div>
+        <InfoDialog triggerText="Impressum & Datenschutz" title="Impressum & Datenschutz">
           <div>
             <p>
               <strong>Verantwortlich für den Inhalt:</strong>
@@ -59,34 +61,7 @@ const InfoCard: React.FC = () => {
             <p>
               E-Mail: philipp.asanger@gmail.com
             </p>
-            <p className="mt-4 text-sm text-muted-foreground">
-              Danke an Thomas, Wolfgang & Dominik, Raffaela & Gerhard für euren Support!
-            </p>
-          </div>
-        </InfoDialog>
-        <Button
-          onClick={() => {
-            showBrowserNotification(
-              'Test-Benachrichtigung',
-              'Dies ist eine Testbenachrichtigung von deinem Browser.',
-            );
-          }}
-        >
-          Test Browser Alert
-        </Button>
-        <Button
-          onClick={() => {
-            setTimeout(() => {
-              toast('Test-Benachrichtigung', {
-                description: 'Dies ist eine Testbenachrichtigung.',
-              });
-            }, 1000);
-          }}
-        >
-          Test Toast Alert
-        </Button>
-        <InfoDialog triggerText="Datenschutz" title="Datenschutz">
-          <div>
+            <hr className="my-4" />
             <p>
               <strong>Datenschutzerklärung</strong>
             </p>
@@ -95,6 +70,31 @@ const InfoCard: React.FC = () => {
             </p>
           </div>
         </InfoDialog>
+        <div className="flex gap-4">
+          <Button
+            className="flex-1"
+            onClick={() => {
+              showBrowserNotification(
+                'Test-Benachrichtigung',
+                'Dies ist eine Testbenachrichtigung von deinem Browser.',
+              );
+            }}
+          >
+            Test Browser Alert
+          </Button>
+          <Button
+            className="flex-1"
+            onClick={() => {
+              setTimeout(() => {
+                toast('Test-Benachrichtigung', {
+                  description: 'Dies ist eine Testbenachrichtigung.',
+                });
+              }, 1000);
+            }}
+          >
+            Test Toast Alert
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

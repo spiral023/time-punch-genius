@@ -252,6 +252,9 @@ export const BreakInfoCard: React.FC = () => {
             <img height='36' style={{ border: 0, height: '46px' }} src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' alt='Buy Me a Coffee at ko-fi.com' />
           </a>
         </div>
+        <p className="text-center text-xs text-muted-foreground mt-4">
+          Danke an Thomas, Wolfgang, Dominik, Raffaela & Gerhard für euren Support! ❤️
+        </p>
       </CardContent>
     </Card>
   );

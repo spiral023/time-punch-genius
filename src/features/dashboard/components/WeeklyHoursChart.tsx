@@ -45,6 +45,9 @@ export const WeeklyHoursChart: React.FC = () => {
     fill: getBarColorByMinutes(item.totalMinutes),
   }))
 
+  const maxHours = Math.max(...chartData.map(item => item.hours), 7.7);
+  const yAxisMax = Math.ceil(maxHours);
+
   return (
     <Card>
       <CardHeader>
@@ -68,6 +71,7 @@ export const WeeklyHoursChart: React.FC = () => {
               axisLine={false}
               tickMargin={10}
               unit="h"
+              domain={[0, yAxisMax]}
             />
             <ChartTooltip
               cursor={false}

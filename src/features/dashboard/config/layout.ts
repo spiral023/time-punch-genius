@@ -13,6 +13,7 @@ import { WorkingTimeCard } from '../components/cards/WorkingTimeCard';
 import { TargetTimesCard } from '../components/cards/TargetTimesCard';
 import { AverageWorkdayHoursChart } from '../components/AverageWorkdayHoursChart';
 import { WeeklyHoursChart } from '../components/WeeklyHoursChart';
+import HeatmapCard from '../components/cards/HeatmapCard';
 import { TimeInputSection } from '@/features/time-calculator/components/TimeInputSection';
 import { SummarySection } from '@/features/time-calculator/components/SummarySection';
 import { DataManagement } from '@/features/time-calculator/components/DataManagement';
@@ -40,6 +41,7 @@ export const cardRegistry: Record<string, CardMeta> = {
   weeklyHours: { id: 'weeklyHours', name: 'Diese Woche', component: WeeklyHoursChart },
   outsideRegularHours: { id: 'outsideRegularHours', name: 'Außerhalb Normalzeit', component: OutsideRegularHoursCard },
   averageWorkdayHours: { id: 'averageWorkdayHours', name: 'Durchschnitt pro Wochentag', component: AverageWorkdayHoursChart },
+  heatmap: { id: 'heatmap', name: 'Arbeits-Heatmap', component: HeatmapCard },
   info: { id: 'info', name: 'Infos', component: InfoCard },
   // dataManagement is handled as a special case in Dashboard.tsx because of the ref
 };
@@ -55,6 +57,6 @@ export const defaultLayout: DashboardLayout = {
     ['currentTime', 'averageDay', 'weeklyHours', 'summary', 'homeOffice'],
     ['timeInput', 'notes', 'breakInfo', 'info'],
     ['workingTime', 'targetTimes', 'vacation', 'outsideRegularHours'],
-    ['tips', 'freeDays', 'averageWorkdayHours', 'statistics'],
+    ['tips', 'freeDays', 'heatmap', 'averageWorkdayHours', 'statistics'],
   ],
 };

@@ -4,25 +4,9 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { cardRegistry } from '../config/layout';
 
-const cardComponents = [
-  { id: 'currentTime', name: 'Aktuelle Uhrzeit' },
-  { id: 'summary', name: 'Zusammenfassung' },
-  { id: 'timeInput', name: 'Zeitbuchungen' },
-  { id: 'results', name: 'Arbeitszeit' },
-  { id: 'breakInfo', name: 'Pauseninfo' },
-  { id: 'statistics', name: 'Statistik' },
-  { id: 'homeOffice', name: 'Home Office' },
-  { id: 'vacation', name: 'Urlaubsplanung' },
-  { id: 'notes', name: 'Notizen' },
-  { id: 'tips', name: 'Tipps' },
-  { id: 'freeDays', name: 'Freie Tage' },
-  { id: 'averageDay', name: 'Durchschnittlicher Arbeitstag' },
-  { id: 'weeklyHours', name: 'Wochenstunden' },
-  { id: 'outsideRegularHours', name: 'Außerhalb der Regelarbeitszeit' },
-  { id: 'averageWorkdayHours', name: 'Durchschnittliche Arbeitszeit' },
-  { id: 'info', name: 'Info' },
-];
+const cardComponents = Object.values(cardRegistry).map(({ id, name }) => ({ id, name }));
 
 export const CardManager: React.FC = () => {
   const { cardVisibility, setAllCardsVisibility } = useAppSettings();
